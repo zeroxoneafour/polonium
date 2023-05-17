@@ -1,0 +1,23 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "vaughanm1@protonmail.com",
+                "Name": "Vaughan Milliman"
+            }
+        ],
+        "Description": "Autotile using KWin 5.27 features",
+        "Icon": "preferences-system-windows-effect-presentwindows",
+        "Id": "polonium",
+        "License": "MIT",
+        "Name": "Polonium",
+        "ServiceTypes": [
+            "KWin/Script"
+        ],
+        "Version": "%VERSION%"
+    },
+    "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted",
+    "X-KDE-PluginKeyword": "polonium",
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js"
+}
