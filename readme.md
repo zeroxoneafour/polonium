@@ -5,7 +5,7 @@ A successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
-![hot icon](res/icon.svg)
+![hot icon](res/logo.svg)
 
 ## features
 * Works in Wayland Plasma 5.27 and up
