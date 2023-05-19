@@ -1,0 +1,17 @@
+{
+    "compileOnSave": true,
+    "include": [
+        "src/extern/*.d.ts",
+        "src/*/*.ts",
+        "src/*.ts"
+    ],
+    "compilerOptions": {
+        "target": "es2021",
+        "outFile": "autotile.js",
+        "noEmitOnError": false,
+        "removeComments": true,
+        "lib": ["es2021"],
+        "alwaysStrict": true,
+        "strict": true
+    }
+}
