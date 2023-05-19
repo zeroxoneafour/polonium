@@ -1,5 +1,11 @@
+<div align="center">
+
 # polonium
-A successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 5.27. The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
+A successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 5.27.
+
+The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
+
+![hot icon](res/icon.svg)
 
 ## features
 * Works in Wayland Plasma 5.27 and up
