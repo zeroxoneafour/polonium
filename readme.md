@@ -7,6 +7,8 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ![hot icon](res/logo.svg)
 
+</div>
+
 ## features
 * Works in Wayland Plasma 5.27 and up
 * Actual tiling backend using binary trees and decent enough code where you can mod in your own
