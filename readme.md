@@ -34,4 +34,4 @@ Commands -
 * Clean build and target - `make cleanall`
 
 ## license
-MIT licensed, please bum my code if you can use it in your own projects. Make sure to give credit though!
+MIT licensed, please bum my code if you can use to make something better. Make sure to give credit though!
