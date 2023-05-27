@@ -67,6 +67,10 @@ export class TilingEngine implements Engine.TilingEngine {
             this.rootNodes.set(desktop.toString(), new RootNode);
         }
         const rootNode = this.rootNodes.get(desktop.toString())!;
+        // wipe rootTile clean
+        while (rootTile.tiles.length > 0) {
+            rootTile.tiles.pop();
+        }
         // modify rootTile
         let stack: Array<TreeNode> = [rootNode];
         let stackNext: Array<TreeNode> = [];
@@ -74,7 +78,6 @@ export class TilingEngine implements Engine.TilingEngine {
         let i = 0;
         while (stack.length > 0) {
             printDebug("Build layout loop iter " + i, false);
-            i += 1;
             for (const node of stack) {
                 if (node.children != null) {
                     const tile = this.nodeMap.get(node);
@@ -94,6 +97,7 @@ export class TilingEngine implements Engine.TilingEngine {
             }
             stack = stackNext;
             stackNext = [];
+            i += 1;
         }
     }
     updateTile(_tile: KWin.Tile): void {
