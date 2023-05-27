@@ -37,7 +37,6 @@ Commands -
 
 ## license
 * Majority of this project is MIT licensed, please bum my code if you can use to make something better. Make sure to give credit though!
-* The implementation of bidirectional map (src/extern/bimap_external.js) is MIT licensed as well by somebody else
 
 ## name
-Came from a comment on my old script, you can find the script and comment [here](https://www.pling.com/p/2003956/)
+Came from a comment on my old script, you can find the script and comment [here](https://store.kde.org/p/2003956)
