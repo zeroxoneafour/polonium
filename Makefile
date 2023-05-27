@@ -4,7 +4,7 @@ VERSION = 0.1.0
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
 
-all: build install start
+all: build install
 
 build: res src
 	zip -r $(PKGFILE) $(PKGDIR)
@@ -24,8 +24,8 @@ cleanall: clean cleanpkg
 
 res: $(PKGDIR)
 	cp res/metadata.json $(PKGDIR)/
-	cp res/main.xml $(PKGDIR)/contents/config/
-	cp res/config.ui $(PKGDIR)/contents/ui/
+#	cp res/main.xml $(PKGDIR)/contents/config/
+#	cp res/config.ui $(PKGDIR)/contents/ui/
 	sed -i "s/%VERSION%/$(VERSION)/" $(PKGDIR)/metadata.json
 
 src: $(PKGDIR)

@@ -40,3 +40,8 @@ function removeClient(client: KWin.AbstractClient): void {
     printDebug(client.resourceClass + " removed", false);
     untileClient(client);
 }
+
+workspace.clientAdded.connect(addClient);
+workspace.clientRemoved.connect(removeClient);
+
+workspace.currentDesktopChanged.connect(rebuildLayout);
