@@ -4,7 +4,7 @@ let useWhitelist: boolean = false;
 let blacklist: Array<string> = "krunner, yakuake, kded, polkit".split(',').map((x: string) => x.trim());
 let tilePopups: boolean = false;
 
-let blacklistCache: Set<string>;
+let blacklistCache: Set<string> = new Set;
 
 function printDebug(str: string, isError: boolean) {
     if (isError) {
