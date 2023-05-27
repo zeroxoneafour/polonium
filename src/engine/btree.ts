@@ -49,6 +49,12 @@ class TreeNode {
 class RootNode extends TreeNode {
     parent: null = null;
     sibling: null = null;
+    remove(): void {
+        // for root node, if the node needs to be removed just reset it
+        this.children = null;
+        this.client = null;
+        this.splitOffset = 0.5;
+    }
 }
 
 export class TilingEngine implements Engine.TilingEngine {
@@ -69,8 +75,8 @@ export class TilingEngine implements Engine.TilingEngine {
         const rootNode = this.rootNodes.get(desktop.toString())!;
         // wipe rootTile clean
         while (rootTile.tiles.length > 0) {
-            rootTile.tiles.pop();
-        }
+            rootTile.tiles[0].remove();
+        };
         // modify rootTile
         let stack: Array<TreeNode> = [rootNode];
         let stackNext: Array<TreeNode> = [];

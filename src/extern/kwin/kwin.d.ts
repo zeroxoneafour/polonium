@@ -36,6 +36,7 @@ declare namespace KWin {
         parent: Tile | null;
         padding: number;
         split(direction: LayoutDirection): void;
+        remove(): void;
     }
     enum LayoutDirection {
         Floating,
