@@ -1,9 +1,17 @@
 // dont expect nice doc comments anywhere other than here, this is the only part of the project meant for expansion
 namespace Engine {
     /**
-     * Tuple that goes [screen, activity, desktop]
+     * Class for current screen config
      */
-    export type Desktop = [number, string, number]
+    export class Desktop {
+        screen: number = workspace.activeScreen;
+        activity: string = workspace.currentActivity;
+        desktop: number = workspace.currentDesktop;
+        toString(): string {
+            return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
+        }
+    }
+    
     /**
      * Interface that can be built off of to create a custom tiling engine
      */
@@ -17,22 +25,23 @@ namespace Engine {
         */
         buildLayout(rootTile: KWin.RootTile, desktop: Desktop): void;
         /**
-         * Places clients based on root tile and desktop
+         * Updates the size of a tile inside of the engine
+         * @remarks
+         * All classes that implement this trait should cache the current root tile based on buildLayout, so it is not provided in the arguments
+         * Not doing this also simplifies the modifications needed to the KWin.Tile class
+         * This also only handles tile resizing, so no deletion/insertion. Doing that may cause undefined behavior.
+         * 
+         * @param tile - The tile to update
+         * @returns nothing
+         */
+        updateTile(tile: KWin.Tile): void;
+        /**
+         * Places clients based on desktop
          *
-         * @param rootTile - The root tile to base placements off of
          * @param desktop - The desktop it is on
          * @returns An array of tuples built as [client, its tile] for all registered clients
          */
-        placeClients(rootTile: KWin.RootTile, desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]>;
-        /**
-         * Return the tile for a single client
-         *
-         * @param client - The client to tile
-         * @param rootTile - A root tile that the client is registered to
-         * @param desktop - The desktop the client is on
-         * @returns The tile to put the client in or null if it doesn't exist
-         */
-        placeClient(client: KWin.AbstractClient, rootTile: KWin.RootTile, desktop: Desktop): KWin.Tile | null;
+        placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]>;
         /**
          * Register a client into the engine
          * @remarks

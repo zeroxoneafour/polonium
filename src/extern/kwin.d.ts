@@ -35,6 +35,12 @@ declare namespace KWin {
         // null for root tile
         parent: Tile | null;
         padding: number;
+        split(direction: LayoutDirection): void;
+    }
+    enum LayoutDirection {
+        Floating,
+        Horizontal,
+        Vertical,
     }
     class RootTile extends Tile {
         parent: null;

@@ -34,4 +34,5 @@ Commands -
 * Clean build and target - `make cleanall`
 
 ## license
-MIT licensed, please bum my code if you can use to make something better. Make sure to give credit though!
+* Majority of this project is MIT licensed, please bum my code if you can use to make something better. Make sure to give credit though!
+* The implementation of bidirectional map (src/extern/bimap_external.js) is MIT licensed as well by somebody else
