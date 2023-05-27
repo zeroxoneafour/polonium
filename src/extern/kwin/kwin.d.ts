@@ -22,7 +22,7 @@ declare namespace KWin {
         frameGeometry: Qt.QRect;
         screen: number;
         // custom tiling stuff that isnt in base kwin but we need it
-        wasTiled: boolean | undefined;
+        hasBeenTiled: boolean | undefined;
         //signals
         desktopPresenceChanged: Signal<(client: AbstractClient, desktop: number) => void>;
         desktopChanged: Signal<() => void>;
@@ -53,7 +53,7 @@ declare namespace KWin {
 
     class WorkspaceWrapper {
         activeClient: AbstractClient | null;
-        activeScreen: number;
+        currentScreen: number;
         currentActivity: string;
         currentDesktop: number;
         desktops: number;

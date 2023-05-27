@@ -1,5 +1,5 @@
-NAME = autotile
-VERSION = 1.3.0
+NAME = polonium
+VERSION = 0.1.0
 
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
@@ -30,7 +30,7 @@ res: $(PKGDIR)
 
 src: $(PKGDIR)
 	tsc
-	mv autotile.js pkg/contents/code/main.js
+	mv polonium.js pkg/contents/code/main.js
 
 $(PKGDIR):
 	mkdir -p $(PKGDIR)
