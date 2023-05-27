@@ -1,7 +1,7 @@
 <div align="center">
 
 # polonium
-A successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 5.27.
+A (unofficial) successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 5.27.
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
@@ -26,12 +26,9 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 Requires `tsc`, `npm`, and `kpackagetool5`
 
 Commands -
-* Build/Install/Start/Clean - `make`
+* Build/Install/Clean - `make`
 * Build - `make build`
 * Install/Reinstall - `make install`
-* Start/Restart - `make start`
-* Stop - `make stop`
-* Uninstall/Stop - `make uninstall`
 * Clean build - `make clean`
 * Clean build and target - `make cleanall`
 
