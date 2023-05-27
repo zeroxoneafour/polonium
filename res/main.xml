@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0">
+    <kcfgfile name=""/>
+    <group name="">
+        <entry name="UseWhitelist" type="bool"><default>false</default></entry>
+        <entry name="Blacklist" type="string"><default>krunner, yakuake, kded, polkit</default></entry>
+        <entry name="TilePopups" type="bool"><default>false</default></entry>
+        <entry name="Debug" type="bool"><default>false</default></entry>
+        <entry name="Borders" type="int"><default>1</default></entry>
+    </group>
+</kcfg>

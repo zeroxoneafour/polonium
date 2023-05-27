@@ -1,10 +1,18 @@
 // config globals
 
+export enum Borders {
+    NoBorderAll = 0,
+    NoBorderTiled,
+    BorderSelected,
+    BorderAll,
+}
+
 class Config {
-    debug: boolean = true;
-    useWhitelist: boolean = false;
-    blacklist: Array<string> = "krunner, yakuake, kded, polkit".split(',').map((x: string) => x.trim());
-    tilePopups: boolean = false;
+    debug: boolean = readConfig("Debug", false);
+    useWhitelist: boolean = readConfig("UseWhitelist", false);
+    blacklist: Array<string> = readConfig("Blacklist", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
+    tilePopups: boolean = readConfig("TilePopups", false);
+    borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
 };
 
 export const config = new Config;
