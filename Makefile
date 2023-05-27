@@ -26,8 +26,8 @@ cleanall: clean cleanpkg
 
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/
-#	cp -f res/main.xml $(PKGDIR)/contents/config/
-#	cp -f res/config.ui $(PKGDIR)/contents/ui/
+	cp -f res/main.xml $(PKGDIR)/contents/config/
+	cp -f res/config.ui $(PKGDIR)/contents/ui/
 	sed -i "s/%VERSION%/$(VERSION)/" $(PKGDIR)/metadata.json
 
 src: $(PKGDIR)
