@@ -1,4 +1,7 @@
-let retileWindow = function() {
+import { untileClient, tileClient } from "./main";
+import { printDebug } from "./util";
+
+export function retileWindow() {
     let client = workspace.activeClient;
     if (client == null) return;
     if (client.tile != null) {
@@ -9,4 +12,3 @@ let retileWindow = function() {
         tileClient(client);
     }
 }
-registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", retileWindow);

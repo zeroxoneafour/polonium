@@ -2,7 +2,7 @@
   "name": "polonium",
   "version": "0.1.0",
   "description": "A tiling window manager for KWin",
-  "main": "src/main.ts",
+  "main": "src/index.ts",
   "directories": {
     "doc": "docs"
   },
@@ -22,5 +22,9 @@
   "homepage": "https://github.com/zeroxoneafour/polonium#readme",
   "dependencies": {
     "mnemonist": "^0.39.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "esbuild": "^0.17.19"
   }
 }

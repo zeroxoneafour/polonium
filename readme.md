@@ -24,7 +24,7 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 Requires `tsc` and `kpackagetool5`
 
 Commands -
-* Build/Install/Start - `make`
+* Build/Install/Start/Clean - `make`
 * Build - `make build`
 * Install/Reinstall - `make install`
 * Start/Restart - `make start`

@@ -1,6 +1,5 @@
 {
     "include": [
-        "node_modules/**/*.*",
         "src/extern/*/*.js",
         "src/extern/*/*.d.ts",
         "src/util.ts",
@@ -14,7 +13,7 @@
     "compilerOptions": {
         "allowJs": true,
         "target": "es2021",
-        "outFile": "polonium.js",
+        "moduleResolution": "node",
         "noEmitOnError": false,
         "removeComments": true,
         "lib": ["es2021"],

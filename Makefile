@@ -4,7 +4,7 @@ VERSION = 0.1.0
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
 
-all: build install
+all: build install clean
 
 build: res src
 	zip -r $(PKGFILE) $(PKGDIR)
@@ -15,6 +15,8 @@ install: $(PKGFILE)
 		|| kpackagetool5 -i $(PKGFILE)
 
 clean: $(PKGDIR)
+	$(foreach file, $(shell ls src/**/*.js), rm $(file);)
+	$(foreach file, $(shell ls src/*.js), rm $(file);)
 	rm -r $(PKGDIR)
 
 cleanpkg: $(PKGFILE)
@@ -23,15 +25,16 @@ cleanpkg: $(PKGFILE)
 cleanall: clean cleanpkg
 
 res: $(PKGDIR)
-	cp res/metadata.json $(PKGDIR)/
-#	cp res/main.xml $(PKGDIR)/contents/config/
-#	cp res/config.ui $(PKGDIR)/contents/ui/
+	cp -f res/metadata.json $(PKGDIR)/
+#	cp -f res/main.xml $(PKGDIR)/contents/config/
+#	cp -f res/config.ui $(PKGDIR)/contents/ui/
 	sed -i "s/%VERSION%/$(VERSION)/" $(PKGDIR)/metadata.json
 
 src: $(PKGDIR)
 	npm install
 	tsc
-	mv polonium.js pkg/contents/code/main.js
+	./node_modules/.bin/esbuild src/index.js --bundle --outfile=polonium.js
+	mv -f polonium.js $(PKGDIR)/contents/code/main.js
 
 $(PKGDIR):
 	mkdir -p $(PKGDIR)

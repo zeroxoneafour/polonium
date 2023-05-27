@@ -1,8 +1,9 @@
 // TODO - Shallow copies instead of references are being made with for ... of ?
 
-namespace BTree {
-
-type Desktop = Engine.Desktop;
+import { BiMap } from "mnemonist";
+import { printDebug } from "../util";
+import { Desktop } from "./common";
+import * as Engine from "./common";
 
 class TreeNode {
     parent: TreeNode | null = null;
@@ -69,14 +70,14 @@ export class TilingEngine implements Engine.TilingEngine {
         // modify rootTile
         let stack: Array<TreeNode> = [rootNode];
         let stackNext: Array<TreeNode> = [];
-        this.nodeMap.push(rootNode, rootTile);
+        this.nodeMap.set(rootNode, rootTile);
         let i = 0;
         while (stack.length > 0) {
             printDebug("Build layout loop iter " + i, false);
             i += 1;
             for (const node of stack) {
                 if (node.children != null) {
-                    const tile = this.nodeMap.key(node);
+                    const tile = this.nodeMap.get(node);
                     printDebug("" + tile, false);
                     if (tile == null) {
                         printDebug("No tile found for node", true);
@@ -85,7 +86,7 @@ export class TilingEngine implements Engine.TilingEngine {
                     tile.split((i % 2) + 1);
                     let j = 0;
                     for (const child of node.children) {
-                        this.nodeMap.push(child, tile.tiles[j]);
+                        this.nodeMap.set(child, tile.tiles[j]);
                         stackNext.push(child);
                         j += 1;
                     }
@@ -111,7 +112,7 @@ export class TilingEngine implements Engine.TilingEngine {
         while (stack.length > 0) {
             for (const node of stack) {
                 if (node.client != null) {
-                    let tile = this.nodeMap.key(node);
+                    let tile = this.nodeMap.get(node);
                     if (tile == null) {
                         printDebug("No tile found for node", true);
                         continue;
@@ -131,7 +132,7 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     registerClient(client: KWin.AbstractClient): void {
         for (const activity of client.activities) {
-            const desktop = new Engine.Desktop;
+            const desktop = new Desktop;
             desktop.screen = client.screen;
             desktop.activity = activity;
             desktop.desktop = client.desktop;
@@ -204,5 +205,3 @@ export class TilingEngine implements Engine.TilingEngine {
         }
     }
 }
-
-} // namespace
