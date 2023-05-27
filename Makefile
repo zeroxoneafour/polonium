@@ -29,6 +29,7 @@ res: $(PKGDIR)
 	sed -i "s/%VERSION%/$(VERSION)/" $(PKGDIR)/metadata.json
 
 src: $(PKGDIR)
+	npm install
 	tsc
 	mv polonium.js pkg/contents/code/main.js
 

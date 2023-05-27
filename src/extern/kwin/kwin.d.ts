@@ -53,7 +53,7 @@ declare namespace KWin {
 
     class WorkspaceWrapper {
         activeClient: AbstractClient | null;
-        currentScreen: number;
+        activeScreen: number;
         currentActivity: string;
         currentDesktop: number;
         desktops: number;

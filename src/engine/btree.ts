@@ -51,17 +51,21 @@ class RootNode extends TreeNode {
 }
 
 export class TilingEngine implements Engine.TilingEngine {
-    rootNodes: Map<Desktop, RootNode> = new Map;
+    // turn the desktop into a string first so its indexed by primitive instead of reference
+    rootNodes: Map<string, RootNode> = new Map;
     // changed when desktop is changed
     nodeMap: BiMap<TreeNode, KWin.Tile> = new BiMap;
     
     buildLayout(rootTile: KWin.RootTile, desktop: Desktop): void {
+        printDebug("" + desktop, false);
         // set up
         this.nodeMap = new BiMap;
-        if (!this.rootNodes.has(desktop)) {
-            this.rootNodes.set(desktop, new RootNode);
+        printDebug("" + this.rootNodes.has(desktop.toString()), false);
+        if (!this.rootNodes.has(desktop.toString())) {
+            printDebug("Making new rootNode for desktop", false);
+            this.rootNodes.set(desktop.toString(), new RootNode);
         }
-        const rootNode = this.rootNodes.get(desktop)!;
+        const rootNode = this.rootNodes.get(desktop.toString())!;
         // modify rootTile
         let stack: Array<TreeNode> = [rootNode];
         let stackNext: Array<TreeNode> = [];
@@ -73,6 +77,7 @@ export class TilingEngine implements Engine.TilingEngine {
             for (const node of stack) {
                 if (node.children != null) {
                     const tile = this.nodeMap.key(node);
+                    printDebug("" + tile, false);
                     if (tile == null) {
                         printDebug("No tile found for node", true);
                         continue;
@@ -95,7 +100,7 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]> {
         let ret = new Array<[KWin.AbstractClient, KWin.Tile]>;
-        const rootNode = this.rootNodes.get(desktop);
+        const rootNode = this.rootNodes.get(desktop.toString());
         if (rootNode == null) {
             printDebug("Root node null for desktop " + desktop, true);
             return ret;
@@ -130,17 +135,18 @@ export class TilingEngine implements Engine.TilingEngine {
             desktop.screen = client.screen;
             desktop.activity = activity;
             desktop.desktop = client.desktop;
-            if (this.rootNodes.get(desktop) == null) {
-                this.rootNodes.set(desktop, new RootNode);
+            printDebug("" + desktop, false);
+            if (!this.rootNodes.has(desktop.toString())) {
+                printDebug("Keys - " + Array.from(this.rootNodes.keys()).join(" "), false);
+                printDebug("Making new rootNode for desktop", false);
+                this.rootNodes.set(desktop.toString(), new RootNode);
             }
-            let rootNode = this.rootNodes.get(desktop)!;
+            const rootNode = this.rootNodes.get(desktop.toString())!;
             // truly this is the peak of programming
             let stack: Array<TreeNode> = [rootNode];
             let stackNext: Array<TreeNode> = [];
             stackloop: while (stack.length > 0) {
-                for (let i = 0; i < stack.length; i++) {
-                    const node = stack[i];
-                    printDebug(node.client + "", false);
+                for (const node of stack) {
                     if (node.children == null) {
                         printDebug("tile found", false);
                         if (node.client != null) { // case for basically all non-root tiles

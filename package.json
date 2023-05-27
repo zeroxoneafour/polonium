@@ -1,0 +1,26 @@
+{
+  "name": "polonium",
+  "version": "0.1.0",
+  "description": "A tiling window manager for KWin",
+  "main": "src/main.ts",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeroxoneafour/polonium.git"
+  },
+  "keywords": [
+    "kwin",
+    "tiling-window-manager"
+  ],
+  "author": "Vaughan Milliman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zeroxoneafour/polonium/issues"
+  },
+  "homepage": "https://github.com/zeroxoneafour/polonium#readme",
+  "dependencies": {
+    "mnemonist": "^0.39.5"
+  }
+}

@@ -4,7 +4,7 @@ namespace Engine {
      * Class for current screen config
      */
     export class Desktop {
-        screen: number = workspace.currentScreen;
+        screen: number = workspace.activeScreen;
         activity: string = workspace.currentActivity;
         desktop: number = workspace.currentDesktop;
         toString(): string {

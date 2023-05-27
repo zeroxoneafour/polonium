@@ -3,7 +3,7 @@ const engine: Engine.TilingEngine = new BTree.TilingEngine;
 
 function rebuildLayout() {
     const desktop = new Engine.Desktop;
-    engine.buildLayout(workspace.tilingForScreen(workspace.currentScreen).rootTile, desktop);
+    engine.buildLayout(workspace.tilingForScreen(workspace.activeScreen).rootTile, desktop);
     for (const client of engine.placeClients(desktop)) {
         client[0].tile = client[1];
     }

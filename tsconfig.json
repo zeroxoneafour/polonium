@@ -1,5 +1,6 @@
 {
     "include": [
+        "node_modules/**/*.*",
         "src/extern/*/*.js",
         "src/extern/*/*.d.ts",
         "src/util.ts",
