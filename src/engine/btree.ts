@@ -1,3 +1,5 @@
+// TODO - Shallow copies instead of references are being made with for ... of ?
+
 namespace BTree {
 
 type Desktop = Engine.Desktop;
@@ -6,7 +8,7 @@ class TreeNode {
     parent: TreeNode | null = null;
     sibling: TreeNode | null = null;
     children: [TreeNode, TreeNode] | null = null;
-    window: KWin.AbstractClient | null = null;
+    client: KWin.AbstractClient | null = null;
     // the offset of the split between the children in ratio (1 is full tile and shouldnt ever happen), so tiles can have different shapes
     splitOffset: number = 0.5;
     // splits tile
@@ -32,7 +34,7 @@ class TreeNode {
             }
 
         } else { // otherwise just move windows over
-            this.parent.window = this.sibling.window;
+            this.parent.client = this.sibling.client;
             this.parent.children = null;
         }
         // say goodbye
@@ -66,6 +68,7 @@ export class TilingEngine implements Engine.TilingEngine {
         this.nodeMap.push(rootNode, rootTile);
         let i = 0;
         while (stack.length > 0) {
+            printDebug("Build layout loop iter " + i, false);
             i += 1;
             for (const node of stack) {
                 if (node.children != null) {
@@ -74,7 +77,7 @@ export class TilingEngine implements Engine.TilingEngine {
                         printDebug("No tile found for node", true);
                         continue;
                     }
-                    tile.split(i % 2);
+                    tile.split((i % 2) + 1);
                     let j = 0;
                     for (const child of node.children) {
                         this.nodeMap.push(child, tile.tiles[j]);
@@ -102,13 +105,13 @@ export class TilingEngine implements Engine.TilingEngine {
         let stackNext: Array<TreeNode> = [];
         while (stack.length > 0) {
             for (const node of stack) {
-                if (node.window != null) {
+                if (node.client != null) {
                     let tile = this.nodeMap.key(node);
                     if (tile == null) {
                         printDebug("No tile found for node", true);
                         continue;
                     }
-                    ret.push([node.window, tile]);
+                    ret.push([node.client, tile]);
                 }
                 if (node.children != null) {
                     for (const child of node.children) {
@@ -123,7 +126,7 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     registerClient(client: KWin.AbstractClient): void {
         for (const activity of client.activities) {
-            let desktop = new Engine.Desktop;
+            const desktop = new Engine.Desktop;
             desktop.screen = client.screen;
             desktop.activity = activity;
             desktop.desktop = client.desktop;
@@ -134,17 +137,22 @@ export class TilingEngine implements Engine.TilingEngine {
             // truly this is the peak of programming
             let stack: Array<TreeNode> = [rootNode];
             let stackNext: Array<TreeNode> = [];
-            while (stack.length > 0) {
-                for (const node of stack) {
+            stackloop: while (stack.length > 0) {
+                for (let i = 0; i < stack.length; i++) {
+                    const node = stack[i];
+                    printDebug(node.client + "", false);
                     if (node.children == null) {
-                        if (node.window != null) { // case for basically all non-root tiles
+                        printDebug("tile found", false);
+                        if (node.client != null) { // case for basically all non-root tiles
                             node.split();
-                            node.children![0].window = node.window;
-                            node.children![1].window = client;
+                            node.children![0].client = node.client;
+                            node.children![1].client = client;
+                            node.client = null;
                         } else { // just add the client
-                            node.window = client;
+                            printDebug("just adding client", false);
+                            node.client = client;
                         }
-                        return;
+                        break stackloop;
                     } else {
                         for (const child of node.children) {
                             stackNext.push(child);
@@ -172,7 +180,7 @@ export class TilingEngine implements Engine.TilingEngine {
             let deleteQueue: Array<TreeNode> = [];
             while (stack.length > 0) {
                 for (const node of stack) {
-                    if (node.window == client) {
+                    if (node.client == client) {
                         deleteQueue.push(node);
                     }
                     if (node.children != null) {

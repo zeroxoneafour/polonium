@@ -29,10 +29,9 @@ function untileClient(this: any, client: KWin.AbstractClient): void {
 
 
 function addClient(client: KWin.AbstractClient): void {
-    printDebug(client.resourceClass + " added", false);
     if (doTileClient(client)) {
-        engine.registerClient(client);
-        rebuildLayout();
+        printDebug(client.resourceClass + " added", false);
+        tileClient(client);
     }
 }
 
@@ -45,3 +44,6 @@ workspace.clientAdded.connect(addClient);
 workspace.clientRemoved.connect(removeClient);
 
 workspace.currentDesktopChanged.connect(rebuildLayout);
+
+// build first time
+rebuildLayout();
