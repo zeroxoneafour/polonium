@@ -64,7 +64,7 @@ export class TilingEngine implements Engine.TilingEngine {
     // turn off tile checking while layout is building
     layoutBuilding: boolean = false;
     
-    buildLayout(rootTile: KWin.RootTile, desktop: Desktop): void {
+    buildLayout(rootTile: KWin.RootTile, desktop: Desktop): boolean {
         printDebug("Building layout for desktop " + desktop, false);
         // disconnect layout modified signal temporarily to stop them from interfering
         this.layoutBuilding = true;
@@ -125,12 +125,13 @@ export class TilingEngine implements Engine.TilingEngine {
             rootTile.layoutModified.connect(this.updateTiles.bind(this, rootTile));
         }
         this.layoutBuilding = false;
+        return true;
     }
     
     // man would it be easy if i could just pass the tile in...
-    updateTiles(rootTile: KWin.RootTile): void {
+    updateTiles(rootTile: KWin.RootTile): boolean {
         // do not execute while layout is building
-        if (this.layoutBuilding) return;
+        if (this.layoutBuilding) return true;
         printDebug("Updating tile", false);
         // find the greatest tile that has been altered
         let stack: Array<KWin.Tile> = [rootTile];
@@ -148,12 +149,12 @@ export class TilingEngine implements Engine.TilingEngine {
                         // should never happen
                         if (modifiedTile == null) {
                             printDebug("Parent of modified tile is null", true);
-                            return;
+                            return false;
                         }
                         const modifiedNodeTest = this.nodeMap.inverse.get(modifiedTile);
                         if (modifiedNodeTest == undefined) {
                             printDebug("No node found for modified tile", true);
-                            return;
+                            return false;
                         }
                         modifiedNode = modifiedNodeTest;
                         break findloop;
@@ -168,7 +169,7 @@ export class TilingEngine implements Engine.TilingEngine {
         }
         if (modifiedNode == null) {
             printDebug("Modified node is null", false);
-            return;
+            return true;
         }
         let modifiedTile = this.nodeMap.get(modifiedNode)!;
         // check if horizontal or vertical size is modified in children
@@ -179,6 +180,7 @@ export class TilingEngine implements Engine.TilingEngine {
             modifiedNode.childRatio = modifiedTile.tiles[0].relativeGeometry.width / modifiedTile.relativeGeometry.width;
         }
         printDebug("New ratio is " + modifiedNode.childRatio, false);
+        return true;
     }
     
     placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]> {
@@ -212,7 +214,8 @@ export class TilingEngine implements Engine.TilingEngine {
         }
         return ret;
     }
-    addClient(client: KWin.AbstractClient): void {
+    
+    addClient(client: KWin.AbstractClient): boolean {
         for (const activity of client.activities) {
             const desktop = new Desktop;
             desktop.screen = client.screen;
@@ -248,18 +251,23 @@ export class TilingEngine implements Engine.TilingEngine {
                 stackNext = [];
             }
         }
+        return true;
     }
-    updateClientDesktop(client: KWin.AbstractClient): void {
+    
+    updateClientDesktop(client: KWin.AbstractClient): boolean {
         // if this works im keeping this until release tbh
-        this.removeClient(client);
-        this.addClient(client);
+        if (!this.removeClient(client)) {
+            return false;
+        }
+        return this.addClient(client);
     }
-    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): void {
+    
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {
         // assumes the nodemap has been built correctly
         const node = this.nodeMap.inverse.get(tile);
         if (node == undefined) {
             printDebug("No node found for tile", true);
-            return;
+            return false;
         }
         if (node.client == null) {
             node.client = client;
@@ -269,9 +277,37 @@ export class TilingEngine implements Engine.TilingEngine {
             node.children![1].client = client;
             node.client = null;
         }
+        return true;
     }
+    
+    clientOfTile(tile: KWin.Tile): KWin.AbstractClient | null {
+        const node = this.nodeMap.inverse.get(tile);
+        if (node == undefined) {
+            printDebug("No node found for tile", true);
+            return null;
+        }
+        return node.client;
+    }
+    
+    swapTiles(tileA: KWin.Tile, tileB: KWin.Tile): boolean {
+        const nodeA = this.nodeMap.inverse.get(tileA);
+        const nodeB = this.nodeMap.inverse.get(tileB);
+        if (nodeA == undefined || nodeB == undefined) {
+            printDebug("No node found for tile", true);
+            return false;
+        }
+        if (nodeA.client == null || nodeB.client == null) {
+            printDebug("No client in one of the nodes", true);
+            return false;
+        }
+        let tmpClient: KWin.AbstractClient = nodeA.client;
+        nodeA.client = nodeB.client;
+        nodeB.client = tmpClient;
+        return true;
+    }
+    
     // cant copy code because indexed by string not object
-    removeClient(client: KWin.AbstractClient): void {
+    removeClient(client: KWin.AbstractClient): boolean {
         for (const rootNode of this.rootNodes.values()) {
             let stack: Array<TreeNode> = [rootNode];
             let stackNext: Array<TreeNode> = [];
@@ -294,5 +330,6 @@ export class TilingEngine implements Engine.TilingEngine {
                 node.remove();
             }
         }
+        return true;
     }
 }

@@ -4,7 +4,7 @@ import * as BTree from "./engine/btree";
 import { Borders, config, printDebug, doTileClient } from "./util";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
-const engine: Engine.TilingEngine = new BTree.TilingEngine;
+export const engine: Engine.TilingEngine = new BTree.TilingEngine;
 
 export function rebuildLayout() {
     const desktop = new Engine.Desktop;

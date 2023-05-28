@@ -1,5 +1,13 @@
-import { untileClient, tileClient } from "./main";
-import { printDebug } from "./util";
+import copy from "fast-copy";
+import { engine, rebuildLayout, untileClient, tileClient } from "./main";
+import { printDebug, config, Borders } from "./util";
+
+export enum Direction {
+    Above,
+    Below,
+    Left,
+    Right,
+}
 
 export function retileWindow() {
     let client = workspace.activeClient;
@@ -11,4 +19,136 @@ export function retileWindow() {
         printDebug("Retiling client " + client.resourceClass, false);
         tileClient(client);
     }
+}
+
+// get tile above
+function tileAbove(client: KWin.AbstractClient): KWin.Tile | null {
+    // only tiled clients are supported with keybinds
+    if (client.tile == null) return null;
+    let geometry = client.frameGeometry;
+    // qt uses top left corner as 0,0
+    // 1 unit offsets so it lands inside of another tile
+    let coordOffset = 1 + client.tile.padding;
+    let x = geometry.x + 1;
+    let y = geometry.y - coordOffset;
+    let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
+    // make sure the window does not include the client
+    if (tile == null || tile.windows.includes(client)) {
+        return null;
+    } else {
+        return tile;
+    }
+}
+
+// tile below
+function tileBelow(client: KWin.AbstractClient) {
+    // only tiled clients are supported with keybinds
+    if (client.tile == null) return null;
+    let geometry = client.frameGeometry;
+    // qt uses top left corner as 0,0
+    // 1 unit offsets so it lands inside of another tile
+    let coordOffset = 1 + geometry.height + client.tile.padding;
+    let x = geometry.x + 1;
+    let y = geometry.y + coordOffset;
+    let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
+    // make sure the window does not include the client
+    if (tile == null || tile.windows.includes(client)) {
+        return null;
+    } else {
+        return tile;
+    }
+}
+
+// tile left
+function tileLeft(client: KWin.AbstractClient) {
+    // only tiled clients are supported with keybinds
+    if (client.tile == null) return null;
+    let geometry = client.frameGeometry;
+    // qt uses top left corner as 0,0
+    // 1 unit offsets so it lands inside of another tile
+    let coordOffset = 1 + client.tile.padding;
+    let x = geometry.x - coordOffset;
+    let y = geometry.y + 1;
+    let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
+    // make sure the window does not include the client
+    if (tile == null || tile.windows.includes(client)) {
+        return null;
+    } else {
+        return tile;
+    }
+}
+
+// tile right
+function tileRight(client: KWin.AbstractClient) {
+    // only tiled clients are supported with keybinds
+    if (client.tile == null) return null;
+    let geometry = client.frameGeometry;
+    // qt uses top left corner as 0,0
+    // 1 unit offsets so it lands inside of another tile
+    let coordOffset = 1 + geometry.width + client.tile.padding;
+    let x = geometry.x + coordOffset;
+    let y = geometry.y + 1;
+    let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
+    // make sure the window does not include the client
+    if (tile == null || tile.windows.includes(client)) {
+        return null;
+    } else {
+        return tile;
+    }
+}
+
+function tileInDirection(client: KWin.AbstractClient, direction: Direction): KWin.Tile | null {
+    switch (direction) {
+        case Direction.Above:
+            return tileAbove(client);
+        case Direction.Below:
+            return tileBelow(client);
+        case Direction.Left:
+            return tileLeft(client);
+        case Direction.Right:
+            return tileRight(client);
+        default:
+            return null;
+    }
+}
+
+export function focus(this: any, direction: Direction): void {
+    let client = workspace.activeClient;
+    if (client == null || client.tile == null) return;
+    let tile = tileInDirection(client, direction);
+    if (tile == null) return;
+    let newClient = engine.clientOfTile(tile);
+    if (newClient == null) return;
+    printDebug("Focusing " + newClient.resourceClass + " from " + client.resourceClass, false);
+    workspace.activeClient = newClient;
+}
+
+export function swap(this: any, direction: Direction) {
+    let client = workspace.activeClient;
+    if (client == null || client.tile == null) return;
+    let tile = tileInDirection(client, direction);
+    if (tile == null) return;
+    printDebug("Swapping windows with " + client.resourceClass, false);
+    engine.swapTiles(client.tile, tile);
+    rebuildLayout();
+}
+
+export function insert(this: any, direction: Direction) {
+    const client = workspace.activeClient;
+    if (client == null || client.tile == null) return;
+    const tile = tileInDirection(client, direction);
+    if (tile == null) return;
+    const tileGeometry = copy(tile.absoluteGeometry);
+    untileClient(client);
+    client.wasTiled = true;
+    let newTile = workspace.tilingForScreen(client.screen).bestTileForPosition(tileGeometry.x + 1, tileGeometry.y + 1);
+    if (newTile == null) {
+        newTile = workspace.tilingForScreen(client.screen).rootTile;
+    }
+    printDebug("Inserting " + client.resourceClass + " in tile " + newTile, false);
+    engine.putClientInTile(client, newTile);
+    if (config.borders == Borders.NoBorderTiled) {
+        client.noBorder = true;
+    }
+    rebuildLayout();
 }

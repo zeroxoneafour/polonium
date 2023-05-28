@@ -56,7 +56,7 @@ declare namespace KWin {
     }
     class TileManager {
         rootTile: RootTile;
-        bestTileForPosition(x: number, y: number): Tile;
+        bestTileForPosition(x: number, y: number): Tile | null;
     }
 
     class WorkspaceWrapper {
