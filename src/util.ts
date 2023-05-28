@@ -13,7 +13,8 @@ class Config {
     blacklist: Array<string> = readConfig("Blacklist", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
     tilePopups: boolean = readConfig("TilePopups", false);
     borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
-    unmanageMinimized: boolean = readConfig("UntileMinimized", true);
+    untileMinimized: boolean = readConfig("UntileMinimized", true);
+    keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
 };
 
 export const config = new Config;

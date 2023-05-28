@@ -150,5 +150,8 @@ export function insert(this: any, direction: Direction) {
     if (config.borders == Borders.NoBorderTiled) {
         client.noBorder = true;
     }
+    if (config.keepTiledBelow) {
+        client.keepBelow = true;
+    }
     rebuildLayout();
 }

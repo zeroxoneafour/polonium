@@ -6,6 +6,7 @@
         <entry name="Blacklist" type="string"><default>krunner, yakuake, kded, polkit</default></entry>
         <entry name="TilePopups" type="bool"><default>false</default></entry>
         <entry name="UntileMinimized" type="bool"><default>true</default></entry>
+        <entry name="KeepTiledBelow" type="bool"><default>true</default></entry>
         <entry name="Debug" type="bool"><default>false</default></entry>
         <entry name="Borders" type="int"><default>1</default></entry>
     </group>

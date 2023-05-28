@@ -16,6 +16,7 @@ declare namespace KWin {
         keepBelow: boolean;
         noBorder: boolean;
         fullScreen: boolean;
+        minimized: boolean;
         activities: string[];
         resourceClass: Qt.QByteArray;
         // frameGeometry is read/write for abstractclient

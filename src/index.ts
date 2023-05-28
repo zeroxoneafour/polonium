@@ -9,11 +9,12 @@ workspace.clientRemoved.connect(main.removeClient);
 workspace.currentDesktopChanged.connect(main.rebuildLayout);
 workspace.clientActivated.connect(main.clientActivated);
 
-if (config.unmanageMinimized) {
-  workspace.clientMinimized.connect(main.removeClient);
-  workspace.clientUnminimized.connect(main.addClient);
+if (config.untileMinimized) {
+  workspace.clientMinimized.connect(main.clientMinimized);
+  workspace.clientUnminimized.connect(main.clientUnminimized);
 }
 
+workspace.clientFullScreenSet.connect(main.clientFullScreenSet);
 
 registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);
 

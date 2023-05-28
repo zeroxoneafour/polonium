@@ -32,6 +32,9 @@ export function tileClient(this: any, client: KWin.AbstractClient): void {
     if (config.borders == Borders.NoBorderTiled) {
         client.noBorder = true;
     }
+    if (config.keepTiledBelow) {
+        client.keepBelow = true;
+    }
     rebuildLayout();
 }
 
@@ -41,11 +44,16 @@ export function untileClient(this: any, client: KWin.AbstractClient): void {
     if (config.borders == Borders.NoBorderTiled) {
         client.noBorder = false;
     }
+    if (config.keepTiledBelow) {
+        client.keepBelow = false;
+    }
     rebuildLayout();
     client.tile = null;
 }
 
 export function clientGeometryChange(this: any, client: KWin.AbstractClient, _oldgeometry: Qt.QRect): void {
+    // dont interfere with minimizing
+    if (client.minimized) return;
     // only allow this function to handle movements when the client is visible
     let desktop = new Engine.Desktop;
     if (client.screen != desktop.screen || !client.activities.includes(desktop.activity) || client.desktop != desktop.desktop) return;
@@ -58,6 +66,9 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
         engine.putClientInTile(client, client.tile);
         if (config.borders == Borders.NoBorderTiled) {
             client.noBorder = true;
+        }
+        if (config.keepTiledBelow) {
+            client.keepBelow = true;
         }
         rebuildLayout();
     }
@@ -77,6 +88,27 @@ export function addClient(client: KWin.AbstractClient): void {
 export function removeClient(client: KWin.AbstractClient): void {
     printDebug(client.resourceClass + " removed", false);
     untileClient(client);
+}
+
+export function clientFullScreenSet(client: KWin.AbstractClient, fullScreen: boolean, _user: boolean): void {
+    if (fullScreen) {
+        printDebug(client.resourceClass + " enabled fullscreen", false);
+        untileClient(client);
+    } else {
+        printDebug(client.resourceClass + " disabled fullscreen", false);
+        tileClient(client);
+    }
+}
+
+export function clientMinimized(client: KWin.AbstractClient): void {
+    if (!client.wasTiled) return;
+    untileClient(client);
+    client.wasTiled = true;
+}
+
+export function clientUnminimized(client: KWin.AbstractClient): void {
+    if (!client.wasTiled) return;
+    tileClient(client);
 }
 
 // for borders
