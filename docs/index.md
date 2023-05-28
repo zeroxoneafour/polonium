@@ -16,6 +16,6 @@
 
 </div>
 
-<div align="center" font-size="small">
+<div align="center" style="font-size: small;">
 Polonium and its documentation are licensed under the MIT License as shown [here](https://github.com/zeroxoneafour/polonium/blob/master/license.txt)
 </div>
