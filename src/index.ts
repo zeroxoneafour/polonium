@@ -2,13 +2,18 @@
 
 import * as main from "./main";
 import * as shortcuts from "./shortcuts";
+import { config } from "./util";
 
 workspace.clientAdded.connect(main.addClient);
 workspace.clientRemoved.connect(main.removeClient);
 workspace.currentDesktopChanged.connect(main.rebuildLayout);
 workspace.clientActivated.connect(main.clientActivated);
-workspace.clientMinimized.connect(main.removeClient);
-workspace.clientUnminimized.connect(main.addClient);
+
+if (config.unmanageMinimized) {
+  workspace.clientMinimized.connect(main.removeClient);
+  workspace.clientUnminimized.connect(main.addClient);
+}
+
 
 registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);
 
