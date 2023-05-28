@@ -14,7 +14,7 @@ Polonium requires that KWin be restarted every time the configuration is changed
 
 Options -
 * Whitelist (check box) - Whether to use the field to the right (normally the blacklist) as a whitelist instead, and blacklist other windows
-* Blacklist (line input) - Windows to not tile, or if whitelist is selected, the only windows to tile.
+* Blacklist (line input) - Windows to not tile, or if whitelist is selected, the only windows to tile
 * Tile popup windows (check box) - Whether to tile windows marked as popup windows
 * Tile borders (dropdown) - How to display borders on tiled, untiled, and selected windows
 * Untile minimized (check box) - Whether to untile windows that have been minimized
@@ -29,7 +29,7 @@ Sometimes you may have to get a log. To do this, enable debug mode in the settin
 journalctl --user --no-pager -e | grep "Polonium"
 ```
 
-Logs are required for bug reports if the bug has to do with tiling.\
+Logs are required for bug reports if the bug has to do with tiling.
 
 ---
 
