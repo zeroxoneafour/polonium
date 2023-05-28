@@ -1,6 +1,6 @@
 {
   "name": "polonium",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A tiling window manager for KWin",
   "main": "src/index.ts",
   "directories": {
