@@ -20,12 +20,9 @@
     "url": "https://github.com/zeroxoneafour/polonium/issues"
   },
   "homepage": "https://github.com/zeroxoneafour/polonium#readme",
-  "dependencies": {
+  "devDependencies": {
+    "esbuild": "^0.17.19",
     "fast-copy": "^3.0.1",
     "mnemonist": "^0.39.5"
-  },
-  "devDependencies": {
-    "@types/node": "^20.2.5",
-    "esbuild": "^0.17.19"
   }
 }
