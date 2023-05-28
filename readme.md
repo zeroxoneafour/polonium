@@ -1,7 +1,7 @@
 <div align="center">
 
 # polonium
-A (unofficial) successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 5.27.
+An (unofficial) successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 5.27.
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 

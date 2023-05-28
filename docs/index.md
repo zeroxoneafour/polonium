@@ -1,2 +1,3 @@
 # polonium
-doc test
+
+![icon](res/logo.svg)
