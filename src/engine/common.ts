@@ -25,17 +25,16 @@ export interface TilingEngine {
      */
     buildLayout(rootTile: KWin.RootTile, desktop: Desktop): void;
     /**
-     * Updates the size of a tile inside of the engine
+     * Updates the size of a tile inside of the engine that is a descendant of rootTile
      * @remarks
-     * The reference implementation of the engine (btree) does not use a tile parameter
+     * The reference implementation of the engine (btree) does not use a normal tile parameter
      * This is because KWin offers no distinction between moving child tiles and their parents if the parents are shifted
      * Hopefully I can add a tile parameter in the future to make it faster
-     * 
-     * Root tile should again be cached, so use it for the base tile that has had its children been modified
      *
+     * @param rootTile - The modified root tile
      * @returns nothing
      */
-    updateTile(): void;
+    updateTiles(rootTile: KWin.RootTile): void;
     /**
      * Places clients based on desktop
      *

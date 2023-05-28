@@ -34,6 +34,7 @@ declare namespace KWin {
     class Tile {
         tiles: Array<Tile>;
         windows: Array<AbstractClient>;
+        absoluteGeometry: Qt.QRect;
         relativeGeometry: Qt.QRect;
         oldRelativeGeometry: Qt.QRect | undefined;
         // null for root tile
@@ -50,6 +51,8 @@ declare namespace KWin {
     class RootTile extends Tile {
         parent: null;
         layoutModified: Signal<() => void>;
+        // extra thing used in engine
+        connected: boolean | undefined;
     }
     class TileManager {
         rootTile: RootTile;

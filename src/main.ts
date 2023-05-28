@@ -59,8 +59,8 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
         if (config.borders == Borders.NoBorderTiled) {
             client.noBorder = true;
         }
+        rebuildLayout();
     }
-    rebuildLayout();
 }
 
 

@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/zeroxoneafour/polonium#readme",
   "dependencies": {
+    "fast-copy": "^3.0.1",
     "mnemonist": "^0.39.5"
   },
   "devDependencies": {

@@ -12,11 +12,12 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 ## features
 * Works in Wayland Plasma 5.27 and up
 * Actual tiling backend using binary trees and decent enough code where you can mod in your own
+* Edit tile sizes with the integrated KWin GUI
+* Move and tile windows with your mouse
 * In early beta so comes pre-packaged with bugs
 
 ## coming soon
-* Edit tiles with the integrated KWin GUI
-* Move and tile windows with your mouse and keyboard
+* Shortcuts with keyboard
 
 ## limitations
 * X11 has been tested but is not officially supported
