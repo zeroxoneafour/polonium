@@ -22,7 +22,10 @@ declare namespace KWin {
         frameGeometry: Qt.QRect;
         screen: number;
         // custom tiling stuff that isnt in base kwin but we need it
+        // has been tiled at least once
         hasBeenTiled: boolean | undefined;
+        // was just tiled
+        wasTiled: boolean | undefined;
         //signals
         desktopPresenceChanged: Signal<(client: AbstractClient, desktop: number) => void>;
         desktopChanged: Signal<() => void>;
@@ -31,7 +34,8 @@ declare namespace KWin {
     class Tile {
         tiles: Array<Tile>;
         windows: Array<AbstractClient>;
-        absoluteGeometry: Qt.QRect;
+        relativeGeometry: Qt.QRect;
+        oldRelativeGeometry: Qt.QRect | undefined;
         // null for root tile
         parent: Tile | null;
         padding: number;

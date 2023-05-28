@@ -27,14 +27,15 @@ export interface TilingEngine {
     /**
      * Updates the size of a tile inside of the engine
      * @remarks
-     * All classes that implement this trait should cache the current root tile based on buildLayout, so it is not provided in the arguments
-     * Not doing this also simplifies the modifications needed to the KWin.Tile class
-     * This also only handles tile resizing, so no deletion/insertion. Doing that may cause undefined behavior.
+     * The reference implementation of the engine (btree) does not use a tile parameter
+     * This is because KWin offers no distinction between moving child tiles and their parents if the parents are shifted
+     * Hopefully I can add a tile parameter in the future to make it faster
+     * 
+     * Root tile should again be cached, so use it for the base tile that has had its children been modified
      *
-     * @param tile - The tile to update
      * @returns nothing
      */
-    updateTile(tile: KWin.Tile): void;
+    updateTile(): void;
     /**
      * Places clients based on desktop
      *
@@ -50,7 +51,7 @@ export interface TilingEngine {
      * @param client - The client to register
      * @returns nothing
      */
-    registerClient(client: KWin.AbstractClient): void;
+    addClient(client: KWin.AbstractClient): void;
     /**
      * Update the desktop of a client (not the tile or position)
      *
@@ -59,13 +60,14 @@ export interface TilingEngine {
      */
     updateClientDesktop(client: KWin.AbstractClient): void;
     /**
-     * Update client position, which tile it is in and whether it is tiled or nothing
-     * It is very important that this is called when the client geometry or position changes
+     * Update client tile
+     * Usually used with geometryChanged to detect if the client is put into a tile
      *
      * @param client - The client to update
+     * @param tile - The tile to put the client in
      * @returns nothing
      */
-    updateClientPosition(client: KWin.AbstractClient): void;
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): void;
     /**
      * Remove a client that has been registered
      *

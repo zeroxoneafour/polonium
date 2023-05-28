@@ -1,5 +1,3 @@
-// TODO - Shallow copies instead of references are being made with for ... of ?
-
 import { BiMap } from "mnemonist";
 import { printDebug } from "../util";
 import { Desktop } from "./common";
@@ -64,7 +62,8 @@ export class TilingEngine implements Engine.TilingEngine {
     nodeMap: BiMap<TreeNode, KWin.Tile> = new BiMap;
     
     buildLayout(rootTile: KWin.RootTile, desktop: Desktop): void {
-        printDebug("" + desktop, false);
+        // disconnect layout modified signal temporarily to stop them from interfering
+        rootTile.layoutModified.disconnect(this.updateTile);
         // set up
         this.nodeMap = new BiMap;
         printDebug("" + this.rootNodes.has(desktop.toString()), false);
@@ -83,7 +82,6 @@ export class TilingEngine implements Engine.TilingEngine {
         this.nodeMap.set(rootNode, rootTile);
         let i = 0;
         while (stack.length > 0) {
-            printDebug("Build layout loop iter " + i, false);
             for (const node of stack) {
                 if (node.children != null) {
                     const tile = this.nodeMap.get(node);
@@ -95,6 +93,7 @@ export class TilingEngine implements Engine.TilingEngine {
                     tile.split((i % 2) + 1);
                     let j = 0;
                     for (const child of node.children) {
+                        tile.tiles[j].oldRelativeGeometry = tile.tiles[j].relativeGeometry;
                         this.nodeMap.set(child, tile.tiles[j]);
                         stackNext.push(child);
                         j += 1;
@@ -105,9 +104,31 @@ export class TilingEngine implements Engine.TilingEngine {
             stackNext = [];
             i += 1;
         }
+        // reconnect updateTile
+        rootTile.layoutModified.connect(this.updateTile);
     }
-    updateTile(_tile: KWin.Tile): void {
-        // will implement this later lol
+    // man would it be easy if i could just pass the tile in...
+    updateTile(): void {
+        const rootNode = this.rootNodes.get((new Desktop).toString());
+        if (rootNode == undefined) {
+            printDebug("No root node detected for tile update", true);
+            return;
+        }
+        const rootTile = this.nodeMap.get(rootNode);
+        if (rootTile == undefined) {
+            printDebug("No tile found for root node", true);
+            return;
+        }
+        // find the greatest tile that has been altered
+        let stack: Array<KWin.Tile> = [];
+        for (const child of rootTile.tiles) {
+            stack.push(child);
+        }
+        let stackNext: Array<KWin.Tile> = [];
+        while (stack.length > 0) {
+            stack = stackNext;
+            stackNext = [];
+        }
     }
     placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]> {
         let ret = new Array<[KWin.AbstractClient, KWin.Tile]>;
@@ -140,15 +161,13 @@ export class TilingEngine implements Engine.TilingEngine {
         }
         return ret;
     }
-    registerClient(client: KWin.AbstractClient): void {
+    addClient(client: KWin.AbstractClient): void {
         for (const activity of client.activities) {
             const desktop = new Desktop;
             desktop.screen = client.screen;
             desktop.activity = activity;
             desktop.desktop = client.desktop;
-            printDebug("" + desktop, false);
             if (!this.rootNodes.has(desktop.toString())) {
-                printDebug("Keys - " + Array.from(this.rootNodes.keys()).join(" "), false);
                 printDebug("Making new rootNode for desktop", false);
                 this.rootNodes.set(desktop.toString(), new RootNode);
             }
@@ -159,14 +178,12 @@ export class TilingEngine implements Engine.TilingEngine {
             stackloop: while (stack.length > 0) {
                 for (const node of stack) {
                     if (node.children == null) {
-                        printDebug("tile found", false);
                         if (node.client != null) { // case for basically all non-root tiles
                             node.split();
                             node.children![0].client = node.client;
                             node.children![1].client = client;
                             node.client = null;
                         } else { // just add the client
-                            printDebug("just adding client", false);
                             node.client = client;
                         }
                         break stackloop;
@@ -184,12 +201,25 @@ export class TilingEngine implements Engine.TilingEngine {
     updateClientDesktop(client: KWin.AbstractClient): void {
         // if this works im keeping this until release tbh
         this.removeClient(client);
-        this.registerClient(client);
+        this.addClient(client);
     }
-    updateClientPosition(_client: KWin.AbstractClient): void {
-        // also will do later
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): void {
+        // assumes the nodemap has been built correctly
+        const node = this.nodeMap.inverse.get(tile);
+        if (node == undefined) {
+            printDebug("No node found for tile", true);
+            return;
+        }
+        if (node.client == null) {
+            node.client = client;
+        } else {
+            node.split();
+            node.children![0].client = node.client;
+            node.children![1].client = client;
+            node.client = null;
+        }
     }
-    // its slow but what can you do
+    // cant copy code because indexed by string not object
     removeClient(client: KWin.AbstractClient): void {
         for (const rootNode of this.rootNodes.values()) {
             let stack: Array<TreeNode> = [rootNode];

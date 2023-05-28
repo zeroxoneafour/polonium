@@ -1,6 +1,5 @@
 {
     "include": [
-        "src/extern/*/*.js",
         "src/extern/*/*.d.ts",
         "src/util.ts",
         "src/*/*.ts",
