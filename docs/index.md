@@ -1,5 +1,3 @@
-# Polonium
-
 ![icon](logo.svg)
 
 ## A tiling manager for KWin 5.27 and up
@@ -11,6 +9,8 @@
 [Usage guide](usage.md)
 
 [FAQ](faq.md)
+
+---
 
 <div align="center"><sub>
 Polonium and its documentation are licensed under the MIT License as shown <a href="https://github.com/zeroxoneafour/polonium/blob/master/license.txt">here</a>

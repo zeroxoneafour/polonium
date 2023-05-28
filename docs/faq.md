@@ -14,8 +14,6 @@ X11 is not officially supported, but you can drop an issue and I can see if I ca
 
 ---
 
-[Back](index.md)
-
 <div align="center"><sub>
 Polonium and its documentation are licensed under the MIT License as shown <a href="https://github.com/zeroxoneafour/polonium/blob/master/license.txt">here</a>
 </sub></div>
