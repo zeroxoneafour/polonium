@@ -2,7 +2,7 @@
 
 ### How do I create a log for my issue?
 
-Follow the instructions [here](usage.md#Getting a log)
+Follow the instructions [here](usage.md#getting-a-log)
 
 ### Fullscreen isn't working correctly
 
@@ -16,6 +16,6 @@ X11 is not officially supported, but you can drop an issue and I can see if I ca
 
 [Back](index.md)
 
-<div align="center" font-size="small">
-Polonium and its documentation are licensed under the MIT License as shown [here](https://github.com/zeroxoneafour/polonium/blob/master/license.txt)
-</div>
+<sub><sup>
+Polonium and its documentation are licensed under the MIT License as shown <a href="https://github.com/zeroxoneafour/polonium/blob/master/license.txt">here</a>
+</sub></sup>
