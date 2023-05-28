@@ -2,7 +2,7 @@
 
 ### How do I create a log for my issue?
 
-Follow the instructions [here](usage.md#getting-a-log)
+Follow the instructions [here](usage.md#getting-a-log).
 
 ### Fullscreen isn't working correctly
 
