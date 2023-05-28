@@ -35,6 +35,6 @@ Logs are required for bug reports if the bug has to do with tiling.\
 
 [Back](index.md)
 
-<footer>
-Polonium and its documentation is licensed under the MIT License as shown [here](https://github.com/zeroxoneafour/polonium/blob/master/license.txt)
-</footer>
+<div align="center" font-size="small">
+Polonium and its documentation are licensed under the MIT License as shown [here](https://github.com/zeroxoneafour/polonium/blob/master/license.txt)
+</div>
