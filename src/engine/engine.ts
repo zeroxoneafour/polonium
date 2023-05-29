@@ -68,6 +68,10 @@ export class EngineManager {
         }
         const ret = this.engines.get(desktop.toString())!.buildLayout(rootTile);
         this.layoutBuilding = false;
+        if (!rootTile.connected) {
+            rootTile.connected = true;
+            rootTile.layoutModified.connect(this.updateTiles.bind(this, rootTile));
+        }
         return ret;
     }
     
@@ -82,12 +86,7 @@ export class EngineManager {
                 return false;
             }
         }
-        const ret = this.engines.get(desktop.toString())!.updateTiles(rootTile);
-        if (!rootTile.connected) {
-            rootTile.connected = true;
-            rootTile.layoutModified.connect(this.updateTiles.bind(this, rootTile));
-        }
-        return ret;
+        return this.engines.get(desktop.toString())!.updateTiles(rootTile);
     }
     placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]> {
         printDebug("Placing clients for desktop " + desktop, false);
@@ -132,26 +131,7 @@ export class EngineManager {
                 return false;
             }
         }
-        let desktops: Array<Desktop> = new Array;
-        for (const activity of client.activities) {
-            const desktop = new Desktop;
-            desktop.screen = client.screen;
-            desktop.activity = activity;
-            desktop.desktop = client.desktop;
-            desktops.push(desktop);
-        }
-        for (const desktop of desktops) {
-            printDebug("Adding " + client.resourceClass + " to desktop " + desktop, false);
-            if (!this.engines.has(desktop.toString())) {
-                if (!this.createNewEngine(desktop)) {
-                    return false;
-                }
-            }
-            if (!this.engines.get(desktop.toString())!.addClient(client)) {
-                return false;
-            }
-        }
-        return true;
+        return this.addClient(client);
     }
     
     putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {
@@ -194,7 +174,7 @@ export class EngineManager {
             desktops.push(desktop);
         }
         for (const desktop of desktops) {
-            printDebug("Removing client from desktop " + desktop, false);
+            printDebug("Removing " + client.resourceClass + " from desktop " + desktop, false);
             if (!this.engines.has(desktop.toString())) {
                 if (!this.createNewEngine(desktop)) {
                     return false;

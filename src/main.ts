@@ -18,21 +18,20 @@ export function rebuildLayout() {
 }
 
 export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
-    if (client.oldScreen == undefined || client.oldActivities == undefined || client.oldDesktop == undefined) {
+    if (client.oldScreen == undefined || client.oldActivities == undefined || client.oldDesktop == undefined || !client.wasTiled) {
         client.oldDesktop = client.desktop;
         client.oldScreen = client.screen;
         client.oldActivities = new Array;
         for (const activity of client.activities) client.oldActivities.push(activity);
         return;
     }
-    const vdesktop = copy(client.oldDesktop);
-    const screen = copy(client.oldScreen);
+    const vdesktop = client.oldDesktop;
+    const screen = client.oldScreen;
     const activities = copy(client.oldActivities);
     client.oldDesktop = client.desktop;
     client.oldScreen = client.screen;
     client.oldActivities = new Array;
     for (const activity of client.activities) client.oldActivities.push(activity);
-    if (!client.wasTiled) return;
     printDebug("Desktop, screen, or activity changed on " + client.resourceClass, false);
     let oldDesktops: Array<Desktop> = new Array;
     printDebug("Activity = " + activities, false);
@@ -41,7 +40,6 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
         desktop.screen = screen;
         desktop.activity = activity;
         desktop.desktop = vdesktop;
-        printDebug("Pushing " + desktop + " to oldDesktops", false);
         oldDesktops.push(copy(desktop));
     }
     engine.updateClientDesktop(client, oldDesktops);
@@ -94,6 +92,7 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
         printDebug(client.resourceClass + " was moved out of a tile", false);
         untileClient(client);
     } else if (!client.wasTiled && client.tile != null) { // if added to tile
+        printDebug(client.resourceClass + " was moved into a tile", false);
         tileClient(client, client.tile);
     }
 }
@@ -103,21 +102,21 @@ export function addClient(client: KWin.AbstractClient): void {
     client.oldScreen = client.screen;
     client.oldActivities = new Array;
     for (const activity of client.activities) client.oldActivities.push(activity);
-    print(client.activities);
-    print(client.oldActivities);
     
     if (config.borders == Borders.NoBorderAll || config.borders == Borders.BorderSelected) {
         client.noBorder = true;
     }
     
     if (doTileClient(client)) {
-        printDebug(client.resourceClass + " added", false);
+        printDebug("Adding and tiling " + client.resourceClass, false);
         tileClient(client);
+    } else {
+        printDebug("Adding and not tiling " + client.resourceClass, false);
     }
 }
 
 export function removeClient(client: KWin.AbstractClient): void {
-    printDebug(client.resourceClass + " removed", false);
+    printDebug(client.resourceClass + " was removed and untiled", false);
     untileClient(client);
 }
 
@@ -133,12 +132,14 @@ export function clientFullScreenSet(client: KWin.AbstractClient, fullScreen: boo
 
 export function clientMinimized(client: KWin.AbstractClient): void {
     if (!client.wasTiled) return;
+    printDebug(client.resourceClass + " was minimized", false);
     untileClient(client);
     client.wasTiled = true;
 }
 
 export function clientUnminimized(client: KWin.AbstractClient): void {
     if (!client.wasTiled) return;
+    printDebug(client.resourceClass + " was unminimized", false);
     tileClient(client);
 }
 

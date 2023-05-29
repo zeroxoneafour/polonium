@@ -109,7 +109,6 @@ export class TilingEngine implements Engine.TilingEngine {
     
     // man would it be easy if i could just pass the tile in...
     updateTiles(rootTile: KWin.RootTile): boolean {
-        printDebug("Updating tile", false);
         // find the greatest tile that has been altered
         let stack: Array<KWin.Tile> = [rootTile];
         let stackNext: Array<KWin.Tile> = [];
@@ -118,7 +117,6 @@ export class TilingEngine implements Engine.TilingEngine {
         findloop: while (stack.length > 0) {
             for (const tile of stack) {
                 if (tile.oldRelativeGeometry != undefined) {
-                    printDebug("Checking tile " + tile, false);
                     const geometry = tile.relativeGeometry;
                     const oldGeometry = tile.oldRelativeGeometry;
                     if (geometry.width != oldGeometry.width || geometry.height != oldGeometry.height) {
@@ -145,7 +143,6 @@ export class TilingEngine implements Engine.TilingEngine {
             stackNext = [];
         }
         if (modifiedNode == null) {
-            printDebug("Modified node is null", false);
             return true;
         }
         let modifiedTile = this.nodeMap.get(modifiedNode)!;
@@ -156,7 +153,6 @@ export class TilingEngine implements Engine.TilingEngine {
         } else {
             modifiedNode.childRatio = modifiedTile.tiles[0].relativeGeometry.width / modifiedTile.relativeGeometry.width;
         }
-        printDebug("New ratio is " + modifiedNode.childRatio, false);
         return true;
     }
     
