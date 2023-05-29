@@ -1,5 +1,6 @@
-// config globals
+import { EngineTypes } from "./engine/engine";
 
+// config globals
 export enum Borders {
     NoBorderAll = 0,
     NoBorderTiled,
@@ -15,6 +16,8 @@ class Config {
     borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
     untileMinimized: boolean = readConfig("UntileMinimized", true);
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
+    // todo later
+    defaultEngine: EngineTypes = EngineTypes.BTree;
 };
 
 export const config = new Config;

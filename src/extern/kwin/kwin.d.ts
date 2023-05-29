@@ -17,7 +17,7 @@ declare namespace KWin {
         noBorder: boolean;
         fullScreen: boolean;
         minimized: boolean;
-        activities: string[];
+        activities: Array<string>;
         resourceClass: Qt.QByteArray;
         // frameGeometry is read/write for abstractclient
         frameGeometry: Qt.QRect;
@@ -27,6 +27,10 @@ declare namespace KWin {
         hasBeenTiled: boolean | undefined;
         // was just tiled
         wasTiled: boolean | undefined;
+        // stuff to keep tabs on changes between locations
+        oldActivities: Array<string> | undefined;
+        oldDesktop: number | undefined;
+        oldScreen: number | undefined;
         //signals
         desktopPresenceChanged: Signal<(client: AbstractClient, desktop: number) => void>;
         desktopChanged: Signal<() => void>;

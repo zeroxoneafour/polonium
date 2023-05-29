@@ -1,7 +1,6 @@
 import { BiMap } from "mnemonist";
 import copy from "fast-copy";
 import { printDebug } from "../util";
-import { Desktop } from "./common";
 import * as Engine from "./common";
 
 class TreeNode {
@@ -58,31 +57,17 @@ class RootNode extends TreeNode {
 
 export class TilingEngine implements Engine.TilingEngine {
     // turn the desktop into a string first so its indexed by primitive instead of reference
-    rootNodes: Map<string, RootNode> = new Map;
+    rootNode: RootNode = new RootNode;
     // changed when desktop is changed
     nodeMap: BiMap<TreeNode, KWin.Tile> = new BiMap;
-    // turn off tile checking while layout is building
-    layoutBuilding: boolean = false;
     
-    buildLayout(rootTile: KWin.RootTile, desktop: Desktop): boolean {
-        printDebug("Building layout for desktop " + desktop, false);
-        // disconnect layout modified signal temporarily to stop them from interfering
-        this.layoutBuilding = true;
+    buildLayout(rootTile: KWin.RootTile): boolean {
         // set up
         this.nodeMap = new BiMap;
-        if (!this.rootNodes.has(desktop.toString())) {
-            printDebug("Making new rootNode for desktop", false);
-            this.rootNodes.set(desktop.toString(), new RootNode);
-        }
-        const rootNode = this.rootNodes.get(desktop.toString())!;
-        // wipe rootTile clean
-        while (rootTile.tiles.length > 0) {
-            rootTile.tiles[0].remove();
-        };
         // modify rootTile
-        let stack: Array<TreeNode> = [rootNode];
+        let stack: Array<TreeNode> = [this.rootNode];
         let stackNext: Array<TreeNode> = [];
-        this.nodeMap.set(rootNode, rootTile);
+        this.nodeMap.set(this.rootNode, rootTile);
         let i = 0;
         while (stack.length > 0) {
             for (const node of stack) {
@@ -119,19 +104,11 @@ export class TilingEngine implements Engine.TilingEngine {
             stackNext = [];
             i += 1;
         }
-        // connect updateTile
-        if (!rootTile.connected) {
-            rootTile.connected = true;
-            rootTile.layoutModified.connect(this.updateTiles.bind(this, rootTile));
-        }
-        this.layoutBuilding = false;
         return true;
     }
     
     // man would it be easy if i could just pass the tile in...
     updateTiles(rootTile: KWin.RootTile): boolean {
-        // do not execute while layout is building
-        if (this.layoutBuilding) return true;
         printDebug("Updating tile", false);
         // find the greatest tile that has been altered
         let stack: Array<KWin.Tile> = [rootTile];
@@ -183,15 +160,10 @@ export class TilingEngine implements Engine.TilingEngine {
         return true;
     }
     
-    placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]> {
+    placeClients(): Array<[KWin.AbstractClient, KWin.Tile]> {
         let ret = new Array<[KWin.AbstractClient, KWin.Tile]>;
-        const rootNode = this.rootNodes.get(desktop.toString());
-        if (rootNode == null) {
-            printDebug("Root node null for desktop " + desktop, true);
-            return ret;
-        }
         // i love copy and paste this is why i develop software
-        let stack: Array<TreeNode> = [rootNode];
+        let stack: Array<TreeNode> = [this.rootNode];
         let stackNext: Array<TreeNode> = [];
         while (stack.length > 0) {
             for (const node of stack) {
@@ -216,52 +188,33 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     
     addClient(client: KWin.AbstractClient): boolean {
-        for (const activity of client.activities) {
-            const desktop = new Desktop;
-            desktop.screen = client.screen;
-            desktop.activity = activity;
-            desktop.desktop = client.desktop;
-            if (!this.rootNodes.has(desktop.toString())) {
-                printDebug("Making new rootNode for desktop", false);
-                this.rootNodes.set(desktop.toString(), new RootNode);
-            }
-            const rootNode = this.rootNodes.get(desktop.toString())!;
-            // truly this is the peak of programming
-            let stack: Array<TreeNode> = [rootNode];
-            let stackNext: Array<TreeNode> = [];
-            stackloop: while (stack.length > 0) {
-                for (const node of stack) {
-                    if (node.children == null) {
-                        if (node.client != null) { // case for basically all non-root tiles
-                            node.split();
-                            node.children![0].client = node.client;
-                            node.children![1].client = client;
-                            node.client = null;
-                        } else { // just add the client
-                            node.client = client;
-                        }
-                        break stackloop;
-                    } else {
-                        for (const child of node.children) {
-                            stackNext.push(child);
-                        }
+        // truly this is the peak of programming
+        let stack: Array<TreeNode> = [this.rootNode];
+        let stackNext: Array<TreeNode> = [];
+        stackloop: while (stack.length > 0) {
+            for (const node of stack) {
+                if (node.children == null) {
+                    if (node.client != null) { // case for basically all non-root tiles
+                        node.split();
+                        node.children![0].client = node.client;
+                        node.children![1].client = client;
+                        node.client = null;
+                    } else { // just add the client
+                        node.client = client;
+                    }
+                    break stackloop;
+                } else {
+                    for (const child of node.children) {
+                        stackNext.push(child);
                     }
                 }
-                stack = stackNext;
-                stackNext = [];
             }
+            stack = stackNext;
+            stackNext = [];
         }
         return true;
     }
-    
-    updateClientDesktop(client: KWin.AbstractClient): boolean {
-        // if this works im keeping this until release tbh
-        if (!this.removeClient(client)) {
-            return false;
-        }
-        return this.addClient(client);
-    }
-    
+
     putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {
         // assumes the nodemap has been built correctly
         const node = this.nodeMap.inverse.get(tile);
@@ -308,27 +261,25 @@ export class TilingEngine implements Engine.TilingEngine {
     
     // cant copy code because indexed by string not object
     removeClient(client: KWin.AbstractClient): boolean {
-        for (const rootNode of this.rootNodes.values()) {
-            let stack: Array<TreeNode> = [rootNode];
-            let stackNext: Array<TreeNode> = [];
-            let deleteQueue: Array<TreeNode> = [];
-            while (stack.length > 0) {
-                for (const node of stack) {
-                    if (node.client == client) {
-                        deleteQueue.push(node);
-                    }
-                    if (node.children != null) {
-                        for (const child of node.children) {
-                            stackNext.push(child);
-                        }
+        let stack: Array<TreeNode> = [this.rootNode];
+        let stackNext: Array<TreeNode> = [];
+        let deleteQueue: Array<TreeNode> = [];
+        while (stack.length > 0) {
+            for (const node of stack) {
+                if (node.client == client) {
+                    deleteQueue.push(node);
+                }
+                if (node.children != null) {
+                    for (const child of node.children) {
+                        stackNext.push(child);
                     }
                 }
-                stack = stackNext;
-                stackNext = [];
             }
-            for (const node of deleteQueue) {
-                node.remove();
-            }
+            stack = stackNext;
+            stackNext = [];
+        }
+        for (const node of deleteQueue) {
+            node.remove();
         }
         return true;
     }

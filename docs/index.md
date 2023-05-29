@@ -1,6 +1,6 @@
 ![icon](logo.svg)
 
-## A tiling manager for KWin 5.27 and up
+## A tiling window manager for KWin 5.27 and up
 
 [KWin Store](https://store.kde.org/p/2042756)
 

@@ -19,11 +19,11 @@ export interface TilingEngine {
     /**
      * Lays out the tiles according to the engine's organization
      *
-     * @param rootTile - The root tile to modify
+     * @param rootTile - The root tile to modify. It will not have any children
      * @param desktop - The desktop it is on
      * @returns True if exited successfully, false otherwise
      */
-    buildLayout(rootTile: KWin.RootTile, desktop: Desktop): boolean;
+    buildLayout(rootTile: KWin.RootTile): boolean;
     /**
      * Updates the size of a tile inside of the engine that is a descendant of rootTile
      * @remarks
@@ -41,7 +41,7 @@ export interface TilingEngine {
      * @param desktop - The desktop it is on
      * @returns An array of tuples built as [client, its tile] for all registered clients
      */
-    placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile]>;
+    placeClients(): Array<[KWin.AbstractClient, KWin.Tile]>;
     /**
      * Register a client into the engine
      * @remarks
@@ -51,13 +51,6 @@ export interface TilingEngine {
      * @returns True if exited successfully, false otherwise
      */
     addClient(client: KWin.AbstractClient): boolean;
-    /**
-     * Update the desktop of a client (not the tile or position)
-     *
-     * @param client - The client to update
-     * @returns True if exited sucessfully, false otherwise
-     */
-    updateClientDesktop(client: KWin.AbstractClient): boolean;
     /**
      * Update client tile
      * Usually used with geometryChanged to detect if the client is put into a tile

@@ -1,13 +1,15 @@
-import * as Engine from "./engine/common";
+import copy from "fast-copy";
+
+import * as Engine from "./engine/engine";
+import { Desktop } from "./engine/common";
 // to build with a different engine, change this to a different file
-import * as BTree from "./engine/btree";
 import { Borders, config, printDebug, doTileClient } from "./util";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
-export const engine: Engine.TilingEngine = new BTree.TilingEngine;
+export const engine: Engine.EngineManager = new Engine.EngineManager;
 
 export function rebuildLayout() {
-    const desktop = new Engine.Desktop;
+    const desktop = new Desktop;
     engine.buildLayout(workspace.tilingForScreen(workspace.activeScreen).rootTile, desktop);
     for (const client of engine.placeClients(desktop)) {
         client[0].wasTiled = true;
@@ -16,14 +18,44 @@ export function rebuildLayout() {
 }
 
 export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
+    if (client.oldScreen == undefined || client.oldActivities == undefined || client.oldDesktop == undefined) {
+        client.oldDesktop = client.desktop;
+        client.oldScreen = client.screen;
+        client.oldActivities = new Array;
+        for (const activity of client.activities) client.oldActivities.push(activity);
+        return;
+    }
+    const vdesktop = copy(client.oldDesktop);
+    const screen = copy(client.oldScreen);
+    const activities = copy(client.oldActivities);
+    client.oldDesktop = client.desktop;
+    client.oldScreen = client.screen;
+    client.oldActivities = new Array;
+    for (const activity of client.activities) client.oldActivities.push(activity);
     if (!client.wasTiled) return;
     printDebug("Desktop, screen, or activity changed on " + client.resourceClass, false);
-    engine.updateClientDesktop(client);
+    let oldDesktops: Array<Desktop> = new Array;
+    printDebug("Activity = " + activities, false);
+    for (const activity of activities) {
+        let desktop = new Desktop;
+        desktop.screen = screen;
+        desktop.activity = activity;
+        desktop.desktop = vdesktop;
+        printDebug("Pushing " + desktop + " to oldDesktops", false);
+        oldDesktops.push(copy(desktop));
+    }
+    engine.updateClientDesktop(client, oldDesktops);
     rebuildLayout();
 }
 
-export function tileClient(this: any, client: KWin.AbstractClient): void {
-    engine.addClient(client);
+// if tile is defined, only tiles on a single desktop
+export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.Tile): void {
+    client.wasTiled = true;
+    if (tile != undefined) {
+        engine.putClientInTile(client, tile);
+    } else {
+        engine.addClient(client);
+    }
     if (client.hasBeenTiled == undefined) {
         client.desktopChanged.connect(clientDesktopChange.bind(this, client));
         client.frameGeometryChanged.connect(clientGeometryChange);
@@ -55,30 +87,29 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
     // dont interfere with minimizing
     if (client.minimized) return;
     // only allow this function to handle movements when the client is visible
-    let desktop = new Engine.Desktop;
+    let desktop = new Desktop;
     if (client.screen != desktop.screen || !client.activities.includes(desktop.activity) || client.desktop != desktop.desktop) return;
     // if removed from tile
     if (client.wasTiled && client.tile == null) {
         printDebug(client.resourceClass + " was moved out of a tile", false);
         untileClient(client);
     } else if (!client.wasTiled && client.tile != null) { // if added to tile
-        client.wasTiled = true;
-        engine.putClientInTile(client, client.tile);
-        if (config.borders == Borders.NoBorderTiled) {
-            client.noBorder = true;
-        }
-        if (config.keepTiledBelow) {
-            client.keepBelow = true;
-        }
-        rebuildLayout();
+        tileClient(client, client.tile);
     }
 }
 
-
 export function addClient(client: KWin.AbstractClient): void {
+    client.oldDesktop = client.desktop;
+    client.oldScreen = client.screen;
+    client.oldActivities = new Array;
+    for (const activity of client.activities) client.oldActivities.push(activity);
+    print(client.activities);
+    print(client.oldActivities);
+    
     if (config.borders == Borders.NoBorderAll || config.borders == Borders.BorderSelected) {
         client.noBorder = true;
     }
+    
     if (doTileClient(client)) {
         printDebug(client.resourceClass + " added", false);
         tileClient(client);

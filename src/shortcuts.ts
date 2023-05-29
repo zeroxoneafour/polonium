@@ -140,18 +140,10 @@ export function insert(this: any, direction: Direction) {
     if (tile == null) return;
     const tileGeometry = copy(tile.absoluteGeometry);
     untileClient(client);
-    client.wasTiled = true;
     let newTile = workspace.tilingForScreen(client.screen).bestTileForPosition(tileGeometry.x + 1, tileGeometry.y + 1);
     if (newTile == null) {
         newTile = workspace.tilingForScreen(client.screen).rootTile;
     }
     printDebug("Inserting " + client.resourceClass + " in tile " + newTile, false);
-    engine.putClientInTile(client, newTile);
-    if (config.borders == Borders.NoBorderTiled) {
-        client.noBorder = true;
-    }
-    if (config.keepTiledBelow) {
-        client.keepBelow = true;
-    }
-    rebuildLayout();
+    tileClient(client, newTile);
 }
