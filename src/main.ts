@@ -83,6 +83,8 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
     }
     if (client.hasBeenTiled == undefined) {
         client.desktopChanged.connect(clientDesktopChange.bind(this, client));
+        client.activitiesChanged.connect(clientDesktopChange);
+        client.screenChanged.connect(clientDesktopChange.bind(this, client));
         client.frameGeometryChanged.connect(clientGeometryChange);
         client.hasBeenTiled = true;
     }
