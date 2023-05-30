@@ -23,6 +23,7 @@ By default, Polonium uses the Vim H,J,K,L for left, down, up, right as direction
 * Switch focus - `Meta` + directional key
 * Swap windows - `Ctrl+Meta` + directional key
 * Push window into tile - `Meta+Shift` + directional key
+
 Note that these keybinds will only work on tiled windows.
 
 ### Moving windows with your mouse
