@@ -91,8 +91,8 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
 
 export function untileClient(this: any, client: KWin.AbstractClient): void {
     client.wasTiled = false;
+    client.tile = null;
     engine.removeClient(client);
-    client.wasTiled = false;
     if (config.borders == Borders.NoBorderTiled) {
         client.noBorder = false;
     }
@@ -100,7 +100,6 @@ export function untileClient(this: any, client: KWin.AbstractClient): void {
         client.keepBelow = false;
     }
     rebuildLayout();
-    client.tile = null;
 }
 
 export function clientGeometryChange(this: any, client: KWin.AbstractClient, _oldgeometry: Qt.QRect): void {
