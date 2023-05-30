@@ -156,13 +156,13 @@ export class TilingEngine implements Engine.TilingEngine {
         } else {
             modifiedNode.childRatio = modifiedTile.tiles[0].relativeGeometry.width / modifiedTile.relativeGeometry.width;
         }
-        // set these so they dont interfere with other child ratios changing
-        modifiedTile.tiles[0].oldRelativeGeometry = copy(modifiedTile.tiles[0].relativeGeometry);
-        modifiedTile.tiles[1].oldRelativeGeometry = copy(modifiedTile.tiles[0].relativeGeometry);
         // some bugs leaking through, this solution should stop them. this is the duct tape of programming
         if (modifiedNode.childRatio > 0.95) {
             modifiedNode.childRatio = oldRatio;
         }
+        // set these so they dont interfere with other child ratios changing
+        modifiedTile.tiles[0].oldRelativeGeometry = copy(modifiedTile.tiles[0].relativeGeometry);
+        modifiedTile.tiles[1].oldRelativeGeometry = copy(modifiedTile.tiles[1].relativeGeometry);
         return true;
     }
     
