@@ -41,7 +41,7 @@ export interface TilingEngine {
      * @param desktop - The desktop it is on
      * @returns An array of tuples built as [client, its tile] for all registered clients
      */
-    placeClients(): Array<[KWin.AbstractClient, KWin.Tile]>;
+    placeClients(): Array<[KWin.AbstractClient, KWin.Tile | null]>;
     /**
      * Register a client into the engine
      * @remarks

@@ -17,6 +17,7 @@ if (config.untileMinimized) {
 workspace.clientFullScreenSet.connect(main.clientFullScreenSet);
 
 registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);
+registerShortcut("PoloniumCycleLayouts", "Polonium: Cycle layouts", "Meta+\\", shortcuts.cycleEngine);
 
 registerShortcut("PoloniumFocusAbove", "Polonium: Focus Above", "Meta+K", shortcuts.focus.bind(this, shortcuts.Direction.Above));
 registerShortcut("PoloniumSwapAbove", "Polonium: Swap Above", "Ctrl+Meta+K", shortcuts.swap.bind(this, shortcuts.Direction.Above));

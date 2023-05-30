@@ -14,6 +14,7 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 * Actual tiling backend using binary trees and decent enough code where you can mod in your own
 * Edit tile sizes with the integrated KWin GUI
 * Move and tile windows with your mouse and keyboard
+* Set layouts independently of desktop
 * In early beta so comes pre-packaged with bugs
 
 ## limitations

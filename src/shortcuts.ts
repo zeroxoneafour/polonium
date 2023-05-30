@@ -1,6 +1,7 @@
 import copy from "fast-copy";
+import { Desktop } from "./engine/common";
 import { engine, rebuildLayout, untileClient, tileClient } from "./main";
-import { printDebug, config, Borders } from "./util";
+import { printDebug } from "./util";
 
 export enum Direction {
     Above,
@@ -146,4 +147,19 @@ export function insert(this: any, direction: Direction) {
     }
     printDebug("Inserting " + client.resourceClass + " in tile " + newTile, false);
     tileClient(client, newTile);
+}
+
+export function cycleEngine() {
+    const desktop = new Desktop;
+    const clients = engine.placeClients(desktop).map(x => x[0]);
+    for (const client of clients) {
+        engine.removeClient(client, desktop);
+        client.wasTiled = false;
+        client.tile = null;
+    }
+    engine.cycleEngine(desktop);
+    for (const client of clients) {
+        engine.addClient(client, desktop);
+    }
+    rebuildLayout();
 }

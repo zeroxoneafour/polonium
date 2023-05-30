@@ -12,7 +12,23 @@ export function rebuildLayout() {
     const desktop = new Desktop;
     engine.buildLayout(workspace.tilingForScreen(workspace.activeScreen).rootTile, desktop);
     for (const client of engine.placeClients(desktop)) {
-        client[0].wasTiled = true;
+        if (client[1] != null) {
+            client[0].wasTiled = true;
+            if (config.borders == Borders.NoBorderTiled) {
+                client[0].noBorder = true;
+            }
+            if (config.keepTiledBelow) {
+                client[0].keepBelow = true;
+            }
+        } else {
+            client[0].wasTiled = false;
+            if (config.borders == Borders.NoBorderTiled) {
+                client[0].noBorder = false;
+            }
+            if (config.keepTiledBelow) {
+                client[0].keepBelow = false;
+            }
+        }
         client[0].tile = client[1];
     }
 }
@@ -59,24 +75,12 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
         client.frameGeometryChanged.connect(clientGeometryChange);
         client.hasBeenTiled = true;
     }
-    if (config.borders == Borders.NoBorderTiled) {
-        client.noBorder = true;
-    }
-    if (config.keepTiledBelow) {
-        client.keepBelow = true;
-    }
     rebuildLayout();
 }
 
 export function untileClient(this: any, client: KWin.AbstractClient): void {
     client.wasTiled = false;
     engine.removeClient(client);
-    if (config.borders == Borders.NoBorderTiled) {
-        client.noBorder = false;
-    }
-    if (config.keepTiledBelow) {
-        client.keepBelow = false;
-    }
     rebuildLayout();
     client.tile = null;
 }

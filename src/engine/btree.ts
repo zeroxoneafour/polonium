@@ -1,3 +1,5 @@
+// the reference binary tree based engine
+
 import { BiMap } from "mnemonist";
 import copy from "fast-copy";
 import { printDebug } from "../util";
@@ -148,10 +150,18 @@ export class TilingEngine implements Engine.TilingEngine {
         let modifiedTile = this.nodeMap.get(modifiedNode)!;
         // check if horizontal or vertical size is modified in children
         // case where height is modified, meaning the tiles are stacked vertically
+        const oldRatio = modifiedNode.childRatio;
         if (modifiedTile.tiles[0].relativeGeometry.height != modifiedTile.tiles[0].oldRelativeGeometry!.height) {
             modifiedNode.childRatio = modifiedTile.tiles[0].relativeGeometry.height / modifiedTile.relativeGeometry.height;
         } else {
             modifiedNode.childRatio = modifiedTile.tiles[0].relativeGeometry.width / modifiedTile.relativeGeometry.width;
+        }
+        // set these so they dont interfere with other child ratios changing
+        modifiedTile.tiles[0].oldRelativeGeometry = copy(modifiedTile.tiles[0].relativeGeometry);
+        modifiedTile.tiles[1].oldRelativeGeometry = copy(modifiedTile.tiles[0].relativeGeometry);
+        // some bugs leaking through, this solution should stop them. this is the duct tape of programming
+        if (modifiedNode.childRatio > 0.95) {
+            modifiedNode.childRatio = oldRatio;
         }
         return true;
     }
@@ -165,7 +175,7 @@ export class TilingEngine implements Engine.TilingEngine {
             for (const node of stack) {
                 if (node.client != null) {
                     let tile = this.nodeMap.get(node);
-                    if (tile == null) {
+                    if (tile == undefined) {
                         printDebug("No tile found for node", true);
                         continue;
                     }

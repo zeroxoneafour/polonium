@@ -17,7 +17,7 @@ class Config {
     untileMinimized: boolean = readConfig("UntileMinimized", true);
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
     // todo later
-    defaultEngine: EngineTypes = EngineTypes.BTree;
+    defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
 };
 
 export const config = new Config;

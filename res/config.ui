@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>311</width>
-     <height>168</height>
+     <height>170</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -133,6 +133,31 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QComboBox" name="kcfg_DefaultEngine">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes where borders are or aren't&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>BTree</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Half</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Floating</string>
+         </property>
+        </item>
+       </widget>
+      </item>
       <item>
        <widget class="QCheckBox" name="kcfg_Debug">
         <property name="toolTip">
