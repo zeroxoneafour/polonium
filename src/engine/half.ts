@@ -62,9 +62,7 @@ export class TilingEngine implements Engine.TilingEngine {
                     this.nodeMap.set(container, leftTile);
                 }
             }
-            print("Right length - " + this.right.length);
             for (let i = 0; i < this.right.length; i += 1) {
-                print("Repeat number " + i);
                 let container = this.right[i];
                 // set the size if not the last one
                 if (i != this.right.length - 1) {
