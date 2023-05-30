@@ -1,18 +1,6 @@
 // dont expect nice doc comments anywhere other than here, this is the only part of the project meant for expansion
 
 /**
- * Class for current screen config
- */
-export class Desktop {
-    screen: number = workspace.activeScreen;
-    activity: string = workspace.currentActivity;
-    desktop: number = workspace.currentDesktop;
-    toString(): string {
-        return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
-    }
-}
-
-/**
  * Interface that can be built off of to create a custom tiling engine
  */
 export interface TilingEngine {

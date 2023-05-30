@@ -16,7 +16,6 @@ class Config {
     borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
     untileMinimized: boolean = readConfig("UntileMinimized", true);
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
-    // todo later
     defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
 };
 

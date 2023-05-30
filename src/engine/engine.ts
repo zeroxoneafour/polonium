@@ -1,4 +1,4 @@
-import { Desktop, TilingEngine } from "./common";
+import { TilingEngine } from "./common";
 import { config, printDebug } from "../util";
 
 // engines and engine enum
@@ -12,6 +12,15 @@ export enum EngineTypes {
     Floating,
     // this enum member is used to loop the enum when iterating it
     _loop,
+}
+
+export class Desktop {
+    screen: number = workspace.activeScreen;
+    activity: string = workspace.currentActivity;
+    desktop: number = workspace.currentDesktop;
+    toString(): string {
+        return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
+    }
 }
 
 function engineForEnum(engine: EngineTypes): TilingEngine | null {
@@ -109,12 +118,24 @@ export class EngineManager {
     addClient(client: KWin.AbstractClient, optionalDesktop?: Desktop): boolean {
         let desktops: Array<Desktop> = new Array;
         if (!optionalDesktop) {
-            for (const activity of client.activities) {
-                const desktop = new Desktop;
-                desktop.screen = client.screen;
-                desktop.activity = activity;
-                desktop.desktop = client.desktop;
-                desktops.push(desktop);
+            if (client.desktop == -1) {
+                for (let i = 0; i < workspace.desktops; i += 1) {
+                    for (const activity of client.activities) {
+                        const desktop = new Desktop;
+                        desktop.screen = client.screen;
+                        desktop.activity = activity;
+                        desktop.desktop = i;
+                        desktops.push(desktop);
+                    }
+                }
+            } else {
+                for (const activity of client.activities) {
+                    const desktop = new Desktop;
+                    desktop.screen = client.screen;
+                    desktop.activity = activity;
+                    desktop.desktop = client.desktop;
+                    desktops.push(desktop);
+                }
             }
         } else {
             desktops.push(optionalDesktop);
@@ -180,12 +201,24 @@ export class EngineManager {
     removeClient(client: KWin.AbstractClient, optionalDesktop?: Desktop): boolean {
         let desktops: Array<Desktop> = new Array;
         if (!optionalDesktop) {
-            for (const activity of client.activities) {
-                const desktop = new Desktop;
-                desktop.screen = client.screen;
-                desktop.activity = activity;
-                desktop.desktop = client.desktop;
-                desktops.push(desktop);
+            if (client.desktop == -1) {
+                for (let i = 0; i < workspace.desktops; i += 1) {
+                    for (const activity of client.activities) {
+                        const desktop = new Desktop;
+                        desktop.screen = client.screen;
+                        desktop.activity = activity;
+                        desktop.desktop = i;
+                        desktops.push(desktop);
+                    }
+                }
+            } else {
+                for (const activity of client.activities) {
+                    const desktop = new Desktop;
+                    desktop.screen = client.screen;
+                    desktop.activity = activity;
+                    desktop.desktop = client.desktop;
+                    desktops.push(desktop);
+                }
             }
         } else {
             desktops.push(optionalDesktop);

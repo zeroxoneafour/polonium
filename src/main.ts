@@ -1,12 +1,11 @@
 import copy from "fast-copy";
 
-import * as Engine from "./engine/engine";
-import { Desktop } from "./engine/common";
+import { EngineManager, Desktop } from "./engine/engine";
 // to build with a different engine, change this to a different file
 import { Borders, config, printDebug, doTileClient } from "./util";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
-export const engine: Engine.EngineManager = new Engine.EngineManager;
+export const engine: EngineManager = new EngineManager;
 
 export function rebuildLayout() {
     const desktop = new Desktop;
@@ -51,12 +50,24 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     printDebug("Desktop, screen, or activity changed on " + client.resourceClass, false);
     let oldDesktops: Array<Desktop> = new Array;
     printDebug("Activity = " + activities, false);
-    for (const activity of activities) {
-        let desktop = new Desktop;
-        desktop.screen = screen;
-        desktop.activity = activity;
-        desktop.desktop = vdesktop;
-        oldDesktops.push(copy(desktop));
+    if (client.desktop == -1) {
+        for (let i = 0; i < workspace.desktops; i += 1) {
+            for (const activity of client.activities) {
+                const desktop = new Desktop;
+                desktop.screen = client.screen;
+                desktop.activity = activity;
+                desktop.desktop = i;
+                oldDesktops.push(desktop);
+            }
+        }
+    } else {
+        for (const activity of client.activities) {
+            const desktop = new Desktop;
+            desktop.screen = client.screen;
+            desktop.activity = activity;
+            desktop.desktop = client.desktop;
+            oldDesktops.push(desktop);
+        }
     }
     engine.updateClientDesktop(client, oldDesktops);
     rebuildLayout();

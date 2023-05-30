@@ -1,5 +1,5 @@
 import copy from "fast-copy";
-import { Desktop } from "./engine/common";
+import { Desktop } from "./engine/engine";
 import { engine, rebuildLayout, untileClient, tileClient } from "./main";
 import { printDebug } from "./util";
 
