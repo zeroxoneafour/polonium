@@ -50,11 +50,11 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     printDebug("Desktop, screen, or activity changed on " + client.resourceClass, false);
     let oldDesktops: Array<Desktop> = new Array;
     printDebug("Activity = " + activities, false);
-    if (client.desktop == -1) {
+    if (vdesktop == -1) {
         for (let i = 0; i < workspace.desktops; i += 1) {
             for (const activity of client.activities) {
                 const desktop = new Desktop;
-                desktop.screen = client.screen;
+                desktop.screen = screen;
                 desktop.activity = activity;
                 desktop.desktop = i;
                 oldDesktops.push(desktop);
@@ -63,9 +63,9 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     } else {
         for (const activity of client.activities) {
             const desktop = new Desktop;
-            desktop.screen = client.screen;
+            desktop.screen = screen;
             desktop.activity = activity;
-            desktop.desktop = client.desktop;
+            desktop.desktop = vdesktop;
             oldDesktops.push(desktop);
         }
     }
@@ -92,6 +92,13 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
 export function untileClient(this: any, client: KWin.AbstractClient): void {
     client.wasTiled = false;
     engine.removeClient(client);
+    client.wasTiled = false;
+    if (config.borders == Borders.NoBorderTiled) {
+        client.noBorder = false;
+    }
+    if (config.keepTiledBelow) {
+        client.keepBelow = false;
+    }
     rebuildLayout();
     client.tile = null;
 }
