@@ -3,8 +3,30 @@
 ## Installation
 
 Do one of the following -
+* Go to [GitHub](https://github.com/zeroxoneafour/polonium) and download the latest `polonium.kwinscript`, then install it in KWin Scripts in the settings menu
 * Go to the [KWin Store](https://store.kde.org/p/2042756) and download the latest `polonium.kwinscript`, then install it in KWin Scripts
 * Go to KWin Scripts settings panel and Get New Scripts, then search for and select Polonium
+
+## General usage
+
+### Adding new windows
+Windows will be automatically tiled unless the whitelist option is enabled. Windows in the blacklist will be excluded from either being tiled or not being tiled, depending on the whitelist option.
+
+### Removing windows
+Windows will be removed from the tiling manager automatically as well
+
+### Resizing tiled windows
+By pressing the KWin tiles key (default - `Meta+T`) a tile configuration menu will appear. Adding or removing tiles will not have a lasting effect, but resizing tiles will for engines that support it. The clients of these tiles will be automatically resized as well.
+
+### Moving windows with your keyboard
+By default, Polonium uses the Vim H,J,K,L for left, down, up, right as directional modifier keys. The keybinds are as follows -
+* Switch focus - `Meta` + directional key
+* Swap windows - `Ctrl+Meta` + directional key
+* Push window into tile - `Meta+Shift` + directional key
+Note that these keybinds will only work on tiled windows.
+
+### Moving windows with your mouse
+By default, holding shift while moving windows will cause the windows to snap into available tiles. Moving a window into a tile will cause it to tile in there. If there is only one tiled window on the screen, a tile menu will not appear. In this case, press the Untile/Retile window keybind to add it back to the tiling.
 
 ## Configuration
 

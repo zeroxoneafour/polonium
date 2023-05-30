@@ -14,7 +14,7 @@ This project is open to contribution from everyone, and I will probably accept t
  - (For `if`) You are one-liner returning from a function
  - (For `for`) You are pushing a preexisting variable to an array or other structure
 * Use modules and not namespaces unless you are declaring an interface from JavaScript, which you shouldn't need to do unless you're modifying the KWin interface
-* Use `const` instead of `let` anywhere possible. I know I use let more than I should, but that doesn't mean you can too!
+* Use `const` instead of `let` anywhere possible. I know I use `let` more than I should, but that doesn't mean you can too!
 
 ## opening an issue/pr
 To open an issue about a bug, **you need a log**. If the issue is determined to be a bug and there is no log, **it will not be fixed**.
