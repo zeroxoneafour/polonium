@@ -7,9 +7,12 @@ import { Borders, config, printDebug, doTileClient } from "./util";
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
 
-export function rebuildLayout() {
+export function rebuildLayout(screen?: number) {
     const desktop = new Desktop;
-    engine.buildLayout(workspace.tilingForScreen(workspace.activeScreen).rootTile, desktop);
+    if (screen) {
+        desktop.screen = screen;
+    }
+    engine.buildLayout(workspace.tilingForScreen(desktop.screen).rootTile, desktop);
     for (const client of engine.placeClients(desktop)) {
         if (client[1] != null) {
             client[0].wasTiled = true;
@@ -70,6 +73,10 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
         }
     }
     engine.updateClientDesktop(client, oldDesktops);
+    // rebuild both screen layouts if the screen changed
+    if (screen != client.screen) {
+        rebuildLayout(screen);
+    }
     rebuildLayout();
 }
 
