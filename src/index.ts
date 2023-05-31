@@ -6,7 +6,8 @@ import { config } from "./util";
 
 workspace.clientAdded.connect(main.addClient);
 workspace.clientRemoved.connect(main.removeClient);
-workspace.currentDesktopChanged.connect(main.rebuildLayout);
+workspace.currentDesktopChanged.connect(main.currentDesktopChange);
+workspace.currentActivityChanged.connect(main.currentDesktopChange);
 workspace.clientActivated.connect(main.clientActivated);
 
 if (config.untileMinimized) {

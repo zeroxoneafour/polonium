@@ -7,12 +7,17 @@ import { Borders, config, printDebug, doTileClient } from "./util";
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
 
-export function rebuildLayout(screen?: number) {
-    const desktop = new Desktop;
-    if (screen) {
-        desktop.screen = screen;
+export function rebuildLayout(optionalScreen?: number) {
+    let desktop = new Desktop;
+    if (optionalScreen != undefined) {
+        desktop.screen = optionalScreen;
     }
-    engine.buildLayout(workspace.tilingForScreen(desktop.screen).rootTile, desktop);
+    let tileManager = workspace.tilingForScreen(desktop.screen);
+    if (tileManager == undefined) {
+        printDebug("No root tile found for desktop " + desktop, true);
+        return;
+    }
+    engine.buildLayout(tileManager.rootTile, desktop);
     for (const client of engine.placeClients(desktop)) {
         if (client[1] != null) {
             client[0].wasTiled = true;
@@ -35,6 +40,10 @@ export function rebuildLayout(screen?: number) {
     }
 }
 
+export function currentDesktopChange(): void {
+    rebuildLayout();
+}
+
 export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     if (client.oldScreen == undefined || client.oldActivities == undefined || client.oldDesktop == undefined || !client.wasTiled) {
         client.oldDesktop = client.desktop;
@@ -44,7 +53,7 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
         return;
     }
     const vdesktop = client.oldDesktop;
-    const screen = client.oldScreen;
+    const oldScreen = client.oldScreen;
     const activities = copy(client.oldActivities);
     client.oldDesktop = client.desktop;
     client.oldScreen = client.screen;
@@ -57,7 +66,7 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
         for (let i = 0; i < workspace.desktops; i += 1) {
             for (const activity of client.activities) {
                 const desktop = new Desktop;
-                desktop.screen = screen;
+                desktop.screen = oldScreen;
                 desktop.activity = activity;
                 desktop.desktop = i;
                 oldDesktops.push(desktop);
@@ -66,7 +75,7 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     } else {
         for (const activity of client.activities) {
             const desktop = new Desktop;
-            desktop.screen = screen;
+            desktop.screen = oldScreen;
             desktop.activity = activity;
             desktop.desktop = vdesktop;
             oldDesktops.push(desktop);
@@ -74,8 +83,8 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     }
     engine.updateClientDesktop(client, oldDesktops);
     // rebuild both screen layouts if the screen changed
-    if (screen != client.screen) {
-        rebuildLayout(screen);
+    if (oldScreen != client.screen) {
+        rebuildLayout(oldScreen);
     }
     rebuildLayout();
 }
