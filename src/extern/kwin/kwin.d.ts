@@ -70,6 +70,7 @@ declare namespace KWin {
         currentActivity: string;
         currentDesktop: number;
         desktops: number;
+        numScreens: number;
         tilingForScreen(desktop: number): KWin.TileManager;
         supportInformation(): string;
         clientList(): Array<AbstractClient>;

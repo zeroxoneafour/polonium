@@ -7,36 +7,40 @@ import { Borders, config, printDebug, doTileClient } from "./util";
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
 
-export function rebuildLayout(optionalScreen?: number) {
-    let desktop = new Desktop;
-    if (optionalScreen != undefined) {
-        desktop.screen = optionalScreen;
+export function rebuildLayout() {
+    let desktops = new Array<Desktop>;
+    for (let i = 0; i < workspace.numScreens; i += 1) {
+        let desktop = new Desktop;
+        desktop.screen = i;
+        desktops.push(desktop);
     }
-    let tileManager = workspace.tilingForScreen(desktop.screen);
-    if (tileManager == undefined) {
-        printDebug("No root tile found for desktop " + desktop, true);
-        return;
-    }
-    engine.buildLayout(tileManager.rootTile, desktop);
-    for (const client of engine.placeClients(desktop)) {
-        if (client[1] != null) {
-            client[0].wasTiled = true;
-            if (config.borders == Borders.NoBorderTiled) {
-                client[0].noBorder = true;
-            }
-            if (config.keepTiledBelow) {
-                client[0].keepBelow = true;
-            }
-        } else {
-            client[0].wasTiled = false;
-            if (config.borders == Borders.NoBorderTiled) {
-                client[0].noBorder = false;
-            }
-            if (config.keepTiledBelow) {
-                client[0].keepBelow = false;
-            }
+    for (const desktop of desktops) {
+        let tileManager = workspace.tilingForScreen(desktop.screen);
+        if (tileManager == undefined) {
+            printDebug("No root tile found for desktop " + desktop, true);
+            return;
         }
-        client[0].tile = client[1];
+        engine.buildLayout(tileManager.rootTile, desktop);
+        for (const client of engine.placeClients(desktop)) {
+            if (client[1] != null) {
+                client[0].wasTiled = true;
+                if (config.borders == Borders.NoBorderTiled) {
+                    client[0].noBorder = true;
+                }
+                if (config.keepTiledBelow) {
+                    client[0].keepBelow = true;
+                }
+            } else {
+                client[0].wasTiled = false;
+                if (config.borders == Borders.NoBorderTiled) {
+                    client[0].noBorder = false;
+                }
+                if (config.keepTiledBelow) {
+                    client[0].keepBelow = false;
+                }
+            }
+            client[0].tile = client[1];
+        }
     }
 }
 
@@ -61,7 +65,6 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     for (const activity of client.activities) client.oldActivities.push(activity);
     printDebug("Desktop, screen, or activity changed on " + client.resourceClass, false);
     let oldDesktops: Array<Desktop> = new Array;
-    printDebug("Activity = " + activities, false);
     if (vdesktop == -1) {
         for (let i = 0; i < workspace.desktops; i += 1) {
             for (const activity of client.activities) {
@@ -82,10 +85,6 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
         }
     }
     engine.updateClientDesktop(client, oldDesktops);
-    // rebuild both screen layouts if the screen changed
-    if (oldScreen != client.screen) {
-        rebuildLayout(oldScreen);
-    }
     rebuildLayout();
 }
 
