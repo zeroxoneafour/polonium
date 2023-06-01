@@ -91,8 +91,36 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
 // if tile is defined, only tiles on a single desktop
 export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.Tile): void {
     client.wasTiled = true;
+    // if a tile is specified, make sure to tile normally on other desktops where the tile doesnt exist
     if (tile != undefined) {
-        engine.putClientInTile(client, tile);
+        let currentDesktop = new Desktop;
+        let desktops: Array<Desktop> = new Array;
+        if (client.desktop == -1) {
+            for (let i = 0; i < workspace.desktops; i += 1) {
+                for (const activity of client.activities) {
+                    const desktop = new Desktop;
+                    desktop.screen = client.screen;
+                    desktop.activity = activity;
+                    desktop.desktop = i;
+                    desktops.push(desktop);
+                }
+            }
+        } else {
+            for (const activity of client.activities) {
+                const desktop = new Desktop;
+                desktop.screen = client.screen;
+                desktop.activity = activity;
+                desktop.desktop = client.desktop;
+                desktops.push(desktop);
+            }
+        }
+        for (const desktop of desktops) {
+            if (desktop.toString() == currentDesktop.toString()) {
+                engine.putClientInTile(client, tile);
+            } else {
+                engine.addClient(client, desktop);
+            }
+        }
     } else {
         engine.addClient(client);
     }
