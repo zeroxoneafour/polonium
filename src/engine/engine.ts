@@ -154,18 +154,44 @@ export class EngineManager {
         return true;
     }
     updateClientDesktop(client: KWin.AbstractClient, oldDesktops: Array<Desktop>): boolean {
-        for (const desktop of oldDesktops) {
-            printDebug("Removing " + client.resourceClass + " from desktop " + desktop, false);
-            if (!this.engines.has(desktop.toString())) {
-                if (!this.createNewEngine(desktop)) {
-                    return false;
+        let newDesktops = new Array<Desktop>;
+        if (client.desktop == -1) {
+            for (let i = 0; i < workspace.desktops; i += 1) {
+                for (const activity of client.activities) {
+                    const desktop = new Desktop;
+                    desktop.screen = client.screen;
+                    desktop.activity = activity;
+                    desktop.desktop = i;
+                    newDesktops.push(desktop);
                 }
             }
-            if (!this.engines.get(desktop.toString())!.removeClient(client)) {
+        } else {
+            for (const activity of client.activities) {
+                const desktop = new Desktop;
+                desktop.screen = client.screen;
+                desktop.activity = activity;
+                desktop.desktop = client.desktop;
+                newDesktops.push(desktop);
+            }
+        }
+        // have to do this because of js object equality
+        let newDesktopsStrings = newDesktops.map(x => x.toString());
+        let oldDesktopsStrings = oldDesktops.map(x => x.toString());
+        for (const desktop of oldDesktops) {
+            // do not retile on desktops that the window is already on
+            if (newDesktopsStrings.includes(desktop.toString())) continue;
+            if (!this.removeClient(client, desktop)) {
                 return false;
             }
         }
-        return this.addClient(client);
+        for (const desktop of newDesktops) {
+            // do not readd client to windows it is on
+            if (oldDesktopsStrings.includes(desktop.toString())) continue;
+            if (!this.addClient(client, desktop)) {
+                return false;
+            }
+        }
+        return true;
     }
     
     putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {

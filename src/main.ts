@@ -67,7 +67,7 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     let oldDesktops: Array<Desktop> = new Array;
     if (vdesktop == -1) {
         for (let i = 0; i < workspace.desktops; i += 1) {
-            for (const activity of client.activities) {
+            for (const activity of activities) {
                 const desktop = new Desktop;
                 desktop.screen = oldScreen;
                 desktop.activity = activity;
@@ -76,7 +76,7 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
             }
         }
     } else {
-        for (const activity of client.activities) {
+        for (const activity of activities) {
             const desktop = new Desktop;
             desktop.screen = oldScreen;
             desktop.activity = activity;
@@ -124,7 +124,7 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
     if (client.minimized) return;
     // only allow this function to handle movements when the client is visible
     let desktop = new Desktop;
-    if (client.screen != desktop.screen || !client.activities.includes(desktop.activity) || client.desktop != desktop.desktop) return;
+    if (client.screen != desktop.screen || !client.activities.includes(desktop.activity) || !(client.desktop == desktop.desktop || client.desktop == -1)) return;
     // if removed from tile
     if (client.wasTiled && client.tile == null) {
         printDebug(client.resourceClass + " was moved out of a tile", false);
