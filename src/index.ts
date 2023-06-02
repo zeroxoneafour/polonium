@@ -6,15 +6,13 @@ import { config } from "./util";
 
 workspace.clientAdded.connect(main.addClient);
 workspace.clientRemoved.connect(main.removeClient);
+
 workspace.currentDesktopChanged.connect(main.currentDesktopChange);
 workspace.currentActivityChanged.connect(main.currentDesktopChange);
+
 workspace.clientActivated.connect(main.clientActivated);
-
-if (config.untileMinimized) {
-  workspace.clientMinimized.connect(main.clientMinimized);
-  workspace.clientUnminimized.connect(main.clientUnminimized);
-}
-
+workspace.clientMinimized.connect(main.clientMinimized);
+workspace.clientUnminimized.connect(main.clientUnminimized);
 workspace.clientFullScreenSet.connect(main.clientFullScreenSet);
 
 registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);

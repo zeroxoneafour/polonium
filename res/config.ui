@@ -68,7 +68,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tile popup/placeholder windows or not&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Tile Popup Windows</string>
+         <string>Tile popup windows</string>
         </property>
        </widget>
       </item>
@@ -107,15 +107,12 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="QCheckBox" name="kcfg_UntileMinimized">
+       <widget class="QCheckBox" name="kcfg_InvertInsertion">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stops managing windows that are minimized&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Inverts insertion order&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Untile Minimized</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
+         <string>Invert insertion</string>
         </property>
        </widget>
       </item>
@@ -164,7 +161,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spams your user journal&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Debug Mode</string>
+         <string>Debug mode</string>
         </property>
        </widget>
       </item>

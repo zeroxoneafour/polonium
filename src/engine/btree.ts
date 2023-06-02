@@ -2,7 +2,7 @@
 
 import { BiMap } from "mnemonist";
 import copy from "fast-copy";
-import { printDebug } from "../util";
+import { printDebug, config } from "../util";
 import * as Engine from "./common";
 
 class TreeNode {
@@ -197,6 +197,7 @@ export class TilingEngine implements Engine.TilingEngine {
         // truly this is the peak of programming
         let stack: Array<TreeNode> = [this.rootNode];
         let stackNext: Array<TreeNode> = [];
+        let i = 0;
         stackloop: while (stack.length > 0) {
             for (const node of stack) {
                 if (node.children == null) {
@@ -216,7 +217,12 @@ export class TilingEngine implements Engine.TilingEngine {
                 }
             }
             stack = stackNext;
+            // invert insertion order every 2 iterations if option is enabled to put windows on right
+            if (config.invertInsertion && i % 2 == 0) {
+                stack.reverse();
+            }
             stackNext = [];
+            i += 1;
         }
         return true;
     }

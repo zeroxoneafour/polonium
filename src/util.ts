@@ -14,7 +14,7 @@ class Config {
     blacklist: Array<string> = readConfig("Blacklist", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
     tilePopups: boolean = readConfig("TilePopups", false);
     borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
-    untileMinimized: boolean = readConfig("UntileMinimized", true);
+    invertInsertion: boolean = readConfig("InvertInsertion", false);
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
     defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
 };
