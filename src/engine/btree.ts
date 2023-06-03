@@ -197,11 +197,15 @@ export class TilingEngine implements Engine.TilingEngine {
         // truly this is the peak of programming
         let stack: Array<TreeNode> = [this.rootNode];
         let stackNext: Array<TreeNode> = [];
+        const targetClient = workspace.previousActiveClient
         let i = 0;
         stackloop: while (stack.length > 0) {
             for (const node of stack) {
                 if (node.children == null) {
                     if (node.client != null) { // case for basically all non-root tiles
+                        if (config.insertAtActive && targetClient && node.client != targetClient) {
+                            continue;
+                        }
                         node.split();
                         node.children![0].client = node.client;
                         node.children![1].client = client;

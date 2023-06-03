@@ -8,6 +8,12 @@ export enum Borders {
     BorderAll,
 }
 
+// export enum BTreeInsertion {
+//     Left = 0,
+//     Right,
+//     Active,
+// }
+
 class Config {
     debug: boolean = readConfig("Debug", false);
     useWhitelist: boolean = readConfig("UseWhitelist", false);
@@ -15,6 +21,7 @@ class Config {
     tilePopups: boolean = readConfig("TilePopups", false);
     borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
     invertInsertion: boolean = readConfig("InvertInsertion", false);
+    insertAtActive: boolean = true;
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
     defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
 };
