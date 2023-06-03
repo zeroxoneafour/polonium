@@ -40,7 +40,7 @@ Options -
 * Blacklist (line input) - Windows to not tile, or if whitelist is selected, the only windows to tile
 * Tile popup windows (check box) - Whether to tile windows marked as popup windows
 * Tile borders (dropdown) - How to display borders on tiled, untiled, and selected windows
-* Untile minimized (check box) - Whether to untile windows that have been minimized
+* Invert insertion (check box) - Inverts how windows are inserted on certain engines (BTree)
 * Keep tiled below (check box) - Whether to keep tiled windows below other windows
 * Default engine (dropdown) - The default tiling engine you want to use on new desktops
 * Debug mode (check box) - Whether to spam your user journal with debug messages or not
