@@ -6,10 +6,8 @@ import * as Engine from "./common";
 
 class Container {
     client: KWin.AbstractClient;
-    size: number;
-    constructor(client: KWin.AbstractClient, size: number) {
+    constructor(client: KWin.AbstractClient) {
         this.client = client;
-        this.size = size;
     }
 }
 
@@ -34,7 +32,7 @@ export class TilingEngine implements Engine.TilingEngine {
                 // set the size if not the last one
                 if (i != mainArray.length - 1) {
                     previousTile.split(2);
-                    topTile.tiles[i].relativeGeometry.height = container.size;
+                    topTile.tiles[i].relativeGeometry.height = 1/mainArray.length;
                     this.nodeMap.set(container, topTile.tiles[i]);
                     previousTile = topTile.tiles[i+1];
                 } else {
@@ -55,7 +53,7 @@ export class TilingEngine implements Engine.TilingEngine {
                 // set the size if not the last one
                 if (i != this.left.length - 1) {
                     leftTile.split(2);
-                    topLeftTile.tiles[i].relativeGeometry.height = container.size;
+                    topLeftTile.tiles[i].relativeGeometry.height = 1/this.left.length;
                     this.nodeMap.set(container, topLeftTile.tiles[i]);
                     leftTile = topLeftTile.tiles[i+1];
                 } else {
@@ -67,7 +65,7 @@ export class TilingEngine implements Engine.TilingEngine {
                 // set the size if not the last one
                 if (i != this.right.length - 1) {
                     rightTile.split(2);
-                    topRightTile.tiles[i].relativeGeometry.height = container.size;
+                    topRightTile.tiles[i].relativeGeometry.height = 1/this.right.length;
                     this.nodeMap.set(container, topRightTile.tiles[i]);
                     rightTile = topRightTile.tiles[i+1];
                 } else {
@@ -79,39 +77,8 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     
     updateTiles(rootTile: KWin.RootTile): boolean {
-        if (this.left.length == 0 || this.right.length == 0) {
-            let mainArray: Array<Container>;
-            if (this.right.length == 0) {
-                mainArray = this.left;
-            } else {
-                mainArray = this.right;
-            }
-            for (const container of mainArray) {
-                const tile = this.nodeMap.get(container);
-                if (tile == undefined) {
-                    printDebug("No tile found for container", true);
-                    return false;
-                }
-                container.size = tile.relativeGeometry.height;
-            }
-        } else {
+        if (this.left.length != 0 && this.right.length != 0) {
             this.middleSplit = rootTile.tiles[0].relativeGeometry.width;
-            for (const container of this.left) {
-                const tile = this.nodeMap.get(container);
-                if (tile == undefined) {
-                    printDebug("No tile found for container", true);
-                    return false;
-                }
-                container.size = tile.relativeGeometry.height;
-            }
-            for (const container of this.right) {
-                const tile = this.nodeMap.get(container);
-                if (tile == undefined) {
-                    printDebug("No tile found for container", true);
-                    return false;
-                }
-                container.size = tile.relativeGeometry.height;
-            }
         }
         return true;
     }
@@ -139,14 +106,9 @@ export class TilingEngine implements Engine.TilingEngine {
     
     addClient(client: KWin.AbstractClient): boolean {
         if (this.left.length == 0) {
-            this.left.push(new Container(client, 1));
+            this.left.push(new Container(client));
         } else {
-            this.right.push(new Container(client, 0.5));
-            const containerSize = 1/this.right.length;
-            // reset all container sizes to equal-ish proportions
-            for (const container of this.right) {
-                container.size = containerSize;
-            }
+            this.right.push(new Container(client));
         }
         return true;
     }
@@ -158,16 +120,20 @@ export class TilingEngine implements Engine.TilingEngine {
             return false;
         }
         let array;
+        let otherArray;
+        let newContainer = new Container(client);
         if (this.right.includes(container)) {
             array = this.right;
+            otherArray = this.left;
         } else {
             array = this.left;
+            otherArray = this.right;
         }
-        array.push(new Container(client, 0.5));
-        let containerSize = 1/array.length;
-        // reset all container sizes to equal-ish proportions
-        for (const container of array) {
-            container.size = containerSize;
+        // if one of the arrays is empty, push to it instead
+        if (otherArray.length != 0) {
+            array.splice(array.indexOf(container), 0, newContainer);
+        } else {
+            otherArray.push(newContainer);
         }
         return true;
     }
@@ -198,12 +164,24 @@ export class TilingEngine implements Engine.TilingEngine {
         for (let i = 0; i < this.left.length; i += 1) {
             if (this.left[i].client == client) {
                 this.left.splice(i, 1);
+                // if no left, shift first on right to left
+                if (this.left.length == 0 && this.right.length != 0) {
+                    const container = this.right[0];
+                    this.left.push(container);
+                    this.right.splice(0, 1);
+                }
                 return true;
             }
         }
         for (let i = 0; i < this.right.length; i += 1) {
             if (this.right[i].client == client) {
                 this.right.splice(i, 1);
+                // if more than one left, move last one to right
+                if (this.right.length == 0 && this.left.length > 1) {
+                    const container = this.left[this.left.length - 1];
+                    this.right.push(container);
+                    this.left.splice(this.left.length - 1, 1);
+                }
                 return true;
             }
         }
