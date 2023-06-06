@@ -4,6 +4,8 @@ VERSION = 0.4.0
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
 
+.NOTPARALLEL: all
+
 all: build install clean
 
 build: res src
