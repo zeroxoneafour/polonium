@@ -7,7 +7,7 @@ import { Borders, config, printDebug, doTileClient } from "./util";
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
 
-export function rebuildLayout() {
+export function rebuildLayout(this: any) {
     let desktops = new Array<Desktop>;
     for (let i = 0; i < workspace.numScreens; i += 1) {
         let desktop = new Desktop;
@@ -21,25 +21,34 @@ export function rebuildLayout() {
             return;
         }
         engine.buildLayout(tileManager.rootTile, desktop);
-        for (const client of engine.placeClients(desktop)) {
-            if (client[1] != null) {
-                client[0].wasTiled = true;
+        for (const clientTile of engine.placeClients(desktop)) {
+            const client = clientTile[0];
+            const tile = clientTile[1];
+            if (tile != null) {
+                client.wasTiled = true;
                 if (config.borders == Borders.NoBorderTiled) {
-                    client[0].noBorder = true;
+                    client.noBorder = true;
                 }
                 if (config.keepTiledBelow) {
-                    client[0].keepBelow = true;
+                    client.keepBelow = true;
                 }
             } else {
-                client[0].wasTiled = false;
+                client.wasTiled = false;
                 if (config.borders == Borders.NoBorderTiled) {
-                    client[0].noBorder = false;
+                    client.noBorder = false;
                 }
                 if (config.keepTiledBelow) {
-                    client[0].keepBelow = false;
+                    client.keepBelow = false;
                 }
             }
-            client[0].tile = client[1];
+            client.tile = tile;
+            if (client.hasBeenTiled == undefined) {
+                client.desktopChanged.connect(clientDesktopChange.bind(this, client));
+                client.activitiesChanged.connect(clientDesktopChange);
+                client.screenChanged.connect(clientDesktopChange.bind(this, client));
+                client.frameGeometryChanged.connect(clientGeometryChange);
+                client.hasBeenTiled = true;
+            }
         }
     }
 }
@@ -90,7 +99,6 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
 
 // if tile is defined, only tiles on a single desktop
 export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.Tile): void {
-    client.wasTiled = true;
     // if a tile is specified, make sure to tile normally on other desktops where the tile doesnt exist
     if (tile != undefined) {
         let currentDesktop = new Desktop;
@@ -123,13 +131,6 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
         }
     } else {
         engine.addClient(client);
-    }
-    if (client.hasBeenTiled == undefined) {
-        client.desktopChanged.connect(clientDesktopChange.bind(this, client));
-        client.activitiesChanged.connect(clientDesktopChange);
-        client.screenChanged.connect(clientDesktopChange.bind(this, client));
-        client.frameGeometryChanged.connect(clientGeometryChange);
-        client.hasBeenTiled = true;
     }
     rebuildLayout();
 }

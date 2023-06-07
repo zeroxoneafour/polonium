@@ -50,7 +50,9 @@ Options -
 The engines are specific to desktops and are cycled in this order by pressing the Polonium: Cycle layouts keybind -
 1. BTree - Breadth-first binary tree engine, sort of balances windows
 2. Half - Put one main window on the left and several on the right. Can also be the other way around
-3. Floating - Basically turns off Polonium on that desktop
+3. Three Column - Put one main window in the center and some on the left and right
+4. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
+5. Floating - Basically turns off Polonium on that desktop
 
 The default engine setting determines which engine desktops will start with.
 

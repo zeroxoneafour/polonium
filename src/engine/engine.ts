@@ -5,10 +5,14 @@ import { config, printDebug } from "../util";
 import * as BTree from "./btree";
 import * as Half from "./half";
 import * as Floating from "./floating";
+import * as ThreeColumn from "./threecolumn";
+import * as Kwin from "./kwin";
 
 export enum EngineTypes {
     BTree = 0,
     Half,
+    ThreeColumn,
+    Kwin,
     Floating,
     // this enum member is used to loop the enum when iterating it
     _loop,
@@ -29,6 +33,10 @@ function engineForEnum(engine: EngineTypes): TilingEngine | null {
             return new BTree.TilingEngine;
         case EngineTypes.Half:
             return new Half.TilingEngine;
+        case EngineTypes.ThreeColumn:
+            return new ThreeColumn.TilingEngine;
+        case EngineTypes.Kwin:
+            return new Kwin.TilingEngine;
         case EngineTypes.Floating:
             return new Floating.TilingEngine;
         default:

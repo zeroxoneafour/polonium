@@ -41,6 +41,7 @@ declare namespace KWin {
         windows: Array<AbstractClient>;
         absoluteGeometry: Qt.QRect;
         relativeGeometry: Qt.QRect;
+        layoutDirection: LayoutDirection;
         oldRelativeGeometry: Qt.QRect | undefined;
         // null for root tile
         parent: Tile | null;
