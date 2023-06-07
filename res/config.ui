@@ -140,22 +140,12 @@
         </property>
         <item>
          <property name="text">
-          <string>Binary Tree</string>
+          <string>BTree</string>
          </property>
         </item>
         <item>
          <property name="text">
           <string>Half</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Three Column</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Autotile</string>
          </property>
         </item>
         <item>
