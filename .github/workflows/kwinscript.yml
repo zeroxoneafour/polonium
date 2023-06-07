@@ -1,0 +1,30 @@
+name: Make polonium.kwinscript
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get install -y kpackagetool5 npm node-typescript
+
+    - name: Build with make
+      run: make build
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        # Artifact name
+        name: polonium.kwinscript
+        # A file, directory or wildcard pattern that describes what to upload
+        path: ./polonium.kwinscript
+        # The desired behavior if no files are found using the provided path.
