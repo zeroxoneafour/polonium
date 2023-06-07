@@ -2,7 +2,7 @@
 
 import { BiMap } from "mnemonist";
 import copy from "fast-copy";
-import { printDebug, config } from "../util";
+import { printDebug, config, BTreeInsertionPoint } from "../util";
 import * as Engine from "./common";
 
 class TreeNode {
@@ -203,7 +203,7 @@ export class TilingEngine implements Engine.TilingEngine {
             for (const node of stack) {
                 if (node.children == null) {
                     if (node.client != null) { // case for basically all non-root tiles
-                        if (config.insertAtActive && targetClient && node.client != targetClient) {
+                        if (config.btreeInsertionPoint == BTreeInsertionPoint.Active && targetClient && node.client != targetClient) {
                             continue;
                         }
                         node.split();
@@ -222,7 +222,7 @@ export class TilingEngine implements Engine.TilingEngine {
             }
             stack = stackNext;
             // invert insertion order every 2 iterations if option is enabled to put windows on right
-            if (config.invertInsertion && i % 2 == 0) {
+            if (config.btreeInsertionPoint == BTreeInsertionPoint.Right && i % 2 == 0) {
                 stack.reverse();
             }
             stackNext = [];
