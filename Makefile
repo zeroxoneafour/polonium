@@ -6,7 +6,7 @@ PKGDIR = pkg
 
 .NOTPARALLEL: all
 
-all: build install clean
+all: build install cleanall
 
 build: res src
 	zip -r $(PKGFILE) $(PKGDIR)

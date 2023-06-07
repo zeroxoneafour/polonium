@@ -3,7 +3,7 @@
 ## Installation
 
 Do one of the following -
-* Go to [GitHub](https://github.com/zeroxoneafour/polonium) and download the latest `polonium.kwinscript`, then install it in KWin Scripts in the settings menu
+* Go to [GitHub Actions](https://github.com/zeroxoneafour/polonium/actions/workflows/kwinscript.yml) and download the artifact from the latest build, then install it in KWin Scripts in the settings menu. This will give you the master build of Polonium
 * Go to the [KWin Store](https://store.kde.org/p/2042756) and download the latest `polonium.kwinscript`, then install it in KWin Scripts
 * Go to KWin Scripts settings panel and Get New Scripts, then search for and select Polonium
 
