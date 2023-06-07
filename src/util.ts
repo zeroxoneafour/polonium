@@ -8,13 +8,19 @@ export enum Borders {
     BorderAll,
 }
 
+export enum BTreeInsertionPoint {
+    Left = 0,
+    Right,
+    Active,
+}
+
 class Config {
     debug: boolean = readConfig("Debug", false);
     useWhitelist: boolean = readConfig("UseWhitelist", false);
     blacklist: Array<string> = readConfig("Blacklist", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
     tilePopups: boolean = readConfig("TilePopups", false);
     borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
-    invertInsertion: boolean = readConfig("InvertInsertion", false);
+    btreeInsertionPoint: BTreeInsertionPoint = readConfig("BTreeInsertionPoint", BTreeInsertionPoint.Left);
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
     defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
 };

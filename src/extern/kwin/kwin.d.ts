@@ -75,8 +75,9 @@ declare namespace KWin {
         tilingForScreen(desktop: number): KWin.TileManager;
         supportInformation(): string;
         clientList(): Array<AbstractClient>;
-        // doesnt actually exist in api, i made it up
-        lastActiveClient: AbstractClient | null | undefined;
+        // doesnt actually exist in api but convenient place to keep state
+        tmpLastActiveClient: AbstractClient | null | undefined;
+        previousActiveClient: AbstractClient | null | undefined;
         // signals
         clientAdded: Signal<(client: AbstractClient) => void>;
         clientRemoved: Signal<(client: AbstractClient) => void>;

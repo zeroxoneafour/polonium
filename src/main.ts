@@ -212,12 +212,13 @@ export function clientUnminimized(client: KWin.AbstractClient): void {
 
 // for borders
 export function clientActivated(client: KWin.AbstractClient) {
-    if (workspace.lastActiveClient != null) {
+    if (workspace.tmpLastActiveClient != null) {
         if (config.borders == Borders.BorderSelected) {
-            workspace.lastActiveClient.noBorder = true;
+            workspace.tmpLastActiveClient.noBorder = true;
         }
+        workspace.previousActiveClient = workspace.tmpLastActiveClient;
     }
-    workspace.lastActiveClient = client;
+    workspace.tmpLastActiveClient = client;
     if (config.borders == Borders.BorderSelected && client.tile != null) {
         client.noBorder = false;
     }
