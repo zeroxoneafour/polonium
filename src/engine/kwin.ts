@@ -94,9 +94,7 @@ export class TilingEngine implements Engine.TilingEngine {
                     printDebug("Could not find tile", true);
                     return false;
                 }
-                for (let i = 0; i < realTile.tiles.length; i += 1) {
-                    let tile = realTile.tiles[i];
-                    print(i);
+                for (const tile of realTile.tiles) {
                     print(tile.relativeGeometry);
                     const newTile = new Tile(fakeTile, tile.relativeGeometry, tile.layoutDirection);
                     this.tileMap.set(newTile, tile);
