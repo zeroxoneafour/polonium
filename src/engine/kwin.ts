@@ -1,5 +1,4 @@
 // normal kwin tiling
-import copy from "fast-copy";
 import { BiMap } from "mnemonist";
 import { printDebug } from "../util";
 import * as Engine from "./common";
@@ -8,7 +7,7 @@ import * as Engine from "./common";
 class Tile {
     tiles: Array<Tile> = new Array;
     windows: Array<KWin.AbstractClient> = new Array;
-    // null for root tile
+    // change this to be any because my qt.qrect definition doesnt cover everything
     relativeGeometry: Qt.QRect | null;
     parent: Tile | null;
     padding: number = 4;
@@ -22,7 +21,12 @@ class Tile {
             return;
         }
         this.parent = parent;
-        this.relativeGeometry = relativeGeometry;
+        this.relativeGeometry = {
+            x: relativeGeometry.x,
+            y: relativeGeometry.y,
+            width: relativeGeometry.width,
+            height: relativeGeometry.height,
+        };
         parent.tiles.push(this);
     }
 }
@@ -52,17 +56,23 @@ export class TilingEngine implements Engine.TilingEngine {
                 }
                 let splitTile = realTile;
                 for (let i = 1; i < fakeTile.tiles.length; i += 1) {
+                    print("split", i);
                     splitTile.split(fakeTile.layoutDirection);
                     splitTile = realTile.tiles[i];
                 }
                 for (let i = 0; i < fakeTile.tiles.length; i += 1) {
-                    this.tileMap.set(fakeTile.tiles[i], realTile.tiles[i]);
                     // have to set all properties individually for reasons
-                    realTile.tiles[i].relativeGeometry.x = fakeTile.tiles[i].relativeGeometry!.x;
-                    realTile.tiles[i].relativeGeometry.y = fakeTile.tiles[i].relativeGeometry!.y;
-                    realTile.tiles[i].relativeGeometry.width = fakeTile.tiles[i].relativeGeometry!.width;
-                    realTile.tiles[i].relativeGeometry.height = fakeTile.tiles[i].relativeGeometry!.height;
+                    this.tileMap.set(fakeTile.tiles[i], realTile.tiles[i]);
                     stackNext.push(fakeTile.tiles[i]);
+                }
+                let geometry = fakeTile.relativeGeometry;
+                if (geometry != null) {
+                    print(geometry.x);
+                    print(realTile.relativeGeometry.x);
+                    realTile.relativeGeometry.x = geometry.x;
+                    realTile.relativeGeometry.y = geometry.y;
+                    realTile.relativeGeometry.width = geometry.width;
+                    realTile.relativeGeometry.height = geometry.height;
                 }
             }
             stack = stackNext;
@@ -77,15 +87,18 @@ export class TilingEngine implements Engine.TilingEngine {
         this.tileMap.set(this.fakeRootTile, rootTile);
         let stack: Array<KWin.Tile> = [rootTile];
         let stackNext = new Array<KWin.Tile>;
-        while (stack.length != 0) {
+        while (stack.length > 0) {
             for (const realTile of stack) {
                 const fakeTile = this.tileMap.inverse.get(realTile);
                 if (fakeTile == undefined) {
                     printDebug("Could not find tile", true);
                     return false;
                 }
-                for (const tile of realTile.tiles) {
-                    const newTile = new Tile(fakeTile, copy(tile.relativeGeometry), tile.layoutDirection);
+                for (let i = 0; i < realTile.tiles.length; i += 1) {
+                    let tile = realTile.tiles[i];
+                    print(i);
+                    print(tile.relativeGeometry);
+                    const newTile = new Tile(fakeTile, tile.relativeGeometry, tile.layoutDirection);
                     this.tileMap.set(newTile, tile);
                     stackNext.push(tile);
                 }
@@ -166,6 +179,7 @@ export class TilingEngine implements Engine.TilingEngine {
     removeClient(client: KWin.AbstractClient): boolean {
         if (this.untiledClients.includes(client)) {
             this.untiledClients.splice(this.untiledClients.indexOf(client), 1);
+            return true;
         }
         let stack: Array<Tile> = [this.fakeRootTile];
         let stackNext = new Array<Tile>;
@@ -173,6 +187,7 @@ export class TilingEngine implements Engine.TilingEngine {
             for (const fakeTile of stack) {
                 if (fakeTile.windows.includes(client)) {
                     fakeTile.windows.splice(fakeTile.windows.indexOf(client), 1);
+                    return true;
                 }
                 for (const tile of fakeTile.tiles) {
                     stackNext.push(tile);
@@ -181,6 +196,7 @@ export class TilingEngine implements Engine.TilingEngine {
             stack = stackNext;
             stackNext = [];
         }
+        // only reach here if client is not found
         return true;
     }
 }

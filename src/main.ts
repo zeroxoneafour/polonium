@@ -7,7 +7,10 @@ import { Borders, config, printDebug, doTileClient } from "./util";
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
 
+// boolean to stop geometrychange from interfering
+let buildingLayout: boolean = false;
 export function rebuildLayout(this: any) {
+    buildingLayout = true;
     let desktops = new Array<Desktop>;
     for (let i = 0; i < workspace.numScreens; i += 1) {
         let desktop = new Desktop;
@@ -24,6 +27,7 @@ export function rebuildLayout(this: any) {
         for (const clientTile of engine.placeClients(desktop)) {
             const client = clientTile[0];
             const tile = clientTile[1];
+            client.tile = tile;
             if (tile != null) {
                 client.wasTiled = true;
                 if (config.borders == Borders.NoBorderTiled) {
@@ -41,7 +45,6 @@ export function rebuildLayout(this: any) {
                     client.keepBelow = false;
                 }
             }
-            client.tile = tile;
             if (client.hasBeenTiled == undefined) {
                 client.desktopChanged.connect(clientDesktopChange.bind(this, client));
                 client.activitiesChanged.connect(clientDesktopChange);
@@ -51,6 +54,7 @@ export function rebuildLayout(this: any) {
             }
         }
     }
+    buildingLayout = false;
 }
 
 export function currentDesktopChange(): void {
@@ -150,7 +154,7 @@ export function untileClient(this: any, client: KWin.AbstractClient): void {
 
 export function clientGeometryChange(this: any, client: KWin.AbstractClient, _oldgeometry: Qt.QRect): void {
     // dont interfere with minimizing
-    if (client.minimized) return;
+    if (client.minimized || buildingLayout) return;
     // only allow this function to handle movements when the client is visible
     let desktop = new Desktop;
     if (client.screen != desktop.screen || !client.activities.includes(desktop.activity) || !(client.desktop == desktop.desktop || client.desktop == -1)) return;
