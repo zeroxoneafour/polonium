@@ -2,7 +2,6 @@
 
 import * as main from "./main";
 import * as shortcuts from "./shortcuts";
-import { config } from "./util";
 
 workspace.clientAdded.connect(main.addClient);
 workspace.clientRemoved.connect(main.removeClient);

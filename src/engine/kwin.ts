@@ -109,22 +109,10 @@ export class TilingEngine implements Engine.TilingEngine {
     
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile | null]> {
         let ret = new Array<[KWin.AbstractClient, KWin.Tile | null]>;
-        let stack: Array<Tile> = [this.fakeRootTile];
-        let stackNext = new Array<Tile>;
-        while (stack.length != 0) {
-            for (const fakeTile of stack) {
-                if (!this.tileMap.has(fakeTile)) {
-                    continue;
-                }
-                for (const client of fakeTile.windows) {
-                    ret.push([client, this.tileMap.get(fakeTile)!]);
-                }
-                for (const tile of fakeTile.tiles) {
-                    stackNext.push(tile);
-                }
+        for (const fakeTile of this.tileMap.keys()) {
+            for (const client of fakeTile.windows) {
+                ret.push([client, this.tileMap.get(fakeTile)!]);
             }
-            stack = stackNext;
-            stackNext = [];
         }
         for (const client of this.untiledClients) {
             ret.push([client, null]);
@@ -179,20 +167,11 @@ export class TilingEngine implements Engine.TilingEngine {
             this.untiledClients.splice(this.untiledClients.indexOf(client), 1);
             return true;
         }
-        let stack: Array<Tile> = [this.fakeRootTile];
-        let stackNext = new Array<Tile>;
-        while (stack.length != 0) {
-            for (const fakeTile of stack) {
-                if (fakeTile.windows.includes(client)) {
-                    fakeTile.windows.splice(fakeTile.windows.indexOf(client), 1);
-                    return true;
-                }
-                for (const tile of fakeTile.tiles) {
-                    stackNext.push(tile);
-                }
+        for (const fakeTile of this.tileMap.keys()) {
+            if (fakeTile.windows.includes(client)) {
+                fakeTile.windows.splice(fakeTile.windows.indexOf(client), 1);
+                return true;
             }
-            stack = stackNext;
-            stackNext = [];
         }
         // only reach here if client is not found
         return true;

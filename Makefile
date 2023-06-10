@@ -6,7 +6,7 @@ PKGDIR = pkg
 
 .NOTPARALLEL: all
 
-all: build install cleanall
+all: build install cleanall start
 
 build: res src
 	zip -r $(PKGFILE) $(PKGDIR)
@@ -26,11 +26,18 @@ cleanpkg: $(PKGFILE)
 
 cleanall: clean cleanpkg
 
+start: stop
+	dbus-send --session --dest=org.kde.KWin /Scripting org.kde.kwin.Scripting.loadScript string:'' string:'$(NAME)'
+
+stop:
+	dbus-send --session --dest=org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript string:'$(NAME)'
+
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/
 	cp -f res/main.xml $(PKGDIR)/contents/config/
 	cp -f res/config.ui $(PKGDIR)/contents/ui/
 	sed -i "s/%VERSION%/$(VERSION)/" $(PKGDIR)/metadata.json
+	sed -i "s/%NAME%/$(NAME)/" $(PKGDIR)/metadata.json
 
 src: $(PKGDIR)
 	npm install

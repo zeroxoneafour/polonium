@@ -8,7 +8,7 @@
         ],
         "Description": "Autotile using KWin 5.27 features",
         "Icon": "preferences-system-windows-effect-presentwindows",
-        "Id": "polonium",
+        "Id": "%NAME%",
         "License": "MIT",
         "Name": "Polonium",
         "ServiceTypes": [

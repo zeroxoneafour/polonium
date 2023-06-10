@@ -27,7 +27,6 @@ export function rebuildLayout(this: any) {
         for (const clientTile of engine.placeClients(desktop)) {
             const client = clientTile[0];
             const tile = clientTile[1];
-            client.tile = tile;
             if (tile != null) {
                 client.wasTiled = true;
                 if (config.borders == Borders.NoBorderTiled) {
@@ -36,6 +35,7 @@ export function rebuildLayout(this: any) {
                 if (config.keepTiledBelow) {
                     client.keepBelow = true;
                 }
+                client.tile = tile;
             } else {
                 client.wasTiled = false;
                 if (config.borders == Borders.NoBorderTiled) {
@@ -44,6 +44,7 @@ export function rebuildLayout(this: any) {
                 if (config.keepTiledBelow) {
                     client.keepBelow = false;
                 }
+                client.tile = null;
             }
             if (client.hasBeenTiled == undefined) {
                 client.desktopChanged.connect(clientDesktopChange.bind(this, client));
