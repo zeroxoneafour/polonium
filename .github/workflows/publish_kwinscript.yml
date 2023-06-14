@@ -1,0 +1,33 @@
+name: Publish polonium.kwinscript
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get install -y kpackagetool5 npm node-typescript
+
+    - name: Build with make
+      run: |
+        make build
+        sha256sum polonium.kwinscript > polonium.kwinscript.sha256sum
+
+    - name: Create release
+      run: |
+        gh release delete nightly --yes || true
+        gh release create nightly \
+          --prerelease \
+          --title "Development build" \
+          --notes "Get the latest version with all the new bugs and features." \
+          polonium.kwinscript*
