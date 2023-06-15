@@ -145,7 +145,8 @@
    <item row="6" column="1">
     <widget class="QLineEdit" name="kcfg_FilterClientCaption">
      <property name="toolTip">
-      <string>Do not tile windows with these titles.</string>
+      <string>Do not tile windows with these titles.
+Comma separated list of window titles.</string>
      </property>
      <property name="text">
       <string/>
@@ -316,7 +317,8 @@
      <item>
       <widget class="QLineEdit" name="kcfg_FilterProcessName">
        <property name="toolTip">
-        <string>Do not tile windows from these processes.</string>
+        <string>Do not tile windows from these processes.
+Comma separated list of process names.</string>
        </property>
        <property name="text">
         <string>krunner, yakuake, kded, polkit</string>
