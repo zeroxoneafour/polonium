@@ -1,3 +1,4 @@
+*.kwinscript*
 pkg/
 *.kate-swp
 src/**/*.js
