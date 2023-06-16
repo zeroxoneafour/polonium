@@ -17,11 +17,22 @@ export enum EngineTypes {
 }
 
 export class Desktop {
-    screen: number = workspace.activeScreen;
-    activity: string = workspace.currentActivity;
-    desktop: number = workspace.currentDesktop;
+    screen: number;
+    activity: string;
+    desktop: number;
     toString(): string {
         return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
+    }
+    constructor(screen?: number, activity?: string, desktop?: number) {
+        if (screen == undefined || activity == undefined || desktop == undefined) {
+            this.screen = workspace.activeScreen;
+            this.activity = workspace.currentActivity;
+            this.desktop = workspace.currentDesktop;
+        } else {
+            this.screen = screen;
+            this.activity = activity;
+            this.desktop = desktop;
+        }
     }
 }
 
@@ -125,19 +136,13 @@ export class EngineManager {
             if (client.desktop == -1) {
                 for (let i = 0; i < workspace.desktops; i += 1) {
                     for (const activity of client.activities) {
-                        const desktop = new Desktop;
-                        desktop.screen = client.screen;
-                        desktop.activity = activity;
-                        desktop.desktop = i;
+                        const desktop = new Desktop(client.screen, activity, i);
                         desktops.push(desktop);
                     }
                 }
             } else {
                 for (const activity of client.activities) {
-                    const desktop = new Desktop;
-                    desktop.screen = client.screen;
-                    desktop.activity = activity;
-                    desktop.desktop = client.desktop;
+                    const desktop = new Desktop(client.screen, activity, client.desktop);
                     desktops.push(desktop);
                 }
             }
@@ -162,19 +167,13 @@ export class EngineManager {
         if (client.desktop == -1) {
             for (let i = 0; i < workspace.desktops; i += 1) {
                 for (const activity of client.activities) {
-                    const desktop = new Desktop;
-                    desktop.screen = client.screen;
-                    desktop.activity = activity;
-                    desktop.desktop = i;
+                    const desktop = new Desktop(client.screen, activity, i);
                     newDesktops.push(desktop);
                 }
             }
         } else {
             for (const activity of client.activities) {
-                const desktop = new Desktop;
-                desktop.screen = client.screen;
-                desktop.activity = activity;
-                desktop.desktop = client.desktop;
+                const desktop = new Desktop(client.screen, activity, client.desktop);
                 newDesktops.push(desktop);
             }
         }
@@ -234,19 +233,13 @@ export class EngineManager {
             if (client.desktop == -1) {
                 for (let i = 0; i < workspace.desktops; i += 1) {
                     for (const activity of client.activities) {
-                        const desktop = new Desktop;
-                        desktop.screen = client.screen;
-                        desktop.activity = activity;
-                        desktop.desktop = i;
+                        const desktop = new Desktop(client.screen, activity, i);
                         desktops.push(desktop);
                     }
                 }
             } else {
                 for (const activity of client.activities) {
-                    const desktop = new Desktop;
-                    desktop.screen = client.screen;
-                    desktop.activity = activity;
-                    desktop.desktop = client.desktop;
+                    const desktop = new Desktop(client.screen, activity, client.desktop);
                     desktops.push(desktop);
                 }
             }

@@ -82,19 +82,13 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
     if (vdesktop == -1) {
         for (let i = 0; i < workspace.desktops; i += 1) {
             for (const activity of activities) {
-                const desktop = new Desktop;
-                desktop.screen = oldScreen;
-                desktop.activity = activity;
-                desktop.desktop = i;
+                const desktop = new Desktop(oldScreen, activity, i);
                 oldDesktops.push(desktop);
             }
         }
     } else {
         for (const activity of activities) {
-            const desktop = new Desktop;
-            desktop.screen = oldScreen;
-            desktop.activity = activity;
-            desktop.desktop = vdesktop;
+            const desktop = new Desktop(oldScreen, activity, vdesktop);
             oldDesktops.push(desktop);
         }
     }
@@ -111,19 +105,13 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
         if (client.desktop == -1) {
             for (let i = 0; i < workspace.desktops; i += 1) {
                 for (const activity of client.activities) {
-                    const desktop = new Desktop;
-                    desktop.screen = client.screen;
-                    desktop.activity = activity;
-                    desktop.desktop = i;
+                    const desktop = new Desktop(client.screen, activity, i);
                     desktops.push(desktop);
                 }
             }
         } else {
             for (const activity of client.activities) {
-                const desktop = new Desktop;
-                desktop.screen = client.screen;
-                desktop.activity = activity;
-                desktop.desktop = client.desktop;
+                const desktop = new Desktop(client.screen, activity, client.desktop);
                 desktops.push(desktop);
             }
         }
@@ -156,6 +144,11 @@ export function untileClient(this: any, client: KWin.AbstractClient): void {
 export function clientGeometryChange(this: any, client: KWin.AbstractClient, _oldgeometry: Qt.QRect): void {
     // dont interfere with minimizing
     if (client.minimized || buildingLayout) return;
+    // because kwin doesnt have a separate handler for screen changing, add it here
+    if (client.oldScreen != client.screen) {
+        clientDesktopChange(client);
+        return;
+    }
     // only allow this function to handle movements when the client is visible
     let desktop = new Desktop;
     if (client.screen != desktop.screen || !client.activities.includes(desktop.activity) || !(client.desktop == desktop.desktop || client.desktop == -1)) return;

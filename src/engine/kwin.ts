@@ -56,7 +56,6 @@ export class TilingEngine implements Engine.TilingEngine {
                 }
                 let splitTile = realTile;
                 for (let i = 1; i < fakeTile.tiles.length; i += 1) {
-                    print("split", i);
                     splitTile.split(fakeTile.layoutDirection);
                     splitTile = realTile.tiles[i];
                 }
@@ -67,8 +66,6 @@ export class TilingEngine implements Engine.TilingEngine {
                 }
                 let geometry = fakeTile.relativeGeometry;
                 if (geometry != null) {
-                    print(geometry.x);
-                    print(realTile.relativeGeometry.x);
                     realTile.relativeGeometry.x = geometry.x;
                     realTile.relativeGeometry.y = geometry.y;
                     realTile.relativeGeometry.width = geometry.width;
@@ -95,7 +92,6 @@ export class TilingEngine implements Engine.TilingEngine {
                     return false;
                 }
                 for (const tile of realTile.tiles) {
-                    print(tile.relativeGeometry);
                     const newTile = new Tile(fakeTile, tile.relativeGeometry, tile.layoutDirection);
                     this.tileMap.set(newTile, tile);
                     stackNext.push(tile);
