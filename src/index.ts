@@ -16,6 +16,7 @@ workspace.clientFullScreenSet.connect(main.clientFullScreenSet);
 
 registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);
 registerShortcut("PoloniumCycleLayouts", "Polonium: Cycle layouts", "Meta+\\", shortcuts.cycleEngine);
+registerShortcut("PoloniumRebuildLayout", "Polonium: Rebuild Layout", "Meta+Ctrl+Space", main.rebuildLayout);
 
 registerShortcut("PoloniumFocusAbove", "Polonium: Focus Above", "Meta+K", shortcuts.focus.bind(this, shortcuts.Direction.Above));
 registerShortcut("PoloniumSwapAbove", "Polonium: Swap Above", "Ctrl+Meta+K", shortcuts.swap.bind(this, shortcuts.Direction.Above));
