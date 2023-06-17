@@ -83,6 +83,23 @@ export class TilingEngine implements Engine.TilingEngine {
         return true;
     }
     
+    resizeTile(_tile: KWin.Tile, direction: Engine.Direction, amount: number): boolean {
+        // only resize left/right
+        if (direction.primary) return false;
+        if (direction.right) {
+            this.middleSplit += amount;
+        } else {
+            this.middleSplit -= amount;
+        }
+        if (this.middleSplit > 0.89) {
+            this.middleSplit -= amount;
+        } else if (this.middleSplit < 0.11) {
+            this.middleSplit += amount;
+        }
+        print(this.middleSplit);
+        return true;
+    }
+    
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile]> {
         let ret: Array<[KWin.AbstractClient, KWin.Tile]> = new Array;
         for (const container of this.left) {

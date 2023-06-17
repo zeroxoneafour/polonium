@@ -1,7 +1,8 @@
 import copy from "fast-copy";
+import * as Engine from "./engine/common";
 import { Desktop } from "./engine/engine";
 import { engine, rebuildLayout, untileClient, tileClient } from "./main";
-import { printDebug } from "./util";
+import { printDebug, config } from "./util";
 
 export enum Direction {
     Above,
@@ -161,5 +162,22 @@ export function cycleEngine() {
     for (const client of clients) {
         engine.addClient(client, desktop);
     }
+    rebuildLayout();
+}
+
+function directionToEngineDirection(direction: Direction): Engine.Direction {
+    switch (direction) {
+        case Direction.Above: return new Engine.Direction(true, true, true);
+        case Direction.Below: return new Engine.Direction(false, true, true);
+        case Direction.Left: return new Engine.Direction(true, false, false);
+        case Direction.Right: return new Engine.Direction(true, true, false);
+    }
+}
+
+export function resizeTile(direction: Direction): void {
+    if (workspace.activeClient == null) return;
+    const activeTile = workspace.activeClient.tile;
+    if (activeTile == null) return;
+    engine.resizeTile(activeTile, directionToEngineDirection(direction), config.resizeAmount);
     rebuildLayout();
 }

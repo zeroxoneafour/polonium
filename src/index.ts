@@ -33,5 +33,10 @@ registerShortcut("PoloniumFocusRight", "Polonium: Focus Right", "Meta+L", shortc
 registerShortcut("PoloniumSwapRight", "Polonium: Swap Right", "Ctrl+Meta+L", shortcuts.swap.bind(this, shortcuts.Direction.Right));
 registerShortcut("PoloniumInsertRight", "Polonium: Insert Right", "Meta+Shift+L", shortcuts.insert.bind(this, shortcuts.Direction.Right));
 
+registerShortcut("PoloniumResizeTileUp", "Polonium: Resize Tile Up", "Meta+Shift+Up", shortcuts.resizeTile.bind(this, shortcuts.Direction.Above));
+registerShortcut("PoloniumResizeTileDown", "Polonium: Resize Tile Down", "Meta+Shift+Down", shortcuts.resizeTile.bind(this, shortcuts.Direction.Below));
+registerShortcut("PoloniumResizeTileLeft", "Polonium: Resize Tile Left", "Meta+Shift+Left", shortcuts.resizeTile.bind(this, shortcuts.Direction.Left));
+registerShortcut("PoloniumResizeTileRight", "Polonium: Resize Tile Right", "Meta+Shift+Right", shortcuts.resizeTile.bind(this, shortcuts.Direction.Right));
+
 // build first time
 main.rebuildLayout();

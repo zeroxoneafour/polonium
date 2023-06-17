@@ -166,6 +166,55 @@ export class TilingEngine implements Engine.TilingEngine {
         return true;
     }
     
+    resizeTile(tile: KWin.Tile, direction: Engine.Direction, amount: number): boolean {
+        const node = this.nodeMap.inverse.get(tile);
+        if (node == undefined) {
+            printDebug("Node not found", true);
+            return false;
+        }
+        let parent: TreeNode | null = node.parent;
+        if (parent == null || tile.parent == null) {
+            printDebug("Parent not found", true);
+            return false;
+        }
+        // resize up/down
+        if (direction.primary) {
+            // if horizontal layout, find the next parent up (to get a vertical layout)
+            if (tile.parent.layoutDirection == 1) {
+                parent = parent.parent;
+            }
+        } else { // resize side to side
+            print("e");
+            // if vertical layout, find the next parent up (for a horizontal layout)
+            if (tile.parent.layoutDirection == 2) {
+                print("f");
+                parent = parent.parent;
+            }
+            print("g");
+        }
+        print("c");
+        if (parent == null) {
+            printDebug("Parent not found", true);
+            return false;
+        }
+        print(parent.childRatio);
+        // -= and += deduced from trial and error
+        if (direction.primary) {
+            if (direction.above) {
+                parent.childRatio -= amount;
+            } else {
+                parent.childRatio += amount;
+            }
+        } else {
+            if (direction.right) {
+                parent.childRatio += amount;
+            } else {
+                parent.childRatio -= amount;
+            }
+        }
+        return true;
+    }
+    
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile]> {
         let ret = new Array<[KWin.AbstractClient, KWin.Tile]>;
         // i love copy and paste this is why i develop software

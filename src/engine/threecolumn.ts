@@ -115,6 +115,41 @@ export class TilingEngine implements Engine.TilingEngine {
         }
         return true;
     }
+    
+    resizeTile(tile: KWin.Tile, direction: Engine.Direction, amount: number): boolean {
+        // only resize left/right
+        if (direction.primary) return false;
+        const container = this.nodeMap.inverse.get(tile);
+        if (container == null) return false;
+        // left
+        if (this.columns[0].includes(container)) {
+            if (direction.right) {
+                this.leftSize += amount;
+            } else {
+                this.leftSize -= amount;
+            }
+        } else if (this.columns[1].includes(container)) {
+            if (direction.right) {
+                this.rightSize -= amount;
+            } else {
+                this.leftSize -= amount;
+            }
+        } else if (this.columns[2].includes(container)) {
+            if (direction.right) {
+                this.rightSize -= amount;
+            } else {
+                this.rightSize += amount;
+            }
+        }
+        if ((this.rightSize + this.leftSize) > 0.9) {
+            if (this.rightSize > this.leftSize) {
+                this.rightSize -= amount;
+            } else {
+                this.leftSize -= amount;
+            }
+        }
+        return true;
+    }
 
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile]> {
         let ret: Array<[KWin.AbstractClient, KWin.Tile]> = new Array;

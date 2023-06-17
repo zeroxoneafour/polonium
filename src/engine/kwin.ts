@@ -103,6 +103,11 @@ export class TilingEngine implements Engine.TilingEngine {
         return true;
     }
     
+    // may add in the future
+    resizeTile(_tile: KWin.Tile, _direction: Engine.Direction, _amount: number): boolean {
+        return true;
+    }
+    
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile | null]> {
         let ret = new Array<[KWin.AbstractClient, KWin.Tile | null]>;
         for (const fakeTile of this.tileMap.keys()) {

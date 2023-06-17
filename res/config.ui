@@ -14,116 +14,7 @@
    <string>Polonium</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Filter processes</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QLabel" name="label_6">
-     <property name="font">
-      <font>
-       <pointsize>11</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Tiling options</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="2">
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>10</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_8">
-     <property name="text">
-      <string>Filter window titles</string>
-     </property>
-    </widget>
-   </item>
-   <item row="22" column="0">
-    <widget class="QLabel" name="label_7">
-     <property name="text">
-      <string>BTree Insertion Point</string>
-     </property>
-    </widget>
-   </item>
-   <item row="16" column="0" colspan="2">
-    <widget class="QCheckBox" name="kcfg_MaximizeSingle">
-     <property name="text">
-      <string>Maximize single windows</string>
-     </property>
-    </widget>
-   </item>
-   <item row="22" column="1">
-    <widget class="QComboBox" name="kcfg_BTreeInsertionPoint">
-     <property name="toolTip">
-      <string>Select where in the binary tree representation of the window layout new windows are placed.
-&quot;Left&quot; and &quot;Right&quot; will keep the binary tree complete, filling the last layer from the selected direction.
-&quot;Active Window&quot; will split the tile of the currently active window in half and place the new window in the new, empty tile.</string>
-     </property>
-     <item>
-      <property name="text">
-       <string>Left side</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Right side</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Active Window</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QLineEdit" name="kcfg_FilterClientCaption">
-     <property name="toolTip">
-      <string>Do not tile windows with these titles.
-Comma separated list of window titles.</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="24" column="0" colspan="2">
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>10</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="11" column="0" colspan="2">
+   <item row="11" column="1" colspan="3">
     <widget class="QCheckBox" name="kcfg_TilePopups">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tile popup/placeholder windows or not&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -133,73 +24,31 @@ Comma separated list of window titles.</string>
      </property>
     </widget>
    </item>
-   <item row="26" column="0" colspan="2">
-    <widget class="QCheckBox" name="kcfg_Debug">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spams your user journal&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Enable debug logging</string>
-     </property>
-    </widget>
-   </item>
-   <item row="28" column="0" colspan="2">
-    <spacer name="verticalSpacer_5">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>10</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="21" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Layout engine</string>
-     </property>
-    </widget>
-   </item>
-   <item row="32" column="0" colspan="2">
-    <spacer name="verticalSpacer_4">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>10</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="9" column="0">
+   <item row="9" column="1">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>Border visibility</string>
      </property>
     </widget>
    </item>
-   <item row="31" column="0" colspan="2">
-    <widget class="QLabel" name="label">
+   <item row="25" column="1">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Changes apply only after disabling and re-enabling the script!</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <string>Layout engine</string>
      </property>
     </widget>
    </item>
-   <item row="29" column="0" colspan="2">
+   <item row="15" column="1" colspan="3">
+    <widget class="QCheckBox" name="kcfg_KeepTiledBelow">
+     <property name="text">
+      <string>Keep tiled windows below</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="33" column="1" colspan="3">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -212,7 +61,7 @@ Comma separated list of window titles.</string>
      </property>
     </spacer>
    </item>
-   <item row="9" column="1">
+   <item row="9" column="3">
     <widget class="QComboBox" name="kcfg_Borders">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes where borders are or aren't&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -242,7 +91,137 @@ Comma separated list of window titles.</string>
      </item>
     </widget>
    </item>
+   <item row="35" column="1" colspan="3">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Changes apply only after disabling and re-enabling the script!</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
    <item row="8" column="1">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Filter processes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="36" column="1" colspan="3">
+    <spacer name="verticalSpacer_4">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="32" column="1" colspan="3">
+    <spacer name="verticalSpacer_5">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="16" column="1" colspan="3">
+    <widget class="QCheckBox" name="kcfg_MaximizeSingle">
+     <property name="text">
+      <string>Maximize single windows</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="3">
+    <widget class="QLineEdit" name="kcfg_FilterClientCaption">
+     <property name="toolTip">
+      <string>Do not tile windows with these titles.
+Comma separated list of window titles.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="30" column="1" colspan="3">
+    <widget class="QCheckBox" name="kcfg_Debug">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spams your user journal&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Enable debug logging</string>
+     </property>
+    </widget>
+   </item>
+   <item row="28" column="1" colspan="3">
+    <spacer name="verticalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="1" colspan="3">
+    <widget class="QLabel" name="label_6">
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Tiling options</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="3">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="26" column="1">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>BTree Insertion Point</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="3">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QCheckBox" name="kcfg_UseProcessWhitelist">
@@ -276,17 +255,7 @@ Comma separated list of process names.</string>
      </item>
     </layout>
    </item>
-   <item row="15" column="0" colspan="2">
-    <widget class="QCheckBox" name="kcfg_KeepTiledBelow">
-     <property name="text">
-      <string>Keep tiled windows below</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="25" column="0" colspan="2">
+   <item row="29" column="1" colspan="3">
     <widget class="QLabel" name="label_5">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -306,7 +275,45 @@ Comma separated list of process names.</string>
      </property>
     </widget>
    </item>
-   <item row="21" column="1">
+   <item row="26" column="3">
+    <widget class="QComboBox" name="kcfg_BTreeInsertionPoint">
+     <property name="toolTip">
+      <string>Select where in the binary tree representation of the window layout new windows are placed.
+&quot;Left&quot; and &quot;Right&quot; will keep the binary tree complete, filling the last layer from the selected direction.
+&quot;Active Window&quot; will split the tile of the currently active window in half and place the new window in the new, empty tile.</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>Left side</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Right side</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Active Window</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="17" column="1">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>Resize amount</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>Filter window titles</string>
+     </property>
+    </widget>
+   </item>
+   <item row="25" column="3">
     <widget class="QComboBox" name="kcfg_DefaultEngine">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select which default layout engine to use&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -334,6 +341,22 @@ Comma separated list of process names.</string>
        <string>KWin</string>
       </property>
      </item>
+    </widget>
+   </item>
+   <item row="17" column="3">
+    <widget class="QSlider" name="kcfg_ResizeAmount">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>450</number>
+     </property>
+     <property name="value">
+      <number>10</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
     </widget>
    </item>
   </layout>

@@ -1,5 +1,22 @@
 // dont expect nice doc comments anywhere other than here, this is the only part of the project meant for expansion
 
+export class Direction {
+    // below if false
+    above: boolean = true;
+    // left if false
+    right: boolean = true;
+    // if true, focus above/below if only one direction supported. If false, focus right/left
+    primary: boolean = true;
+    constructor(above: boolean, right: boolean, primary: boolean) {
+        this.above = above;
+        this.right = right;
+        this.primary = primary;
+    }
+    toString(): string {
+        return "(" + this.above ? "above" : "below" + ", " + this.right ? "right" : "left" + ")";
+    }
+}
+
 /**
  * Interface that can be built off of to create a custom tiling engine
  */
@@ -24,6 +41,16 @@ export interface TilingEngine {
      */
     updateTiles(rootTile: KWin.RootTile): boolean;
     /**
+     * Resize a client tile by a certain number of pixels in a direction
+     * @remarks
+     * Will return false if not possible to resize in that direction or on error
+     * 
+     * @param tile - The tile to resize
+     * @param direction - The direction to resize in
+     * @param amount - The amount to resize by, relative to screen size (number less than 1)
+     */
+    resizeTile(tile: KWin.Tile, direction: Direction, amount: number): boolean;
+    /**
      * Places clients based on desktop
      *
      * @param desktop - The desktop it is on
@@ -40,7 +67,6 @@ export interface TilingEngine {
      */
     addClient(client: KWin.AbstractClient): boolean;
     /**
-     * Update client tile
      * Usually used with geometryChanged to detect if the client is put into a tile
      *
      * @param client - The client to update

@@ -25,6 +25,7 @@ class Config {
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
     defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
     maximizeSingle: boolean = readConfig("MaximizeSingle", false);
+    resizeAmount: number = readConfig("ResizeAmount", 10) / 1000;
 };
 
 export const config = new Config;
