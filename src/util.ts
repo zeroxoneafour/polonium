@@ -16,8 +16,9 @@ export enum BTreeInsertionPoint {
 
 class Config {
     debug: boolean = readConfig("Debug", false);
-    useWhitelist: boolean = readConfig("UseWhitelist", false);
-    blacklist: Array<string> = readConfig("Blacklist", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
+    useProcessWhitelist: boolean = readConfig("UseProcessWhitelist", false);
+    filterProcessName: Array<string> = readConfig("FilterProcessName", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
+    filterClientCaption: Array<string> = readConfig("FilterClientCaption", "").split(',').map((x: string) => x.trim());
     tilePopups: boolean = readConfig("TilePopups", false);
     borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
     btreeInsertionPoint: BTreeInsertionPoint = readConfig("BTreeInsertionPoint", BTreeInsertionPoint.Left);
@@ -27,7 +28,8 @@ class Config {
 
 export const config = new Config;
 
-let blacklistCache: Set<string> = new Set;
+let filterProcessCache: Set<string> = new Set;
+let filterCaptionCache: Set<string> = new Set;
 
 export function printDebug(str: string, isError: boolean) {
     if (isError) {
@@ -51,17 +53,30 @@ export function doTileClient(client: KWin.AbstractClient): boolean {
     if (client.specialWindow) {
         return false;
     }
-    let c = client.resourceClass.toString();
-    // check if client is in blacklist cache (to save time)
-    if (blacklistCache.has(c)) {
-        return config.useWhitelist;
+
+    // filter based on window caption (title)
+    const cap = client.caption;
+    if (filterCaptionCache.has(cap)) {
+        return false;
     }
-    // check if client is black/whitelisted
-    for (const i of config.blacklist) {
-        if (c.includes(i) || i.includes(c)) {
-            blacklistCache.add(c);
-            return config.useWhitelist;
+    for (const i of config.filterClientCaption) {
+        if (i !== "" && cap.includes(i)) {
+            filterProcessCache.add(cap);
+            return false
         }
     }
-    return !config.useWhitelist;
+
+    // filter based on process name
+    const proc = client.resourceClass.toString();
+    if (filterProcessCache.has(proc)) {
+        return config.useProcessWhitelist;
+    }
+    for (const i of config.filterProcessName) {
+        if (i !== "" && proc.includes(i)) {
+            filterProcessCache.add(proc);
+            return config.useProcessWhitelist;
+        }
+    }
+	
+    return !config.useProcessWhitelist;
 }
