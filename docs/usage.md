@@ -15,7 +15,10 @@ Windows will be automatically tiled unless the whitelist option is enabled. Wind
 ### Removing windows
 Windows will be removed from the tiling manager automatically as well
 
-### Resizing tiled windows
+### Resizing tiled windows with your keyboard
+The default keybinds to resize tiled windows with your keyboard are `Meta+Shift+<directional arrow key>`. In the Half and Three Column layouts, you can only resize windows left and right. In the BTree layout, you can resize windows in all directions.
+
+### Resizing tiled windows with your mouse
 By pressing the KWin tiles key (default - `Meta+T`) a tile configuration menu will appear. Adding or removing tiles will not have a lasting effect, but resizing tiles will for engines that support it. The clients of these tiles will be automatically resized as well.
 
 ### Moving windows with your keyboard
@@ -35,14 +38,19 @@ To configure Polonium, go to KWin Scripts and click the configuration icon next 
 
 Polonium requires that KWin be restarted every time the configuration is changed. Usually, you can do this by logging out and back in.
 
-Options -
-* Whitelist (check box) - Whether to use the field to the right (normally the blacklist) as a whitelist instead, and blacklist other windows
-* Blacklist (line input) - Windows to not tile, or if whitelist is selected, the only windows to tile
+### Tiling options
+* Filter window titles (line input) - Window titles to filter out (ie. not tile)
+* Filter processes (line input) - Processes to filter out
+  - Invert (check box) - Whether to treat the filter processes input as a whitelist instead of a blacklist, and only tile things in the input
+* Border visibility (dropdown) - How to display borders on tiled, untiled, and selected windows
 * Tile popup windows (check box) - Whether to tile windows marked as popup windows
-* Tile borders (dropdown) - How to display borders on tiled, untiled, and selected windows
 * Keep tiled below (check box) - Whether to keep tiled windows below other windows
+* Maximize single windows (check box) - Whether to maximize solo windows on desktops. May be slightly buggy
+* Resize amount (slider) - The amount to resize windows by, from 0.001 to 0.45 of the available desktop space
 * Default engine (dropdown) - The default tiling engine you want to use on new desktops
 * BTree Insertion Point (dropdown) - Select where new windows should be inserted into the binary tree representation
+
+### Debug options
 * Debug mode (check box) - Whether to spam your user journal with debug messages or not
 
 ## Engines
@@ -52,7 +60,6 @@ The engines are specific to desktops and are cycled in this order by pressing th
 2. Half - Put one main window on the left and several on the right. Can also be the other way around
 3. Three Column - Put one main window in the center and some on the left and right
 4. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
-5. Floating - Basically turns off Polonium on that desktop
 
 The default engine setting determines which engine desktops will start with.
 
