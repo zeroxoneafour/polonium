@@ -32,10 +32,17 @@ declare namespace KWin {
         oldActivities: Array<string> | undefined;
         oldDesktop: number | undefined;
         oldScreen: number | undefined;
-        //signals
+        // for some reason, kwin doesn't include whether the window is maximized, so we add it ourselves
+        maximized: MaximizeMode | undefined;
+        // whether the client is the only tile on their screen or not
+        isSingleTile: boolean | undefined;
+        // signals
         desktopPresenceChanged: Signal<(client: AbstractClient, desktop: number) => void>;
         desktopChanged: Signal<() => void>;
         activitiesChanged: Signal<(client: AbstractClient) => void>;
+        clientMaximizedStateChanged: Signal<(client: AbstractClient, mode: MaximizeMode) => void>;
+        // functions
+        setMaximize(vertically: boolean, horizontally: boolean): void;
     }
     class Tile {
         tiles: Array<Tile>;
@@ -51,9 +58,15 @@ declare namespace KWin {
         remove(): void;
     }
     enum LayoutDirection {
-        Floating,
+        Floating = 0,
         Horizontal,
         Vertical,
+    }
+    enum MaximizeMode {
+        MaximizeRestore = 0,
+        MaximizeVertical,
+        MaximizeHorizontal,
+        MaximizeFull,
     }
     class RootTile extends Tile {
         parent: null;

@@ -24,6 +24,7 @@ class Config {
     btreeInsertionPoint: BTreeInsertionPoint = readConfig("BTreeInsertionPoint", BTreeInsertionPoint.Left);
     keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
     defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
+    maximizeSingle: boolean = readConfig("MaximizeSingle", false);
 };
 
 export const config = new Config;

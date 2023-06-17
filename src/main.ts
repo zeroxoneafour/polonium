@@ -24,9 +24,18 @@ export function rebuildLayout(this: any) {
             return;
         }
         engine.buildLayout(tileManager.rootTile, desktop);
-        for (const clientTile of engine.placeClients(desktop)) {
+        const clientTiles = engine.placeClients(desktop);
+        for (const clientTile of clientTiles) {
             const client = clientTile[0];
             const tile = clientTile[1];
+            if (client.isSingleTile) {
+                client.setMaximize(false, false);
+            }
+            // maximize' single windows if enabled in config
+            if (config.maximizeSingle && (tile == tileManager.rootTile || clientTiles.length == 1)) {
+                client.isSingleTile = true;
+                client.setMaximize(true, true);
+            }
             if (tile != null) {
                 client.wasTiled = true;
                 if (config.borders == Borders.NoBorderTiled) {
@@ -35,7 +44,9 @@ export function rebuildLayout(this: any) {
                 if (config.keepTiledBelow) {
                     client.keepBelow = true;
                 }
-                client.tile = tile;
+                if (!client.isSingleTile) {
+                    client.tile = tile;
+                }
             } else {
                 client.wasTiled = false;
                 if (config.borders == Borders.NoBorderTiled) {
@@ -51,6 +62,7 @@ export function rebuildLayout(this: any) {
                 client.activitiesChanged.connect(clientDesktopChange);
                 client.screenChanged.connect(clientDesktopChange.bind(this, client));
                 client.frameGeometryChanged.connect(clientGeometryChange);
+                client.clientMaximizedStateChanged.connect(clientMaximized);
                 client.hasBeenTiled = true;
             }
         }
@@ -142,8 +154,8 @@ export function untileClient(this: any, client: KWin.AbstractClient): void {
 }
 
 export function clientGeometryChange(this: any, client: KWin.AbstractClient, _oldgeometry: Qt.QRect): void {
-    // dont interfere with minimizing
-    if (client.minimized || buildingLayout) return;
+    // dont interfere with minimizing, maximizing, fullscreening, being the single tile, or layout building
+    if (client.minimized || buildingLayout || client.maximized != 0 || client.fullScreen || client.isSingleTile) return;
     // because kwin doesnt have a separate handler for screen changing, add it here
     if (client.oldScreen != client.screen) {
         clientDesktopChange(client);
@@ -166,6 +178,8 @@ export function addClient(client: KWin.AbstractClient): void {
     client.oldDesktop = client.desktop;
     client.oldScreen = client.screen;
     client.oldActivities = new Array;
+    client.maximized = 0;
+    client.isSingleTile = false;
     for (const activity of client.activities) client.oldActivities.push(activity);
     
     if (config.borders == Borders.NoBorderAll || config.borders == Borders.BorderSelected) {
@@ -186,9 +200,11 @@ export function removeClient(client: KWin.AbstractClient): void {
 }
 
 export function clientFullScreenSet(client: KWin.AbstractClient, fullScreen: boolean, _user: boolean): void {
+    if (!client.wasTiled) return;
     if (fullScreen) {
         printDebug(client.resourceClass + " enabled fullscreen", false);
         untileClient(client);
+        client.wasTiled = true;
     } else {
         printDebug(client.resourceClass + " disabled fullscreen", false);
         tileClient(client);
@@ -206,6 +222,24 @@ export function clientUnminimized(client: KWin.AbstractClient): void {
     if (!client.wasTiled) return;
     printDebug(client.resourceClass + " was unminimized", false);
     tileClient(client);
+}
+
+export function clientMaximized(client: KWin.AbstractClient, mode: KWin.MaximizeMode) {
+    client.maximized = mode;
+    if (!client.wasTiled) return;
+    if (client.isSingleTile && mode == 0) {
+        client.isSingleTile = false;
+        return;
+    } else if (client.isSingleTile) {
+        client.wasTiled = true;
+        return;
+    }
+    printDebug("Maximize mode on " + client.resourceClass + " was changed to " + mode, false);
+    switch (mode) {
+        case 0: tileClient(client);
+        default: untileClient(client);
+    }
+    client.wasTiled = true;
 }
 
 // for borders
