@@ -23,7 +23,6 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ## bugs/limitations
 * X11 has been tested but is not officially supported
-* When creating tiling layouts in the KWin tiling mode, KWin does not save the most recent change you make to the layout
 * Probably slow due to poor optimization
 
 ## building
