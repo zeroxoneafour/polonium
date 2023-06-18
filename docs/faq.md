@@ -24,6 +24,10 @@ X11 is not officially supported, but you can drop an issue and I can see if I ca
 
 You can turn the latency down to 1ms or up to 200ms in the settings, under callback delay. Higher latencies should fix issues with slow computers, but lower ones will make the script smoother.
 
+### Windows appear in strange places but go back to normal after I switch desktops/rebuild the layout
+
+KWin, by default, remembers the location of windows. It will try to put them back into these locations if the windows request it. Known windows that do include Firefox. If this conflicts with tiling, try adding a KWin rule to all windows to force ignore requested geometry.
+
 ---
 
 <div align="center"><sub>
