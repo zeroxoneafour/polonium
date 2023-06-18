@@ -9,8 +9,9 @@ export const engine: EngineManager = new EngineManager;
 
 // boolean to stop geometrychange from interfering
 let buildingLayout: boolean = false;
-export function rebuildLayout(this: any) {
+export function rebuildLayout(this: any, isRepeat = false) {
     buildingLayout = true;
+    let repeatRebuild = false;
     let desktops = new Array<Desktop>;
     for (let i = 0; i < workspace.numScreens; i += 1) {
         let desktop = new Desktop;
@@ -30,6 +31,7 @@ export function rebuildLayout(this: any) {
             const tile = clientTile[1];
             if (client.isSingleTile) {
                 client.setMaximize(false, false);
+                repeatRebuild = true;
             }
             // maximize' single windows if enabled in config
             if (config.maximizeSingle && (tile == tileManager.rootTile || clientTiles.length == 1)) {
@@ -68,6 +70,14 @@ export function rebuildLayout(this: any) {
         }
     }
     buildingLayout = false;
+
+    // workaround for setMaximize(false,false) breaking the layout on first run
+    if (!isRepeat && repeatRebuild) {
+        let timer = new QTimer();
+        timer.singleShot = true;
+        timer.timeout.connect(() => rebuildLayout(true));
+        timer.start(150)
+    }
 }
 
 export function currentDesktopChange(): void {
