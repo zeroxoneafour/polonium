@@ -75,8 +75,8 @@ export function rebuildLayout(this: any, isRepeat = false) {
     if (!isRepeat && repeatRebuild) {
         let timer = new QTimer();
         timer.singleShot = true;
-        timer.timeout.connect(() => rebuildLayout(true));
-        timer.start(150)
+        timer.timeout.connect(rebuildLayout.bind(this, true));
+        timer.start(config.timerDelay);
     }
 }
 

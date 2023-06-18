@@ -20,6 +20,10 @@ Some apps do not handle fullscreen correctly.
 
 X11 is not officially supported, but you can drop an issue and I can see if I can fix it. Include a log!
 
+### There is a latency before windows are fixed/tiles are updated OR windows will not fix/tiles won't update
+
+You can turn the latency down to 1ms or up to 200ms in the settings, under callback delay. Higher latencies should fix issues with slow computers, but lower ones will make the script smoother.
+
 ---
 
 <div align="center"><sub>

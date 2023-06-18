@@ -13,5 +13,6 @@
         <entry name="DefaultEngine" type="int"><default>0</default></entry>
         <entry name="MaximizeSingle" type="bool"><default>false</default></entry>
         <entry name="ResizeAmount" type="int"><default>10</default></entry>
+        <entry name="TimerDelay" type="int"><default>150</default></entry>
     </group>
 </kcfg>

@@ -26,6 +26,7 @@ class Config {
     defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
     maximizeSingle: boolean = readConfig("MaximizeSingle", false);
     resizeAmount: number = readConfig("ResizeAmount", 10) / 1000;
+    timerDelay: number = readConfig("TimerDelay", 150);
 };
 
 export const config = new Config;

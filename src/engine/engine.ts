@@ -55,6 +55,7 @@ export class EngineManager {
     engineTypes: Map<string, EngineTypes> = new Map;
     engines: Map<string, TilingEngine> = new Map;
     layoutBuilding: boolean = false;
+    tileRebuildTimers: Map<KWin.RootTile, QTimer> = new Map;
     
     createNewEngine(desktop: Desktop): boolean {
         this.engineTypes.set(desktop.toString(), config.defaultEngine);
@@ -103,9 +104,22 @@ export class EngineManager {
         this.layoutBuilding = false;
         if (!rootTile.connected) {
             rootTile.connected = true;
-            rootTile.layoutModified.connect(this.updateTiles.bind(this, rootTile));
+            rootTile.layoutModified.connect(this.updateTilesSignal.bind(this, rootTile));
         }
         return ret;
+    }
+    
+    private updateTilesSignal(rootTile: KWin.RootTile): void {
+        // do not execute while layout is building
+        if (this.layoutBuilding) return;
+        if (!this.tileRebuildTimers.has(rootTile)) {
+            printDebug("Creating tile update timer", false);
+            this.tileRebuildTimers.set(rootTile, new QTimer());
+            const timer = this.tileRebuildTimers.get(rootTile)!;
+            timer.singleShot = true;
+            timer.timeout.connect(this.updateTiles.bind(this, rootTile));
+        }
+        this.tileRebuildTimers.get(rootTile)!.start(config.timerDelay);
     }
     
     updateTiles(rootTile: KWin.RootTile): boolean {
