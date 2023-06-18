@@ -26,6 +26,7 @@ jobs:
     - name: Create release
       run: |
         gh release delete nightly --yes || true
+        git push --delete origin refs/tags/nightly || true
         gh release create nightly \
           --prerelease \
           --title "Development build" \
