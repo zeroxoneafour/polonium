@@ -24,6 +24,7 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 ## bugs/limitations
 * X11 has been tested but is not officially supported
 * Probably slow due to poor optimization
+* No option to disable untiling windows by dragging
 
 ## building
 Requires `tsc`, `npm`, and `kpackagetool5`
