@@ -371,7 +371,7 @@ Comma separated list of window titles.</string>
    <item row="26" column="3">
     <widget class="QSlider" name="kcfg_TimerDelay">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The delay before timer callbacks are called. Increase for up to a 500 ms delay, decrease for down to a 10 ms delay. Delay should be higher for slower computers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The delay before timer callbacks are called. Increase for up to a 200 ms delay, decrease for down to a 1 ms delay. Delay should be higher for slower computers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="minimum">
       <number>1</number>
@@ -396,7 +396,7 @@ Comma separated list of window titles.</string>
    <item row="26" column="1">
     <widget class="QLabel" name="label_10">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The delay before timer callbacks are called. Increase for up to a 500 ms delay, decrease for down to a 10 ms delay. Delay should be higher for slower computers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The delay before timer callbacks are called. Increase for up to a 200 ms delay, decrease for down to a 1 ms delay. Delay should be higher for slower computers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>Callback delay</string>
