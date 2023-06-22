@@ -1,11 +1,15 @@
 // obviously not all of qt, only the stuff I need
 
 declare namespace Qt {
-    class QRect {
+    interface QRect {
         x: number;
         y: number;
         width: number;
         height: number;
+    }
+    interface QPoint {
+        x: number;
+        y: number;
     }
     class QByteArray {}
 

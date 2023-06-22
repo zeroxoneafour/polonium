@@ -19,7 +19,6 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 * Edit tile sizes with the integrated KWin GUI
 * Move and tile windows with your mouse and keyboard
 * Set layouts independently of desktop
-* In early beta so comes pre-packaged with bugs
 
 ## bugs/limitations
 * X11 has been tested but is not officially supported

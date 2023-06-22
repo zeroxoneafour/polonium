@@ -23,5 +23,8 @@ Because of the minimalist feature set of this project, many supposed bugs are fe
 
 Pull requests are always open and, as I have said, most will be accepted. After I accept them, I may reformat them a bit or alter small things like variable names to better fit with the project. These changes, if present will likely be released in the next commit to master after I have accepted the request.
 
+## changelog
+When submitting a PR, it is expected that you update the changelog with the changes you made in your PR. Make sure to file these changes in the relevant section.
+
 ## documentation
-Documentation should be written in Markdown wherever possible. Adding new and helpful documentation is always welcome. Make sure it looks correct before you submit it to be merged.s
+Documentation should be written in Markdown wherever possible. Adding new and helpful documentation is always welcome. Make sure it looks correct before you submit it to be merged.

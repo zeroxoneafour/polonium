@@ -1,8 +1,9 @@
 import copy from "fast-copy";
 
 import { EngineManager, Desktop } from "./engine/engine";
+import { Direction } from "./engine/common";
 // to build with a different engine, change this to a different file
-import { Borders, config, printDebug, doTileClient } from "./util";
+import { Borders, config, printDebug, doTileClient, GeometryTools } from "./util";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
@@ -12,7 +13,7 @@ let buildingLayout: boolean = false;
 export function rebuildLayout(this: any, isRepeat = false) {
     buildingLayout = true;
     let repeatRebuild = false;
-    let desktops = new Array<Desktop>;
+    let desktops = new Array<Desktop>();
     for (let i = 0; i < workspace.numScreens; i += 1) {
         let desktop = new Desktop;
         desktop.screen = i;
@@ -29,16 +30,20 @@ export function rebuildLayout(this: any, isRepeat = false) {
         for (const clientTile of clientTiles) {
             const client = clientTile[0];
             const tile = clientTile[1];
+            if (client == undefined) {
+                printDebug("Undefined client found", true);
+                continue;
+            }
             if (client.isSingleTile) {
                 client.setMaximize(false, false);
                 repeatRebuild = true;
             }
             // maximize' single windows if enabled in config
-            if (config.maximizeSingle && (tile == tileManager.rootTile || clientTiles.length == 1)) {
-                client.isSingleTile = true;
-                client.setMaximize(true, true);
-            }
             if (tile != null) {
+                if (config.maximizeSingle && (tile == tileManager.rootTile || clientTiles.length == 1)) {
+                    client.isSingleTile = true;
+                    client.setMaximize(true, true);
+                }
                 client.wasTiled = true;
                 if (config.borders == Borders.NoBorderTiled) {
                     client.noBorder = true;
@@ -63,6 +68,7 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 client.desktopChanged.connect(clientDesktopChange.bind(this, client));
                 client.activitiesChanged.connect(clientDesktopChange);
                 client.screenChanged.connect(clientDesktopChange.bind(this, client));
+                //client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
                 client.frameGeometryChanged.connect(clientGeometryChange);
                 client.clientMaximizedStateChanged.connect(clientMaximized);
                 client.hasBeenTiled = true;
@@ -81,6 +87,19 @@ export function rebuildLayout(this: any, isRepeat = false) {
 }
 
 export function currentDesktopChange(): void {
+    // set geometry for all clients manually to avoid resizing when tiles are deleted
+    for (const client of workspace.clientList()) {
+        if (client.tile != null && client.screen == workspace.lastActiveScreen && client.activities.includes(workspace.lastActivity!) && client.desktop == workspace.lastDesktop) {
+            const tile = client.tile;
+            client.tile = null;
+            client.frameGeometry = tile.absoluteGeometry;
+            client.frameGeometry.width -= tile.padding;
+            client.frameGeometry.height -= tile.padding;
+        }
+    }
+    workspace.lastActiveScreen = workspace.activeScreen;
+    workspace.lastActivity = workspace.currentActivity;
+    workspace.lastDesktop = workspace.currentDesktop;
     rebuildLayout();
 }
 
@@ -119,7 +138,7 @@ export function clientDesktopChange(this: any, client: KWin.AbstractClient) {
 }
 
 // if tile is defined, only tiles on a single desktop
-export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.Tile): void {
+export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.Tile, direction?: Direction): void {
     // if a tile is specified, make sure to tile normally on other desktops where the tile doesnt exist
     if (tile != undefined) {
         let currentDesktop = new Desktop;
@@ -139,7 +158,7 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
         }
         for (const desktop of desktops) {
             if (desktop.toString() == currentDesktop.toString()) {
-                engine.putClientInTile(client, tile);
+                engine.putClientInTile(client, tile, direction);
             } else {
                 engine.addClient(client, desktop);
             }
@@ -180,9 +199,27 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
         untileClient(client);
     } else if (!client.wasTiled && client.tile != null) { // if added to tile
         printDebug(client.resourceClass + " was moved into a tile", false);
-        tileClient(client, client.tile);
+        tileClient(client, client.tile, GeometryTools.directionFromPointInRect(client.tile.absoluteGeometry, workspace.cursorPos));
     }
 }
+
+/* What even is quick tiling
+export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
+    const cursorPos = new GeometryTools.QPoint(workspace.cursorPos.x, workspace.cursorPos.y);
+    const tile = workspace.tilingForScreen(client.screen).bestTileForPosition(cursorPos.x, cursorPos.y);
+    if (tile == null) {
+        return;
+    }
+    printDebug(client.resourceClass + " has been quick tiled", false);
+    cursorPos.x += tile.padding;
+    cursorPos.y += tile.padding;
+    const direction = GeometryTools.directionFromPointInRect(tile.absoluteGeometry, cursorPos);
+    if (direction == null) {
+        return;
+    }
+    tileClient(client, tile, GeometryTools.directionFromPointInRect(tile.absoluteGeometry, cursorPos));
+}
+*/
 
 export function addClient(client: KWin.AbstractClient): void {
     client.oldDesktop = client.desktop;

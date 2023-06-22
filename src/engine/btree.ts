@@ -5,6 +5,12 @@ import copy from "fast-copy";
 import { printDebug, config, BTreeInsertionPoint } from "../util";
 import * as Engine from "./common";
 
+/*
+ * Notes about BTree -
+ * Child [0] is on the left/above, child [1] is on the right/below
+ * This is true at all times
+ */
+
 class TreeNode {
     parent: TreeNode | null = null;
     sibling: TreeNode | null = null;
@@ -216,7 +222,7 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile]> {
-        let ret = new Array<[KWin.AbstractClient, KWin.Tile]>;
+        let ret = new Array<[KWin.AbstractClient, KWin.Tile]>();
         // i love copy and paste this is why i develop software
         let stack: Array<TreeNode> = [this.rootNode];
         let stackNext: Array<TreeNode> = [];
@@ -280,7 +286,7 @@ export class TilingEngine implements Engine.TilingEngine {
         return true;
     }
 
-    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Engine.Direction): boolean {
         // assumes the nodemap has been built correctly
         const node = this.nodeMap.inverse.get(tile);
         if (node == undefined) {
@@ -291,8 +297,37 @@ export class TilingEngine implements Engine.TilingEngine {
             node.client = client;
         } else {
             node.split();
-            node.children![0].client = node.client;
-            node.children![1].client = client;
+            if (direction == undefined) {
+                node.children![0].client = node.client;
+                node.children![1].client = client;
+            } else {
+                let parent = node;
+                let i = 0;
+                // find root node
+                while (parent.parent != null) {
+                    parent = parent.parent;
+                    i += 1;
+                }
+                // if i is odd, tiles are side to side (so any new tile is up to down)
+                // vice versa for even
+                if (i % 2 == 1) {
+                    if (direction.above) {
+                        node.children![0].client = client;
+                        node.children![1].client = node.client;
+                    } else {
+                        node.children![0].client = node.client;
+                        node.children![1].client = client;
+                    }
+                } else {
+                    if (!direction.right) {
+                        node.children![0].client = client;
+                        node.children![1].client = node.client;
+                    } else {
+                        node.children![0].client = node.client;
+                        node.children![1].client = client;
+                    }
+                }
+            }
             node.client = null;
         }
         return true;

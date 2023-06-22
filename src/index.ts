@@ -39,5 +39,9 @@ registerShortcut("PoloniumResizeTileDown", "Polonium: Resize Tile Down", "Meta+S
 registerShortcut("PoloniumResizeTileLeft", "Polonium: Resize Tile Left", "Meta+Shift+Left", shortcuts.resizeTile.bind(this, shortcuts.Direction.Left));
 registerShortcut("PoloniumResizeTileRight", "Polonium: Resize Tile Right", "Meta+Shift+Right", shortcuts.resizeTile.bind(this, shortcuts.Direction.Right));
 
+workspace.lastActiveScreen = workspace.activeScreen;
+workspace.lastActivity = workspace.currentActivity;
+workspace.lastDesktop = workspace.currentDesktop;
+
 // build first time
 main.rebuildLayout();

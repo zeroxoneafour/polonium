@@ -15,7 +15,7 @@ export class TilingEngine implements Engine.TilingEngine {
     columns = [new Array<Container>, new Array<Container>, new Array<Container>];
     leftSize: number = 0.25;
     rightSize: number = 0.25;
-    nodeMap = new BiMap<Container, KWin.Tile>;
+    nodeMap = new BiMap<Container, KWin.Tile>();
     buildLayout(rootTile: KWin.Tile): boolean {
         // setup
         let leftTile: KWin.Tile | undefined;
@@ -178,7 +178,7 @@ export class TilingEngine implements Engine.TilingEngine {
         return true;
     }
 
-    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Engine.Direction): boolean {
         const container = this.nodeMap.inverse.get(tile);
         const newContainer = new Container(client);
         if (container == undefined) {
@@ -200,7 +200,15 @@ export class TilingEngine implements Engine.TilingEngine {
             printDebug("Container not registered", true);
             return false;
         }
-        array.splice(array.indexOf(container), 0, newContainer);
+        if (direction == undefined) {
+            array.splice(array.indexOf(container), 0, newContainer);
+        } else {
+            if (direction.above) {
+                array.splice(array.indexOf(container), 0, newContainer);
+            } else {
+                array.splice(array.indexOf(container) + 1, 0, newContainer);
+            }
+        }
         return true;
     }
 

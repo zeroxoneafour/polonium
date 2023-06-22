@@ -46,7 +46,7 @@ export class TilingEngine implements Engine.TilingEngine {
         this.tileMap.clear();
         this.tileMap.set(this.fakeRootTile, rootTile);
         let stack: Array<Tile> = [this.fakeRootTile];
-        let stackNext = new Array<Tile>;
+        let stackNext = new Array<Tile>();
         while (stack.length != 0) {
             for (const fakeTile of stack) {
                 const realTile = this.tileMap.get(fakeTile);
@@ -83,7 +83,7 @@ export class TilingEngine implements Engine.TilingEngine {
         this.fakeRootTile = new RootTile(rootTile.layoutDirection);
         this.tileMap.set(this.fakeRootTile, rootTile);
         let stack: Array<KWin.Tile> = [rootTile];
-        let stackNext = new Array<KWin.Tile>;
+        let stackNext = new Array<KWin.Tile>();
         while (stack.length > 0) {
             for (const realTile of stack) {
                 const fakeTile = this.tileMap.inverse.get(realTile);
@@ -93,6 +93,9 @@ export class TilingEngine implements Engine.TilingEngine {
                 }
                 for (const tile of realTile.tiles) {
                     const newTile = new Tile(fakeTile, tile.relativeGeometry, tile.layoutDirection);
+                    for (const client of tile.windows) {
+                        newTile.windows.push(client);
+                    }
                     this.tileMap.set(newTile, tile);
                     stackNext.push(tile);
                 }
@@ -109,7 +112,7 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile | null]> {
-        let ret = new Array<[KWin.AbstractClient, KWin.Tile | null]>;
+        let ret = new Array<[KWin.AbstractClient, KWin.Tile | null]>();
         for (const fakeTile of this.tileMap.keys()) {
             for (const client of fakeTile.windows) {
                 ret.push([client, this.tileMap.get(fakeTile)!]);
@@ -132,6 +135,9 @@ export class TilingEngine implements Engine.TilingEngine {
         if (fakeTile == undefined) {
             printDebug("Could not find tile", true);
             return false;
+        }
+        if (this.untiledClients.includes(client)) {
+            this.untiledClients.splice(this.untiledClients.indexOf(client), 1);
         }
         fakeTile.windows.push(client);
         return true;

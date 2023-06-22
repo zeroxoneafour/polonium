@@ -195,7 +195,7 @@ export class EngineManager {
     }
     
     updateClientDesktop(client: KWin.AbstractClient, oldDesktops: Array<Desktop>): boolean {
-        let newDesktops = new Array<Desktop>;
+        let newDesktops = new Array<Desktop>();
         if (client.desktop == -1) {
             for (let i = 0; i < workspace.desktops; i += 1) {
                 for (const activity of client.activities) {
@@ -229,7 +229,7 @@ export class EngineManager {
         return true;
     }
     
-    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Direction): boolean {
         const desktop = new Desktop;
         printDebug("Placing " + client.resourceClass + " in " + tile, false);
         if (!this.engines.has(desktop.toString())) {
@@ -237,7 +237,7 @@ export class EngineManager {
                 return false;
             }
         }
-        return this.engines.get(desktop.toString())!.putClientInTile(client, tile);
+        return this.engines.get(desktop.toString())!.putClientInTile(client, tile, direction);
     }
     
     clientOfTile(tile: KWin.Tile): KWin.AbstractClient | null {

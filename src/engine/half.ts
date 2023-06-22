@@ -130,7 +130,7 @@ export class TilingEngine implements Engine.TilingEngine {
         return true;
     }
     
-    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean {
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Engine.Direction): boolean {
         const container = this.nodeMap.inverse.get(tile);
         if (container == undefined) {
             printDebug("No container found for tile", true);
@@ -148,7 +148,15 @@ export class TilingEngine implements Engine.TilingEngine {
         }
         // if one of the arrays is empty, push to it instead
         if (otherArray.length != 0) {
-            array.splice(array.indexOf(container), 0, newContainer);
+            if (direction == undefined) {
+                array.splice(array.indexOf(container), 0, newContainer);
+            } else {
+                if (direction.above) {
+                    array.splice(array.indexOf(container), 0, newContainer);
+                } else {
+                    array.splice(array.indexOf(container) + 1, 0, newContainer);
+                }
+            }
         } else {
             otherArray.push(newContainer);
         }

@@ -41,6 +41,7 @@ declare namespace KWin {
         desktopChanged: Signal<() => void>;
         activitiesChanged: Signal<(client: AbstractClient) => void>;
         clientMaximizedStateChanged: Signal<(client: AbstractClient, mode: MaximizeMode) => void>;
+        quickTileModeChanged: Signal<() => void>;
         // functions
         setMaximize(vertically: boolean, horizontally: boolean): void;
     }
@@ -86,12 +87,17 @@ declare namespace KWin {
         currentDesktop: number;
         desktops: number;
         numScreens: number;
+        // found it
+        cursorPos: Qt.QPoint;
         tilingForScreen(desktop: number): KWin.TileManager;
         supportInformation(): string;
         clientList(): Array<AbstractClient>;
         // doesnt actually exist in api but convenient place to keep state
         tmpLastActiveClient: AbstractClient | null | undefined;
         previousActiveClient: AbstractClient | null | undefined;
+        lastActiveScreen: number | undefined;
+        lastActivity: string | undefined;
+        lastDesktop: number | undefined;
         // signals
         clientAdded: Signal<(client: AbstractClient) => void>;
         clientRemoved: Signal<(client: AbstractClient) => void>;

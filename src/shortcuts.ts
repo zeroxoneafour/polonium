@@ -11,6 +11,15 @@ export enum Direction {
     Right,
 }
 
+function invertDirection(direction: Direction): Direction {
+    switch (direction) {
+        case Direction.Above: return Direction.Below;
+        case Direction.Below: return Direction.Above;
+        case Direction.Right: return Direction.Left;
+        case Direction.Left: return Direction.Right;
+    }
+}
+
 export function retileWindow() {
     let client = workspace.activeClient;
     if (client == null) return;
@@ -147,7 +156,7 @@ export function insert(this: any, direction: Direction) {
         newTile = workspace.tilingForScreen(client.screen).rootTile;
     }
     printDebug("Inserting " + client.resourceClass + " in tile " + newTile, false);
-    tileClient(client, newTile);
+    tileClient(client, newTile, directionToEngineDirection(invertDirection(direction)));
 }
 
 export function cycleEngine() {

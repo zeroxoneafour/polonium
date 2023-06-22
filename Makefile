@@ -1,5 +1,5 @@
 NAME = polonium
-VERSION = 0.5.0
+VERSION = 0.5.1
 
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg

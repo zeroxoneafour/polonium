@@ -2,11 +2,11 @@
 
 export class Direction {
     // below if false
-    above: boolean = true;
+    above: boolean;
     // left if false
-    right: boolean = true;
+    right: boolean;
     // if true, focus above/below if only one direction supported. If false, focus right/left
-    primary: boolean = true;
+    primary: boolean;
     constructor(above: boolean, right: boolean, primary: boolean) {
         this.above = above;
         this.right = right;
@@ -71,9 +71,10 @@ export interface TilingEngine {
      *
      * @param client - The client to update
      * @param tile - The tile to put the client in
+     * @param direction (optional) - The direction in the tile to place the client (top, bottom, etc.)
      * @returns True if exited successfully, false otherwise
      */
-    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile): boolean;
+    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Direction): boolean;
     /**
      * Gets the client of a tile
      * 
