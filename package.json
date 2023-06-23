@@ -3,6 +3,7 @@
   "version": "0.5.1",
   "description": "A tiling window manager for KWin",
   "main": "src/index.ts",
+  "private": true,
   "directories": {
     "doc": "docs"
   },

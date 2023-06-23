@@ -16,3 +16,4 @@
 * Replaced limitations section of readme with info about X11
 * Insert starting on right with ThreeColumn
 * Added partial side insertion to ThreeColumn and Half to get around missing columns
+* Added private to package.json
