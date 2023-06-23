@@ -69,7 +69,7 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 client.desktopChanged.connect(clientDesktopChange.bind(this, client));
                 client.activitiesChanged.connect(clientDesktopChange);
                 client.screenChanged.connect(clientDesktopChange.bind(this, client));
-                client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
+                //client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
                 client.frameGeometryChanged.connect(clientGeometryChange);
                 client.clientMaximizedStateChanged.connect(clientMaximized);
                 client.hasBeenTiled = true;
@@ -208,6 +208,7 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
     }
 }
 
+/*
 // What even is quick tiling
 export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
     printDebug(client.resourceClass + " has been quick tiled", false);
@@ -224,6 +225,7 @@ export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
         tileClient(client, tile, direction);
     }
 }
+*/
 
 export function addClient(client: KWin.AbstractClient): void {
     client.oldDesktop = client.desktop;
