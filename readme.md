@@ -20,9 +20,8 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 * Move and tile windows with your mouse and keyboard
 * Set layouts independently of desktop
 
-## bugs/limitations
-* X11 has been tested but is not officially supported
-* Probably slow due to poor optimization
+## X11
+X11 has been briefly tested but is not officially supported. If you encounter an issue running the script on X11, make sure it is reproducible in Wayland before submitting a bug report.
 
 ## building
 Requires `npm` and `kpackagetool5`

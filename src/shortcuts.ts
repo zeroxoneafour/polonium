@@ -125,9 +125,9 @@ function tileInDirection(client: KWin.AbstractClient, direction: Direction): KWi
 }
 
 export function focus(this: any, direction: Direction): void {
-    let client = workspace.activeClient;
+    const client = workspace.activeClient;
     if (client == null || client.tile == null) return;
-    let tile = tileInDirection(client, direction);
+    const tile = tileInDirection(client, direction);
     if (tile == null) return;
     let newClient = engine.clientOfTile(tile);
     if (newClient == null) return;
@@ -136,9 +136,9 @@ export function focus(this: any, direction: Direction): void {
 }
 
 export function swap(this: any, direction: Direction) {
-    let client = workspace.activeClient;
+    const client = workspace.activeClient;
     if (client == null || client.tile == null) return;
-    let tile = tileInDirection(client, direction);
+    const tile = tileInDirection(client, direction);
     if (tile == null) return;
     printDebug("Swapping windows with " + client.resourceClass, false);
     engine.swapTiles(client.tile, tile);
@@ -157,7 +157,12 @@ export function insert(this: any, direction: Direction) {
         newTile = workspace.tilingForScreen(client.screen).rootTile;
     }
     printDebug("Inserting " + client.resourceClass + " in tile " + newTile, false);
+    const oldGeometry = copy(client.frameGeometry);
     tileClient(client, newTile, directionToEngineDirection(invertDirection(direction)));
+    // if inserting the client into a new tile gives it the same geometry, then just swap the tiles
+    if (oldGeometry.height == client.frameGeometry.height && oldGeometry.width == client.frameGeometry.width && oldGeometry.x == client.frameGeometry.x && oldGeometry.y == client.frameGeometry.y) {
+        swap(direction);
+    }
 }
 
 export function cycleEngine() {

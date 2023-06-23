@@ -91,11 +91,12 @@ export class TilingEngine implements Engine.TilingEngine {
         } else {
             this.middleSplit -= amount;
         }
-        if (this.middleSplit > 0.89) {
+        while (this.middleSplit > 0.85) {
             this.middleSplit -= amount;
-        } else if (this.middleSplit < 0.11) {
+        };
+        while (this.middleSplit < 0.15) {
             this.middleSplit += amount;
-        }
+        };
         return true;
     }
     

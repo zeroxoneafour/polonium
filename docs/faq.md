@@ -28,6 +28,10 @@ You can turn the latency down to 1ms or up to 200ms in the settings, under callb
 
 KWin, by default, remembers the location of windows. It will try to put them back into these locations if the windows request it. Known windows that do include Firefox. If this conflicts with tiling, try adding a KWin rule to all windows to force ignore requested geometry.
 
+### I want to move windows using my mouse while keeping them tiled
+
+When moving a window, KWin untiles it. I could circumvent this issue by constantly forcing the window back into the nearest available tile, but it would be unoptimized, messy, and would not integrate well with the KWin tiling system. This script tries to work instead of against the builtin tiling system whenever possible, and therefore supports moving floated windows into tiles when using the shift key (just as our founding fathers intended). This being said, if KWin ever adds an option to keep windows tiled while moving them, you bet I would jump onto supporting that engine-side in a heartbeat.
+
 ---
 
 <div align="center"><sub>

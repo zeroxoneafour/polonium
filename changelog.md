@@ -10,3 +10,8 @@
 * Fixed rare issue with TypeScript not allowing no parentheses `new Array<T>` statements
 * Rewrote much of the project internals around using QML as the main script type
 * Added new popup for when the tiling engine is switched
+* Use esbuild instead of tsc to compile and added typescript to npm dependencies
+* Fix up some issues with overextending tiling when resizing with shortcuts
+* Added section to FAQ about moving windows while keeping them tiled
+* Replaced limitations section of readme with info about X11
+* Insert starting on right with ThreeColumn

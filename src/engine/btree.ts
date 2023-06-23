@@ -214,6 +214,12 @@ export class TilingEngine implements Engine.TilingEngine {
                 parent.childRatio -= amount;
             }
         }
+        while (parent.childRatio > 0.85) {
+            parent.childRatio -= amount;
+        };
+        while (parent.childRatio < 0.15) {
+            parent.childRatio += amount;
+        };
         return true;
     }
     

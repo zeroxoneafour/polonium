@@ -47,8 +47,8 @@ export class TilingEngine implements Engine.TilingEngine {
             rootTile.split(1);
             rootTile.tiles[1].split(1);
             rootTile.tiles[0].relativeGeometry.width = this.leftSize;
-            rootTile.tiles[1].relativeGeometry.width = 1 - this.leftSize - this.rightSize;
             rootTile.tiles[2].relativeGeometry.width = this.rightSize;
+            rootTile.tiles[1].relativeGeometry.width = 1 - this.leftSize - this.rightSize;
             centerTile = rootTile.tiles[1];
             leftTile = rootTile.tiles[0];
             rightTile = rootTile.tiles[2];
@@ -141,13 +141,22 @@ export class TilingEngine implements Engine.TilingEngine {
                 this.rightSize += amount;
             }
         }
-        if ((this.rightSize + this.leftSize) > 0.9) {
+        // nice
+        while ((this.rightSize + this.leftSize) > 0.69) {
             if (this.rightSize > this.leftSize) {
                 this.rightSize -= amount;
             } else {
                 this.leftSize -= amount;
             }
         }
+        while (this.rightSize < 0.15) {
+            this.rightSize += amount;
+        }
+        while (this.leftSize < 0.15) {
+            this.leftSize += amount;
+        }
+        printDebug(this.rightSize + "", true);
+        printDebug(this.leftSize + "", true);
         return true;
     }
 
@@ -170,7 +179,7 @@ export class TilingEngine implements Engine.TilingEngine {
         // center first, then right, then left
         if (this.columns[1].length == 0) {
             this.columns[1].push(new Container(client));
-        } else if (this.columns[2].length < this.columns[0].length) {
+        } else if (this.columns[2].length <= this.columns[0].length) {
             this.columns[2].push(new Container(client));
         } else {
             this.columns[0].push(new Container(client));
