@@ -141,7 +141,7 @@ export class TilingEngine implements Engine.TilingEngine {
                 this.rightSize += amount;
             }
         }
-        while ((this.rightSize + this.leftSize) > 0.69) { // nice
+        while ((this.rightSize + this.leftSize) > 0.85) {
             if (this.rightSize > this.leftSize) {
                 this.rightSize -= amount;
             } else {
