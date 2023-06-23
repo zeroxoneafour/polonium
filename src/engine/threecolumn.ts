@@ -154,8 +154,6 @@ export class TilingEngine implements Engine.TilingEngine {
         while (this.leftSize < 0.15) {
             this.leftSize += amount;
         }
-        printDebug(this.rightSize + "", true);
-        printDebug(this.leftSize + "", true);
         return true;
     }
 

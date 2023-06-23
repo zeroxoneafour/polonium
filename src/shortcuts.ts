@@ -169,13 +169,14 @@ export function cycleEngine() {
     const desktop = new Desktop;
     const clients = engine.placeClients(desktop).map(x => x[0]);
     for (const client of clients) {
-        engine.removeClient(client, desktop);
         client.wasTiled = false;
         client.tile = null;
     }
     engine.cycleEngine(desktop);
     for (const client of clients) {
-        engine.addClient(client, desktop);
+        if (client != undefined) { 
+            engine.addClient(client, desktop);
+        }
     }
     rebuildLayout();
 }
