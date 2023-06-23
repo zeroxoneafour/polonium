@@ -23,8 +23,11 @@ declare namespace Qt {
         /** Very coarse timers only keep full second accuracy */
         VeryCoarseTimer = 2
     }
+    
 }
 
+// more complex than this, cant be iterated over
+type QList<T> = Array<T>;
 
 // taken from https://github.com/RubixDev/kwin-types/blob/main/src/qt.d.ts
 /**

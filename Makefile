@@ -17,8 +17,6 @@ install: $(PKGFILE)
 		|| kpackagetool5 -i $(PKGFILE)
 
 clean: $(PKGDIR)
-	$(foreach file, $(shell ls src/**/*.js), rm $(file);)
-	$(foreach file, $(shell ls src/*.js), rm $(file);)
 	rm -r $(PKGDIR)
 
 cleanpkg: $(PKGFILE)
@@ -39,11 +37,13 @@ res: $(PKGDIR)
 	sed -i "s/%VERSION%/$(VERSION)/" $(PKGDIR)/metadata.json
 	sed -i "s/%NAME%/$(NAME)/" $(PKGDIR)/metadata.json
 
-src: $(PKGDIR)
+src: polonium.mjs
+	mv -f polonium.mjs $(PKGDIR)/contents/code/main.mjs
+	cp -f src/qml/* $(PKGDIR)/contents/code/
+
+polonium.mjs:
 	npm install
-	tsc
-	./node_modules/.bin/esbuild src/index.js --bundle --outfile=polonium.js
-	mv -f polonium.js $(PKGDIR)/contents/code/main.js
+	./node_modules/esbuild/bin/esbuild --bundle src/index.ts --outfile=polonium.mjs --format=esm --platform=neutral
 
 $(PKGDIR):
 	mkdir -p $(PKGDIR)

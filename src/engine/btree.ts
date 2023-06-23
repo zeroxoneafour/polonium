@@ -4,6 +4,7 @@ import { BiMap } from "mnemonist";
 import copy from "fast-copy";
 import { printDebug, config, BTreeInsertionPoint } from "../util";
 import * as Engine from "./common";
+import { workspace } from "../index";
 
 /*
  * Notes about BTree -
@@ -190,20 +191,15 @@ export class TilingEngine implements Engine.TilingEngine {
                 parent = parent.parent;
             }
         } else { // resize side to side
-            print("e");
             // if vertical layout, find the next parent up (for a horizontal layout)
             if (tile.parent.layoutDirection == 2) {
-                print("f");
                 parent = parent.parent;
             }
-            print("g");
         }
-        print("c");
         if (parent == null) {
             printDebug("Parent not found", true);
             return false;
         }
-        print(parent.childRatio);
         // -= and += deduced from trial and error
         if (direction.primary) {
             if (direction.above) {

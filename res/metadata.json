@@ -18,6 +18,6 @@
     },
     "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted",
     "X-KDE-PluginKeyword": "polonium",
-    "X-Plasma-API": "javascript",
-    "X-Plasma-MainScript": "code/main.js"
+    "X-Plasma-API": "declarativescript",
+    "X-Plasma-MainScript": "code/main.qml"
 }

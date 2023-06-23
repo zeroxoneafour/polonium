@@ -1,12 +1,16 @@
 declare namespace KWin {
-    class Toplevel {
+    interface Api {
+        readConfig(key: string, defaultValue?: any): any;
+        registerShortcut(id: string, desc: string, keybind: string, callback: Function): void;
+    }
+    interface Toplevel {
         readonly popupWindow: boolean;
         readonly frameGeometry: Qt.QRect;
         readonly desktop: number;
         frameGeometryChanged: Signal<(client: AbstractClient, oldGeometry: Qt.QRect) => void>;
         screenChanged: Signal<() => void>;
     }
-    class AbstractClient extends Toplevel {
+    interface AbstractClient extends Toplevel {
         readonly resizeable: boolean;
         readonly moveable: boolean;
         readonly transient: boolean;
@@ -45,9 +49,9 @@ declare namespace KWin {
         // functions
         setMaximize(vertically: boolean, horizontally: boolean): void;
     }
-    class Tile {
+    interface Tile {
         tiles: Array<Tile>;
-        windows: Array<AbstractClient>;
+        windows: QList<AbstractClient>;
         absoluteGeometry: Qt.QRect;
         relativeGeometry: Qt.QRect;
         layoutDirection: LayoutDirection;
@@ -69,18 +73,18 @@ declare namespace KWin {
         MaximizeHorizontal,
         MaximizeFull,
     }
-    class RootTile extends Tile {
+    interface RootTile extends Tile {
         parent: null;
         layoutModified: Signal<() => void>;
         // extra thing used in engine
         connected: boolean | undefined;
     }
-    class TileManager {
+    interface TileManager {
         rootTile: RootTile;
         bestTileForPosition(x: number, y: number): Tile | null;
     }
 
-    class WorkspaceWrapper {
+    interface WorkspaceWrapper {
         activeClient: AbstractClient | null;
         activeScreen: number;
         currentActivity: string;
@@ -91,7 +95,7 @@ declare namespace KWin {
         cursorPos: Qt.QPoint;
         tilingForScreen(desktop: number): KWin.TileManager;
         supportInformation(): string;
-        clientList(): Array<AbstractClient>;
+        clientList(): QList<AbstractClient>;
         // doesnt actually exist in api but convenient place to keep state
         tmpLastActiveClient: AbstractClient | null | undefined;
         previousActiveClient: AbstractClient | null | undefined;
@@ -110,7 +114,7 @@ declare namespace KWin {
         currentDesktopChanged: Signal<(desktop: number, client: AbstractClient) => void>;
         currentActivityChanged: Signal<(activity: string) => void>;
     }
-    class Options {
+    interface Options {
         configChanged: Signal<() => void>;
     }
 }

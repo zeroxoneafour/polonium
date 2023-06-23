@@ -1,5 +1,6 @@
 import { TilingEngine, Direction } from "./common";
 import { config, printDebug } from "../util";
+import { workspace, showDialog } from "../index";
 
 // engines and engine enum
 import * as BTree from "./btree";
@@ -76,7 +77,7 @@ export class EngineManager {
         }
         engineType += 1;
         engineType %= EngineTypes._loop;
-        printDebug("Setting engine for " + desktop + " to engine " + engineType, false);
+        printDebug("Setting engine for " + desktop + " to engine " + EngineTypes[engineType], false);
         this.engineTypes.set(desktop.toString(), engineType);
         const engine = engineForEnum(engineType);
         if (engine == null) {
@@ -84,6 +85,7 @@ export class EngineManager {
             return false;
         }
         this.engines.set(desktop.toString(), engine);
+        showDialog(EngineTypes[engineType]);
         return true;
     }
     

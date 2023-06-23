@@ -7,12 +7,12 @@
         "pkg/"
     ],
     "compilerOptions": {
-        "allowJs": true,
         "target": "es2021",
+        "module": "es6",
         "moduleResolution": "node",
         "noEmitOnError": false,
         "removeComments": true,
-        "lib": ["es2021", "dom"],
+        "lib": ["es2022", "dom"],
         "alwaysStrict": true,
         "strict": true
     }

@@ -96,7 +96,6 @@ export class TilingEngine implements Engine.TilingEngine {
         } else if (this.middleSplit < 0.11) {
             this.middleSplit += amount;
         }
-        print(this.middleSplit);
         return true;
     }
     

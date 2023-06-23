@@ -3,6 +3,7 @@ import * as Engine from "./engine/common";
 import { Desktop } from "./engine/engine";
 import { engine, rebuildLayout, untileClient, tileClient } from "./main";
 import { printDebug, config } from "./util";
+import { workspace } from "./index";
 
 export enum Direction {
     Above,
@@ -44,7 +45,7 @@ function tileAbove(client: KWin.AbstractClient): KWin.Tile | null {
     let y = geometry.y - coordOffset;
     let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
     // make sure the window does not include the client
-    if (tile == null || tile.windows.includes(client)) {
+    if (tile == null || client.tile == tile) {
         return null;
     } else {
         return tile;
@@ -63,7 +64,7 @@ function tileBelow(client: KWin.AbstractClient) {
     let y = geometry.y + coordOffset;
     let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
     // make sure the window does not include the client
-    if (tile == null || tile.windows.includes(client)) {
+    if (tile == null || client.tile == tile) {
         return null;
     } else {
         return tile;
@@ -82,7 +83,7 @@ function tileLeft(client: KWin.AbstractClient) {
     let y = geometry.y + 1;
     let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
     // make sure the window does not include the client
-    if (tile == null || tile.windows.includes(client)) {
+    if (tile == null || client.tile == tile) {
         return null;
     } else {
         return tile;
@@ -101,7 +102,7 @@ function tileRight(client: KWin.AbstractClient) {
     let y = geometry.y + 1;
     let tile: KWin.Tile | null = workspace.tilingForScreen(client.screen).bestTileForPosition(x, y);
     // make sure the window does not include the client
-    if (tile == null || tile.windows.includes(client)) {
+    if (tile == null || client.tile == tile) {
         return null;
     } else {
         return tile;

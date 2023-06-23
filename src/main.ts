@@ -4,6 +4,7 @@ import { EngineManager, Desktop } from "./engine/engine";
 import { Direction } from "./engine/common";
 // to build with a different engine, change this to a different file
 import { Borders, config, printDebug, doTileClient, GeometryTools } from "./util";
+import { workspace } from "./index";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
@@ -88,7 +89,9 @@ export function rebuildLayout(this: any, isRepeat = false) {
 
 export function currentDesktopChange(): void {
     // set geometry for all clients manually to avoid resizing when tiles are deleted
-    for (const client of workspace.clientList()) {
+    const clientList = workspace.clientList();
+    for (let i = 0; i < clientList.length; i += 1) {
+        const client = clientList[i];
         if (client.tile != null && client.screen == workspace.lastActiveScreen && client.activities.includes(workspace.lastActivity!) && client.desktop == workspace.lastDesktop) {
             const tile = client.tile;
             client.tile = null;

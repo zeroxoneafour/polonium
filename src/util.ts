@@ -1,5 +1,6 @@
 import { EngineTypes } from "./engine/engine";
 import { Direction } from "./engine/common";
+import { kwin, print } from "./index";
 
 // config globals
 export enum Borders {
@@ -17,21 +18,24 @@ export enum BTreeInsertionPoint {
 
 
 class Config {
-    debug: boolean = readConfig("Debug", false);
-    useProcessWhitelist: boolean = readConfig("UseProcessWhitelist", false);
-    filterProcessName: Array<string> = readConfig("FilterProcessName", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
-    filterClientCaption: Array<string> = readConfig("FilterClientCaption", "").split(',').map((x: string) => x.trim());
-    tilePopups: boolean = readConfig("TilePopups", false);
-    borders: Borders = readConfig("Borders", Borders.NoBorderTiled);
-    btreeInsertionPoint: BTreeInsertionPoint = readConfig("BTreeInsertionPoint", BTreeInsertionPoint.Left);
-    keepTiledBelow: boolean = readConfig("KeepTiledBelow", true);
-    defaultEngine: EngineTypes = readConfig("DefaultEngine", EngineTypes.BTree);
-    maximizeSingle: boolean = readConfig("MaximizeSingle", false);
-    resizeAmount: number = readConfig("ResizeAmount", 10) / 1000;
-    timerDelay: number = readConfig("TimerDelay", 150);
+    debug: boolean = kwin.readConfig("Debug", false);
+    useProcessWhitelist: boolean = kwin.readConfig("UseProcessWhitelist", false);
+    filterProcessName: Array<string> = kwin.readConfig("FilterProcessName", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
+    filterClientCaption: Array<string> = kwin.readConfig("FilterClientCaption", "").split(',').map((x: string) => x.trim());
+    tilePopups: boolean = kwin.readConfig("TilePopups", false);
+    borders: Borders = kwin.readConfig("Borders", Borders.NoBorderTiled);
+    btreeInsertionPoint: BTreeInsertionPoint = kwin.readConfig("BTreeInsertionPoint", BTreeInsertionPoint.Left);
+    keepTiledBelow: boolean = kwin.readConfig("KeepTiledBelow", true);
+    defaultEngine: EngineTypes = kwin.readConfig("DefaultEngine", EngineTypes.BTree);
+    maximizeSingle: boolean = kwin.readConfig("MaximizeSingle", false);
+    resizeAmount: number = kwin.readConfig("ResizeAmount", 10) / 1000;
+    timerDelay: number = kwin.readConfig("TimerDelay", 150);
 };
 
-export const config = new Config;
+export let config: Config;
+export function createConfig(): void {
+    config = new Config();
+}
 
 let filterProcessCache: Set<string> = new Set;
 let filterCaptionCache: Set<string> = new Set;

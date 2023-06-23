@@ -25,7 +25,7 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 * Probably slow due to poor optimization
 
 ## building
-Requires `tsc`, `npm`, and `kpackagetool5`
+Requires `npm` and `kpackagetool5`
 
 Commands -
 * Build/Install/Clean - `make`
