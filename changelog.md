@@ -18,3 +18,4 @@
 * Added partial side insertion to ThreeColumn and Half to get around missing columns
 * Added private to package.json
 * Quick tiling support on sides of screen using mouse, works for Half at least
+* Set fallback tiling engine to KWin

@@ -56,15 +56,17 @@ export class EngineManager {
     layoutBuilding: boolean = false;
     tileRebuildTimers: Map<KWin.RootTile, QTimer> = new Map;
     
-    createNewEngine(desktop: Desktop): TilingEngine {
+    private createNewEngine(desktop: Desktop): TilingEngine {
         this.engineTypes.set(desktop.toString(), config.defaultEngine);
         const engine = engineForEnum(config.defaultEngine);
         this.engines.set(desktop.toString(), engine);
         return engine;
     }
 
-    getEngine(desktop?: Desktop): TilingEngine {
-        if (desktop === undefined) desktop = new Desktop();
+    private getEngine(desktop?: Desktop): TilingEngine {
+        if (desktop === undefined) {
+            desktop = new Desktop();
+        }
         return this.engines.get(desktop.toString()) ?? this.createNewEngine(desktop);
     }
     
