@@ -144,4 +144,9 @@ export namespace GeometryTools {
         if (point.y > rect.y + rect.height) return false;
         return true;
     }
+    
+    // close enough
+    export function rectCenter(rect: Qt.QRect): Qt.QPoint {
+        return new QPoint(rect.x + (rect.width + 1) / 2, rect.y + (rect.width + 1) / 2);
+    }
 }

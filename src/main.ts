@@ -69,7 +69,7 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 client.desktopChanged.connect(clientDesktopChange.bind(this, client));
                 client.activitiesChanged.connect(clientDesktopChange);
                 client.screenChanged.connect(clientDesktopChange.bind(this, client));
-                //client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
+                client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
                 client.frameGeometryChanged.connect(clientGeometryChange);
                 client.clientMaximizedStateChanged.connect(clientMaximized);
                 client.hasBeenTiled = true;
@@ -172,8 +172,10 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
     rebuildLayout();
 }
 
-export function untileClient(this: any, client: KWin.AbstractClient): void {
-    client.wasTiled = false;
+export function untileClient(this: any, client: KWin.AbstractClient, keepWasTiled: boolean = false): void {
+    if (!keepWasTiled) {
+        client.wasTiled = false;
+    }
     client.tile = null;
     engine.removeClient(client);
     if (config.borders == Borders.NoBorderTiled) {
@@ -206,23 +208,22 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
     }
 }
 
-/* What even is quick tiling
+// What even is quick tiling
 export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
-    const cursorPos = new GeometryTools.QPoint(workspace.cursorPos.x, workspace.cursorPos.y);
-    const tile = workspace.tilingForScreen(client.screen).bestTileForPosition(cursorPos.x, cursorPos.y);
-    if (tile == null) {
-        return;
-    }
     printDebug(client.resourceClass + " has been quick tiled", false);
-    cursorPos.x += tile.padding;
-    cursorPos.y += tile.padding;
-    const direction = GeometryTools.directionFromPointInRect(tile.absoluteGeometry, cursorPos);
-    if (direction == null) {
-        return;
+    const windowCenter = GeometryTools.rectCenter(client.frameGeometry);
+    if (client.tile != null) {
+        untileClient(client);
+        const tile = workspace.tilingForScreen(client.screen).bestTileForPosition(windowCenter.x, windowCenter.y);
+        if (tile == null) {
+            return;
+        }
+        windowCenter.x;
+        windowCenter.y;
+        const direction = GeometryTools.directionFromPointInRect(tile.absoluteGeometry, windowCenter);
+        tileClient(client, tile, direction);
     }
-    tileClient(client, tile, GeometryTools.directionFromPointInRect(tile.absoluteGeometry, cursorPos));
 }
-*/
 
 export function addClient(client: KWin.AbstractClient): void {
     client.oldDesktop = client.desktop;
@@ -253,8 +254,7 @@ export function clientFullScreenSet(client: KWin.AbstractClient, fullScreen: boo
     if (!client.wasTiled) return;
     if (fullScreen) {
         printDebug(client.resourceClass + " enabled fullscreen", false);
-        untileClient(client);
-        client.wasTiled = true;
+        untileClient(client, true);
     } else {
         printDebug(client.resourceClass + " disabled fullscreen", false);
         tileClient(client);
@@ -264,8 +264,7 @@ export function clientFullScreenSet(client: KWin.AbstractClient, fullScreen: boo
 export function clientMinimized(client: KWin.AbstractClient): void {
     if (!client.wasTiled) return;
     printDebug(client.resourceClass + " was minimized", false);
-    untileClient(client);
-    client.wasTiled = true;
+    untileClient(client, true);
 }
 
 export function clientUnminimized(client: KWin.AbstractClient): void {
