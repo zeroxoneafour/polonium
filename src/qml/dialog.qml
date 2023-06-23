@@ -26,7 +26,7 @@ PlasmaCore.Dialog {
         // Show the popup
         this.visible = true;
         // Start popup hide timer
-        hideTimer.interval = 3000;
+        hideTimer.interval = 1000;
         hideTimer.start();
     }
 

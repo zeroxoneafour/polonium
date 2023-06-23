@@ -195,11 +195,7 @@ export class TilingEngine implements Engine.TilingEngine {
         }
         let array: Array<Container> | undefined;
         for (const column of this.columns) {
-            // create all columns first
-            if (column.length == 0) {
-                column.push(newContainer);
-                return true;
-            } else if (column.includes(container)) {
+            if (column.includes(container)) {
                 array = column;
                 break;
             }
