@@ -12,7 +12,7 @@ class Container {
 }
 
 export class TilingEngine implements Engine.TilingEngine {
-    columns = [new Array<Container>, new Array<Container>, new Array<Container>];
+    columns = [new Array<Container>(), new Array<Container>(), new Array<Container>()];
     leftSize: number = 0.25;
     rightSize: number = 0.25;
     nodeMap = new BiMap<Container, KWin.Tile>();
