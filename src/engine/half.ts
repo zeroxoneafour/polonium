@@ -136,29 +136,40 @@ export class TilingEngine implements Engine.TilingEngine {
             printDebug("No container found for tile", true);
             return false;
         }
-        let array;
-        let otherArray;
-        let newContainer = new Container(client);
+        const newContainer = new Container(client);
         if (this.right.includes(container)) {
-            array = this.right;
-            otherArray = this.left;
-        } else {
-            array = this.left;
-            otherArray = this.right;
-        }
-        // if one of the arrays is empty, push to it instead
-        if (otherArray.length != 0) {
-            if (direction == undefined) {
-                array.splice(array.indexOf(container), 0, newContainer);
+            const array = this.right;
+            // put in left if there are no windows and the direction indicates left
+            if ((direction == undefined || !direction.right) && this.left.length == 0) {
+                this.left.push(newContainer);
             } else {
-                if (direction.above) {
+                if (direction == undefined) {
                     array.splice(array.indexOf(container), 0, newContainer);
                 } else {
-                    array.splice(array.indexOf(container) + 1, 0, newContainer);
+                    if (direction.above) {
+                        array.splice(array.indexOf(container), 0, newContainer);
+                    } else {
+                        array.splice(array.indexOf(container) + 1, 0, newContainer);
+                    }
                 }
             }
         } else {
-            otherArray.push(newContainer);
+            const array = this.left;
+            // put in right if there are no windows and the direction indicates right
+            if ((direction == undefined || direction.right) && this.right.length == 0) {
+                this.right.push(newContainer);
+            } else {
+                if (direction == undefined) {
+                    array.splice(array.indexOf(container), 0, newContainer);
+                } else {
+                    if (direction.above) {
+                        array.splice(array.indexOf(container), 0, newContainer);
+                    } else {
+                        array.splice(array.indexOf(container) + 1, 0, newContainer);
+                    }
+                }
+            }
+
         }
         return true;
     }

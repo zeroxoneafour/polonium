@@ -141,8 +141,7 @@ export class TilingEngine implements Engine.TilingEngine {
                 this.rightSize += amount;
             }
         }
-        // nice
-        while ((this.rightSize + this.leftSize) > 0.69) {
+        while ((this.rightSize + this.leftSize) > 0.69) { // nice
             if (this.rightSize > this.leftSize) {
                 this.rightSize -= amount;
             } else {
@@ -209,13 +208,32 @@ export class TilingEngine implements Engine.TilingEngine {
             printDebug("Container not registered", true);
             return false;
         }
-        if (direction == undefined) {
-            array.splice(array.indexOf(container), 0, newContainer);
-        } else {
-            if (direction.above) {
+        // special behavior for center if there are no windows present on the sides
+        if (array == this.columns[1]) {
+            if (direction == undefined) {
                 array.splice(array.indexOf(container), 0, newContainer);
             } else {
-                array.splice(array.indexOf(container) + 1, 0, newContainer);
+                if (direction.right && this.columns[2].length == 0) {
+                    this.columns[2].push(newContainer);
+                } else if (!direction.right && this.columns[0].length == 0) {
+                    this.columns[0].push(newContainer);
+                } else {
+                    if (direction.above) {
+                        array.splice(array.indexOf(container), 0, newContainer);
+                    } else {
+                        array.splice(array.indexOf(container) + 1, 0, newContainer);
+                    }
+                }
+            }
+        } else {
+            if (direction == undefined) {
+                array.splice(array.indexOf(container), 0, newContainer);
+            } else {
+                if (direction.above) {
+                    array.splice(array.indexOf(container), 0, newContainer);
+                } else {
+                    array.splice(array.indexOf(container) + 1, 0, newContainer);
+                }
             }
         }
         return true;
