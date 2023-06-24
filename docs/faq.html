@@ -1,0 +1,35 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta id="pagename" content="faq">
+    <title>Polonium | FAQ</title>
+    <script src="main.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    
+<header>
+    <div id="header"></div>
+</header>
+
+<div id="navbar" class="navbar"></div>
+
+<div id="content" class="content md">
+
+</div>
+
+<script>
+  fetch("faq.md").then(function(response) {
+    response.text().then(function(text) {
+        document.getElementById("content").innerHTML = marked.parse(text);
+    });
+  });
+</script>
+
+<footer>
+    <div id="footer"></div>
+</footer>
+
+</body>
+</html>
