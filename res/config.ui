@@ -158,7 +158,7 @@
 Comma separated list of process names.</string>
        </property>
        <property name="text">
-        <string>krunner, yakuake, kded, polkit</string>
+        <string>krunner, yakuake, kded, polkit, plasmashell</string>
        </property>
       </widget>
      </item>
@@ -380,7 +380,7 @@ Comma separated list of window titles.</string>
       <number>200</number>
      </property>
      <property name="value">
-      <number>150</number>
+      <number>10</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

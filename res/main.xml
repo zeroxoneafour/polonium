@@ -3,7 +3,7 @@
     <kcfgfile name=""/>
     <group name="">
         <entry name="UseProcessWhitelist" type="bool"><default>false</default></entry>
-        <entry name="FilterProcessName" type="string"><default>krunner, yakuake, kded, polkit</default></entry>
+        <entry name="FilterProcessName" type="string"><default>krunner, yakuake, kded, polkit, plasmashell</default></entry>
         <entry name="FilterClientCaption" type="string"><default></default></entry>
         <entry name="TilePopups" type="bool"><default>false</default></entry>
         <entry name="BTreeInsertionPoint" type="int"><default>0</default></entry>
@@ -13,6 +13,6 @@
         <entry name="DefaultEngine" type="int"><default>0</default></entry>
         <entry name="MaximizeSingle" type="bool"><default>false</default></entry>
         <entry name="ResizeAmount" type="int"><default>10</default></entry>
-        <entry name="TimerDelay" type="int"><default>150</default></entry>
+        <entry name="TimerDelay" type="int"><default>10</default></entry>
     </group>
 </kcfg>

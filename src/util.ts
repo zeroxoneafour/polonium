@@ -20,7 +20,7 @@ export enum BTreeInsertionPoint {
 class Config {
     debug: boolean = kwin.readConfig("Debug", false);
     useProcessWhitelist: boolean = kwin.readConfig("UseProcessWhitelist", false);
-    filterProcessName: Array<string> = kwin.readConfig("FilterProcessName", "krunner, yakuake, kded, polkit").split(',').map((x: string) => x.trim());
+    filterProcessName: Array<string> = kwin.readConfig("FilterProcessName", "krunner, yakuake, kded, polkit, plasmashell").split(',').map((x: string) => x.trim());
     filterClientCaption: Array<string> = kwin.readConfig("FilterClientCaption", "").split(',').map((x: string) => x.trim());
     tilePopups: boolean = kwin.readConfig("TilePopups", false);
     borders: Borders = kwin.readConfig("Borders", Borders.NoBorderTiled);
@@ -29,7 +29,7 @@ class Config {
     defaultEngine: EngineTypes = kwin.readConfig("DefaultEngine", EngineTypes.BTree);
     maximizeSingle: boolean = kwin.readConfig("MaximizeSingle", false);
     resizeAmount: number = kwin.readConfig("ResizeAmount", 10) / 1000;
-    timerDelay: number = kwin.readConfig("TimerDelay", 150);
+    timerDelay: number = kwin.readConfig("TimerDelay", 10);
 };
 
 export let config: Config;
