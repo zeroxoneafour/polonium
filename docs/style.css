@@ -1,0 +1,127 @@
+@import "styles/variables.css";
+@import "styles/classes.css";
+@import "styles/navbar.css";
+@import "styles/fonts.css";
+
+body {
+  margin: 0px;
+  min-width: 350px;
+  color: var(--on-navgroup);
+  background-color: var(--page-bg);
+  font-family: 'Lexend Decca', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.5rem;
+  transition: 0.3s
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Lexend Zetta', sans-serif;
+}
+
+h1 {
+  text-align: center;
+}
+
+pre {
+  width: auto;
+  overflow: auto;
+}
+
+svg {
+  display: inline-block;
+  vertical-align: middle;
+  padding-bottom: 3px;
+  fill: var(--on-navgroup);
+  transition: 0.3s;
+}
+
+img {
+  margin: 20px;
+  max-width: -webkit-fill-available;
+  transition: 0.3s;
+}
+
+a {
+  text-decoration: none;
+  color: #2f80ed;
+  transition: 0.3s;
+}
+
+a * {
+  color: var(--on-navgroup);
+  transition: 0.3s;
+}
+
+a svg {
+  transition: 0s;
+}
+
+a:hover, a:hover *:not(p) {
+  text-shadow: 0px 0px 10px #2f80ed;
+  color: #2f80ed;
+}
+
+a:hover svg {
+  filter: drop-shadow(0px 0px 10px rgb(47 128 237));
+  fill: #2f80ed;
+}
+
+a:hover img {
+  box-shadow: 0px 0px 10px #2f80ed;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  color: var(--on-navgroup);
+  background-color: var(--navgroup-bg);
+  transition: 0.3s;
+}
+
+header,
+footer {
+  font-family: 'Lexend Zetta', sans-serif;
+  background-color: var(--navgroup-bg);
+  text-align: center;
+  z-index: 2;
+  color: var(--on-navgroup);
+  transition: 0.3s;
+}
+
+header {
+  padding-bottom: 30px;
+}
+
+header div,
+footer div {
+  display: inline-flex;
+}
+
+header div div,
+footer div div {
+  text-align: center;
+  display: inline-block;
+  margin: 0px 10px;
+}
+
+table {
+  border: 2px solid var(--on-navgroup);
+  border-collapse: collapse;
+  margin: 30px;
+}
+
+th {
+  border: 2px solid var(--on-navgroup);
+  text-align: center;
+  padding: 5px;
+}
+
+td {
+  border: 1px solid var(--on-navgroup);
+  text-align: left;
+  padding: 5px;
+}
