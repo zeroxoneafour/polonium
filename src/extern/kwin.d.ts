@@ -14,6 +14,10 @@ declare namespace KWin {
         readonly resizeable: boolean;
         readonly moveable: boolean;
         readonly transient: boolean;
+        // added these three after looking at bismuth, lets see if they work
+        readonly dialog: boolean;
+        readonly splash: boolean;
+        readonly utility: boolean;
         readonly specialWindow: boolean;
         tile: Tile | null;
         keepAbove: boolean;

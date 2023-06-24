@@ -55,10 +55,11 @@ export function doTileClient(client: KWin.AbstractClient): boolean {
         return false;
     }
     // check if client is a popup window or transient (placeholder window)
-    if ((client.popupWindow || client.transient) && !config.tilePopups) {
+    if ((client.dialog || client.splash || client.utility || client.transient) && !config.tilePopups) {
         return false;
     }
-    // check if client is a dock or something
+    
+    // check if client is a dock or something (kwin at least marks plasmashell as this)
     if (client.specialWindow) {
         return false;
     }
