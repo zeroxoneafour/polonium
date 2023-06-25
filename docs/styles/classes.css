@@ -54,6 +54,8 @@
 
 .dropdown:hover .dropbutton {
     background-color: var(--hover-navgroup);
+    text-shadow: 0px 0px 10px #2f80ed;
+    font-variation-settings: 'FILL' 1;
 }
 
 .dropdown:hover .dropdown-content {

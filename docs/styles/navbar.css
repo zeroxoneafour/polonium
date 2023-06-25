@@ -30,12 +30,12 @@
 
 .navbar .navbutton {
   font-family: 'Lexend Zetta', sans-serif;
-  color: var(--on-navgroup);
   padding: 0.5rem;
   font-size: 1rem;
   margin: 0.22rem 0.22rem;
   box-shadow: none;
   border-radius: 0.2rem;
+  display: flex;
 }
 
 .navbar .nav .navbutton {
@@ -46,21 +46,24 @@
   margin-right: 0rem;
 }
 
-.navbar .navbutton:hover {
+.navbar .navbutton:hover span {
   text-decoration: none;
   color: var(--on-navgroup);
 }
 
-.navbar .navbutton:hover svg {
-  fill: var(--on-navgroup);
-}
-
 .navbar .navitem:not(.active):not(.activenav) .navbutton:hover {
   background-color: var(--hover-navgroup);
+  text-shadow: 0px 0px 10px #2f80ed;
+  font-variation-settings: 'FILL' 1;
 }
 
-.navbar .navitem.active .navbutton:hover,
-.navbar .activenav .navbutton:hover {
+.navbar .navitem.active .navbutton,
+.navbar .activenav .navbutton {
+  font-variation-settings: 'FILL' 1;
+}
+
+.navbar .navitem.active .navbutton:hover span,
+.navbar .activenav .navbutton:hover span {
   cursor: default;
   text-shadow: none;
 }
@@ -91,6 +94,10 @@
   background-color: var(--hover-navgroup);
 }
 
+.navbar .navmenu:hover .hamicon * {
+  box-shadow: 0px 0px 10px #2f80ed;
+}
+
 @media screen and (max-width: 720px) {
   .navbar .nav .navitem:not(.activenav) {
     display: none;
@@ -99,7 +106,7 @@
   .navbar .nav .activenav,
   .navbar .nav .activenav .navbutton {
     float: none;
-    display: inline-block;
+    display: flex;
   }
 
   .navbar.responsive .nav .navitem:not(.active):not(.activenav) {
