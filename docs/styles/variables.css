@@ -1,0 +1,154 @@
+/* COLORS */
+
+:root {
+    --black: #1A1C1E;
+    --white: #FFFFFF;
+
+    --transparent-white: #FFFFFFCC;
+    --transparent-grey: #7F766B33;
+    --transparent-black: #1A1C1E33;
+
+    --primary-90: #CDE5FF;
+    --primary-80: #95CCFF;
+    --primary-70: #4CB2FF;
+    --primary-40: #006399;
+    --primary-30: #004A75;
+    --primary-20: #003352;
+    --primary-10: #001D32;
+
+    --secondary-90: #D0E5FB;
+    --secondary-80: #B5C9DF;
+    --secondary-40: #4D6073;
+    --secondary-30: #36495B;
+    --secondary-10: #081D2D;
+
+    --tertiary-90: #EEDCFF;
+    --tertiary-80: #D4BDEE;
+    --tertiary-40: #695681;
+    --tertiary-30: #4F4061;
+    --tertiary-20: #3A2850;
+    --tertiary-10: #241339;
+
+    --neutral-90: #E2E2E5;
+    --neutral-80: #C6C6C9;
+    --neutral-30: #45474A;
+    --neutral-10: #1A1C1E;
+
+    --neutral-variant-90: #DEE3EB;
+    --neutral-variant-80: #C2C7CF;
+    --neutral-variant-40: #595F66;
+    --neutral-variant-30: #42474E;
+    --neutral-variant-10: #171C22;
+}
+
+:root {
+    --github-bg-light: #5F5E5E;
+    --github-bg-dark: #C8C6C5;
+    --github-text-light: #FFF;
+    --github-text-dark: #303030;
+
+    --devto-bg-light: #5E5E5E;
+    --devto-bg-dark: #C6C6C6;
+    --devto-text-light: #FFF;
+    --devto-text-dark: #303030;
+}
+
+/* LIGHT THEME */
+
+[theme="light"] {
+    --standard-text: var(--black);
+    --cursor: var(--tertiary-20);
+    --page-bg: var(--white);
+    --navgroup-bg: var(--neutral-variant-90);
+    --card: var(--neutral-variant-90);
+    --card-hover: var(--tertiary-80);
+    --card-links: var(--neutral-variant-10);
+    --card-links-hover: var(--tertiary-20);
+    --card-infos-hover: var(--tertiary-20);
+    --mobile-navbar-bg: var(--transparent-white);
+    --on-navgroup: var(--neutral-variant-10);
+    --selected-navgroup: var(--primary-80);
+    --on-selected-navgroup: var(--primary-20);
+    --hover-navgroup: var(--neutral-variant-80);
+    --home-title-bg: var(--primary-90);
+    --home-on-title: var(--primary-10);
+    --repos-title-bg: var(--tertiary-90);
+    --repos-on-title: var(--tertiary-10);
+    --info-title-bg: var(--secondary-90);
+    --info-on-title: var(--secondary-10);
+    --contact-title-bg: var(--neutral-90);
+    --contact-on-title: var(--neutral-10);
+}
+
+[theme="light"] {
+    --github-bg: var(--github-bg-light);
+    --github-text: var(--github-text-light);
+    --devto-bg: var(--devto-bg-light);
+    --devto-text: var(--devto-text-light)
+}
+
+/* DARK THEME */
+
+[theme="dark"] {
+    --standard-text: var(--white);
+    --cursor: var(--tertiary-80);
+    --page-bg: var(--black);
+    --navgroup-bg: var(--neutral-variant-30);
+    --card: var(--neutral-variant-30);
+    --card-hover: var(--tertiary-30);
+    --card-links: var(--neutral-variant-90);
+    --card-links-hover: var(--tertiary-90);
+    --card-infos-hover: var(--tertiary-90);
+    --mobile-navbar-bg: var(--transparent-black);
+    --on-navgroup: var(--neutral-variant-90);
+    --selected-navgroup: var(--primary-30);
+    --on-selected-navgroup: var(--primary-90);
+    --hover-navgroup: var(--neutral-variant-40);
+    --home-title-bg: var(--primary-30);
+    --home-on-title: var(--primary-90);
+    --repos-title-bg: var(--tertiary-30);
+    --repos-on-title: var(--tertiary-90);
+    --info-title-bg: var(--secondary-30);
+    --info-on-title: var(--secondary-90);
+    --contact-title-bg: var(--neutral-30);
+    --contact-on-title: var(--neutral-90);
+}
+
+[theme="dark"] {
+    --github-bg: var(--github-bg-dark);
+    --github-text: var(--github-text-dark);
+    --devto-bg: var(--devto-bg-dark);
+    --devto-text: var(--devto-text-dark)
+}
+
+/* INVERTED ROUNDED CORNERS MASKS */
+
+:root {
+    --topleft-mask: radial-gradient(var(--border-radius-m) at 100% 100%, #0000 100%, #000);
+    --topright-mask: radial-gradient(var(--border-radius-m) at 0 100%, #0000 100%, #000);
+    --bottomleft-mask: radial-gradient(var(--border-radius-m) at 100% 0, #0000 100%, #000);
+    --bottomright-mask: radial-gradient(var(--border-radius-m) at 0 0, #0000 100%, #000);
+    --logo-mask: url("../res/img/logoMask.svg");
+}
+
+/* OTHER VARIABLES */
+
+/* BORDER RADIUS SIZES */
+
+:root {
+    --border-radius-xa: 1.2rem;
+    --border-radius-s: 1.6rem;
+    --border-radius-m: 2rem;
+    --border-radius-l: 2.4rem;
+    --border-radius-xl: 3rem;
+}
+
+/* FONT SIZES */
+
+:root {
+    --font-size-s: 1.4rem;
+    --font-size-m: 2.2rem;
+    --font-size-l: 4.8rem;
+    --font-size-xl: 6.4rem;
+    --font-size-header: 1.8rem;
+}

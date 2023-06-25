@@ -5,7 +5,7 @@ An (unofficial) successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth)
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
-![hot icon](res/logo.svg)
+![hot icon](https://raw.githubusercontent.com/zeroxoneafour/polonium/master/docs/logo.svg)
 
 [![wayland: supported](https://img.shields.io/badge/Wayland-Ready-blue?logo=kde)](https://community.kde.org/KWin/Wayland)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com) 

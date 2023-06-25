@@ -1,0 +1,95 @@
+.d-none {
+    display: none !important;
+}
+
+.content {
+    animation: fadeEffect 1s;
+    border: none;
+    padding: 2rem;
+    background-color: var(--page-bg);
+    transition: 0.3s;
+    max-width: 1010px;
+    margin: auto;
+}
+
+.change-theme {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.change-theme:hover .material-symbols-rounded {
+    font-variation-settings: 'FILL' 1;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    margin: 0rem;
+    padding: 0rem;
+    display: none;
+    position: absolute;
+    z-index: 1;
+}
+
+.dropdown-bg {
+    display: grid;
+    background-color: var(--navgroup-bg);
+    margin-top: 0.25rem;
+    padding: 0.2rem;
+    border-radius: 0.2rem;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+    top: 3rem;
+}
+
+.dropdown .dropdown-content .dropdown-bg .dropitem {
+    margin: 0.2rem;
+}
+
+.md h1,
+.md h2,
+.md h3,
+.md h4,
+.md h5,
+.md h6,
+.md p,
+.md ul,
+.md ol {
+    margin: 0rem;
+    padding-bottom: 0.25rem;
+}
+
+.md h1 {
+    padding-top: 3rem;
+}
+
+.md h2 {
+    padding-top: 2rem;
+}
+
+.md h3 {
+    padding-top: 1rem;
+}
+
+.md h4 {
+    padding-top: 0.75rem;
+}
+
+.md h5 {
+    padding-top: 0.5rem;
+}
+
+.md h6 {
+    padding-top: 0.25rem;
+}
+
+.md p,
+.md ul,
+.md ol {
+    padding-top: 0rem;
+}

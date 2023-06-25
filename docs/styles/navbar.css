@@ -1,0 +1,154 @@
+.navbar {
+  background-color: var(--navgroup-bg);
+  position: -webkit-sticky;
+  position: sticky;
+  z-index: 3;
+  padding: 0rem 0.2rem;
+  top: 0rem;
+  display: flex;
+  transition: 0.3s;
+}
+
+.navbar .nav {
+  display: inline;
+}
+
+.navbar .navright {
+  display: inline-block;
+  margin-left: auto;
+}
+
+.navbar .navitem {
+  margin: 0rem;
+  padding: 0rem;
+}
+
+.navbar .nav .navitem,
+.navbar .nav .navbutton {
+  float: left;
+}
+
+.navbar .navbutton {
+  font-family: 'Lexend Zetta', sans-serif;
+  color: var(--on-navgroup);
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin: 0.22rem 0.22rem;
+  box-shadow: none;
+  border-radius: 0.2rem;
+}
+
+.navbar .nav .navbutton {
+  margin-left: 0rem;
+}
+
+.navbar .navright .navbutton {
+  margin-right: 0rem;
+}
+
+.navbar .navbutton:hover {
+  text-decoration: none;
+  color: var(--on-navgroup);
+}
+
+.navbar .navbutton:hover svg {
+  fill: var(--on-navgroup);
+}
+
+.navbar .navitem:not(.active):not(.activenav) .navbutton:hover {
+  background-color: var(--hover-navgroup);
+}
+
+.navbar .navitem.active .navbutton:hover,
+.navbar .activenav .navbutton:hover {
+  cursor: default;
+  text-shadow: none;
+}
+
+.navbar .navitem.active .navbutton:hover svg,
+.navbar .activenav .navbutton:hover svg {
+  filter: none;
+}
+
+.navbar .navitem.active .navbutton {
+  background-color: var(--selected-navgroup);
+}
+
+.navbar .activenav {
+  display: none;
+}
+
+.navbar .navmenu {
+  border-radius: 0.2rem;
+  cursor: pointer;
+  padding: 0.5rem 0.4rem;
+  margin: 0.2rem 0rem;
+  display: none;
+  transition: 0.3s;
+}
+
+.navbar .navmenu:hover {
+  background-color: var(--hover-navgroup);
+}
+
+@media screen and (max-width: 720px) {
+  .navbar .nav .navitem:not(.activenav) {
+    display: none;
+  }
+
+  .navbar .nav .activenav,
+  .navbar .nav .activenav .navbutton {
+    float: none;
+    display: inline-block;
+  }
+
+  .navbar.responsive .nav .navitem:not(.active):not(.activenav) {
+    float: unset;
+    display: flex;
+  }
+  
+  .navbar .navmenu {
+    float: left;
+    display: block;
+    position: -webkit-sticky;
+    position: sticky;
+    z-index: 10;
+  }
+
+  .navbar.responsive .navmenu {
+    background-color: var(--selected-navgroup);
+  }
+
+  .navbar.responsive .navmenu .hamicon .bar1 {
+    -webkit-transform: rotate(-45deg) translate(-0.3rem, 0.3rem);
+    transform: rotate(-45deg) translate(-0.3rem, 0.3rem);
+  }
+
+  .navbar.responsive .navmenu .hamicon .bar2 {
+    opacity: 0;
+  }
+
+  .navbar.responsive .navmenu .hamicon .bar3 {
+    -webkit-transform: rotate(45deg) translate(-0.3rem, -0.3rem);
+    transform: rotate(45deg) translate(-0.3rem, -0.3rem);
+  }
+
+  .main {
+    margin: 0px 10px;
+  }
+}
+
+.hamicon {
+  display: inline-block;
+}
+
+.bar1,
+.bar2,
+.bar3 {
+  width: 1.5rem;
+  height: 0.3rem;
+  background-color: var(--on-navgroup);
+  margin: 0.15rem;
+  border-radius: 0.3rem;
+  transition: 0.3s;
+}
