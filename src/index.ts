@@ -20,6 +20,8 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     showDialog = qmlObjects.dialog.show;
     
     createConfig();
+    options.configChanged.connect(createConfig);
+    
     workspace.clientAdded.connect(main.addClient);
     workspace.clientRemoved.connect(main.removeClient);
 
@@ -27,8 +29,6 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     workspace.currentActivityChanged.connect(main.currentDesktopChange);
 
     workspace.clientActivated.connect(main.clientActivated);
-    workspace.clientMinimized.connect(main.clientMinimized);
-    workspace.clientUnminimized.connect(main.clientUnminimized);
 
     kwin.registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);
     kwin.registerShortcut("PoloniumCycleLayouts", "Polonium: Cycle layouts", "Meta+\\", shortcuts.cycleEngine);

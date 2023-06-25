@@ -6,6 +6,8 @@
 * Fixed QTimer undefined bug
 * Added fullscreen handler on a per-window basis
 * Website redesign from @HimDek
+* Added rudimentary monocle layout
+* Refactored some stuff to use more per-window signals instead of global kwin ones
 
 ### 0.5.1
 * Added an optional direction parameter to `TilingEngine.putClientInTile` and most descending classes
