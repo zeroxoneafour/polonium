@@ -1,6 +1,6 @@
 import { TilingEngine, Direction } from "./common";
 import { config, printDebug } from "../util";
-import { workspace, showDialog } from "../index";
+import { workspace, showDialog, createTimer } from "../index";
 
 // engines and engine enum
 import * as BTree from "./btree";
@@ -54,7 +54,7 @@ export class EngineManager {
     engineTypes: Map<string, EngineTypes> = new Map;
     engines: Map<string, TilingEngine> = new Map;
     layoutBuilding: boolean = false;
-    tileRebuildTimers: Map<KWin.RootTile, QTimer> = new Map;
+    tileRebuildTimers: Map<KWin.RootTile, Qt.QTimer> = new Map;
     
     private createNewEngine(desktop: Desktop): TilingEngine {
         this.engineTypes.set(desktop.toString(), config.defaultEngine);
@@ -108,12 +108,13 @@ export class EngineManager {
         if (this.layoutBuilding) return;
         if (!this.tileRebuildTimers.has(rootTile)) {
             printDebug("Creating tile update timer", false);
-            this.tileRebuildTimers.set(rootTile, new QTimer());
+            this.tileRebuildTimers.set(rootTile, createTimer());
             const timer = this.tileRebuildTimers.get(rootTile)!;
-            timer.singleShot = true;
-            timer.timeout.connect(this.updateTiles.bind(this, rootTile));
+            timer.repeat = false;
+            timer.triggered.connect(this.updateTiles.bind(this, rootTile));
+            timer.interval = config.timerDelay;
         }
-        this.tileRebuildTimers.get(rootTile)!.start(config.timerDelay);
+        this.tileRebuildTimers.get(rootTile)!.restart();
     }
 
     updateTiles(rootTile: KWin.RootTile): boolean {

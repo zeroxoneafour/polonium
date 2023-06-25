@@ -47,6 +47,7 @@ declare namespace KWin {
         // signals
         desktopPresenceChanged: Signal<(client: AbstractClient, desktop: number) => void>;
         desktopChanged: Signal<() => void>;
+        fullScreenChanged: Signal<() => void>;
         activitiesChanged: Signal<(client: AbstractClient) => void>;
         clientMaximizedStateChanged: Signal<(client: AbstractClient, mode: MaximizeMode) => void>;
         quickTileModeChanged: Signal<() => void>;
