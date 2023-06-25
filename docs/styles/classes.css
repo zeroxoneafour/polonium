@@ -105,3 +105,23 @@
 .md ol {
     padding-top: 0rem;
 }
+
+.pre-container {
+    background-color: var(--navgroup-bg);
+    padding: 1rem;
+    margin: 1rem 0rem;
+    border-radius: 0.2rem;
+    position: relative;
+}
+
+.pre-container .pre-copy-button {
+    position: absolute;
+    top: 0rem;
+    right: 0rem;
+    margin: 1rem;
+    opacity: 0;
+}
+
+.pre-container:hover .pre-copy-button {
+    opacity: 1;
+}

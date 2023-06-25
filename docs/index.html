@@ -19,11 +19,7 @@
 </div>
 
 <script>
-    fetch("https://raw.githubusercontent.com/zeroxoneafour/polonium/master/readme.md").then(function(response) {
-        response.text().then(function(text) {
-            document.getElementById("content").innerHTML = marked.parse(text);
-        });
-    });
+    markdownParse("https://raw.githubusercontent.com/zeroxoneafour/polonium/master/readme.md", "content");
 </script>
 
 <footer>
