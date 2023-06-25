@@ -5,6 +5,7 @@
 ### 0.5.2
 * Fixed QTimer undefined bug
 * Added fullscreen handler on a per-window basis
+* Website redesign from @HimDek
 
 ### 0.5.1
 * Added an optional direction parameter to `TilingEngine.putClientInTile` and most descending classes
