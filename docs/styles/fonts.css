@@ -1,12 +1,12 @@
 @font-face {
     font-family: 'Material Symbols Rounded';
     font-style: normal;
-    font-weight: 100 700;
-    src: url("https://fonts.gstatic.com/s/materialsymbolsrounded/v75/sykg-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190Fjzag.woff2") format('woff2')
-}
-
-.material-symbols-rounded {
-    font-family: 'Material Symbols Rounded', sans-serif;
+    font-weight: 400;
+    src: url(https://fonts.gstatic.com/s/materialsymbolsrounded/v120/syl7-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjpZIvLgyidOK7BDB_Qb9vUdV6_gjDK-P1Ju1_Zs-obHph2-jOcZTKPqw.woff2) format('woff2');
+  }
+  
+  .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded';
     font-weight: normal;
     font-style: normal;
     font-size: 24px;
@@ -19,7 +19,7 @@
     direction: ltr;
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
-}
+  }
 
 @font-face {
     font-family: "Lexend Zetta";

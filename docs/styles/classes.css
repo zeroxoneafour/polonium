@@ -7,7 +7,7 @@
     border: none;
     padding: 2rem;
     background-color: var(--page-bg);
-    transition: 0.3s;
+    transition: inherit;
     max-width: 1010px;
     margin: auto;
 }
@@ -17,7 +17,8 @@
     height: 2.5rem;
 }
 
-.change-theme:hover .material-symbols-rounded {
+.change-theme:hover,
+.material-symbols-rounded:hover {
     font-variation-settings: 'FILL' 1;
 }
 
@@ -26,7 +27,12 @@
     display: inline-block;
 }
 
+.dropbutton {
+    background-color: var(--navgroup-bg);
+}
+
 .dropdown-content {
+    background-color: #00000000;
     margin: 0rem;
     padding: 0rem;
     display: none;
@@ -42,13 +48,17 @@
     border-radius: 0.2rem;
 }
 
+.dropdown .dropdown-content .dropdown-bg .dropitem {
+    margin: 0.2rem;
+}
+
+.dropdown:hover .dropbutton {
+    background-color: var(--hover-navgroup);
+}
+
 .dropdown:hover .dropdown-content {
     display: block;
     top: 3rem;
-}
-
-.dropdown .dropdown-content .dropdown-bg .dropitem {
-    margin: 0.2rem;
 }
 
 .md h1,
