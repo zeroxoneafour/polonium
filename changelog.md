@@ -2,6 +2,10 @@
 
 ## 0.5.0
 
+### 0.5.2
+* Fixed QTimer undefined bug
+* Added fullscreen handler on a per-window basis
+
 ### 0.5.1
 * Added an optional direction parameter to `TilingEngine.putClientInTile` and most descending classes
 * Added code to set geometry of windows when not active to preserve their shape
