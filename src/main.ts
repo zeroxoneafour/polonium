@@ -69,6 +69,7 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 client.desktopChanged.connect(clientDesktopChange.bind(this, client));
                 client.activitiesChanged.connect(clientDesktopChange);
                 client.screenChanged.connect(clientDesktopChange.bind(this, client));
+                client.minimizedChanged.connect(clientMinimized.bind(this, client));
                 //client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
                 client.frameGeometryChanged.connect(clientGeometryChange);
                 client.clientMaximizedStateChanged.connect(clientMaximized);
@@ -267,14 +268,13 @@ export function clientFullScreen(client: KWin.AbstractClient): void {
 
 export function clientMinimized(client: KWin.AbstractClient): void {
     if (!client.wasTiled) return;
-    printDebug(client.resourceClass + " was minimized", false);
-    untileClient(client, true);
-}
-
-export function clientUnminimized(client: KWin.AbstractClient): void {
-    if (!client.wasTiled) return;
-    printDebug(client.resourceClass + " was unminimized", false);
-    tileClient(client);
+    if (client.minimized) {
+        printDebug(client.resourceClass + " was minimized", false);
+        untileClient(client, true);
+    } else {
+        printDebug(client.resourceClass + " was unminimized", false);
+        tileClient(client);
+    }
 }
 
 export function clientMaximized(client: KWin.AbstractClient, mode: KWin.MaximizeMode) {

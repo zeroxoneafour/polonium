@@ -6,12 +6,14 @@ import { workspace, showDialog, createTimer } from "../index";
 import * as BTree from "./btree";
 import * as Half from "./half";
 import * as ThreeColumn from "./threecolumn";
+import * as Monocle from "./monocle";
 import * as Kwin from "./kwin";
 
 export enum EngineTypes {
     BTree = 0,
     Half,
     ThreeColumn,
+    Monocle,
     Kwin,
     // this enum member is used to loop the enum when iterating it
     _loop,
@@ -45,6 +47,8 @@ function engineForEnum(engine: EngineTypes): TilingEngine {
             return new Half.TilingEngine;
         case EngineTypes.ThreeColumn:
             return new ThreeColumn.TilingEngine;
+        case EngineTypes.Monocle:
+            return new Monocle.TilingEngine;
         case EngineTypes.Kwin: default:
             return new Kwin.TilingEngine;
     }

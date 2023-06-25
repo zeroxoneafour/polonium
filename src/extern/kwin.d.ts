@@ -8,6 +8,7 @@ declare namespace KWin {
         readonly frameGeometry: Qt.QRect;
         readonly desktop: number;
         frameGeometryChanged: Signal<(client: AbstractClient, oldGeometry: Qt.QRect) => void>;
+        windowClosed: Signal<(client: AbstractClient, deleted: object) => void>;
         screenChanged: Signal<() => void>;
     }
     interface AbstractClient extends Toplevel {
@@ -51,6 +52,7 @@ declare namespace KWin {
         activitiesChanged: Signal<(client: AbstractClient) => void>;
         clientMaximizedStateChanged: Signal<(client: AbstractClient, mode: MaximizeMode) => void>;
         quickTileModeChanged: Signal<() => void>;
+        minimizedChanged: Signal<() => void>;
         // functions
         setMaximize(vertically: boolean, horizontally: boolean): void;
     }
