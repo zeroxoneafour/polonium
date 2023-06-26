@@ -4,7 +4,7 @@ import { EngineManager, Desktop } from "./engine/engine";
 import { Direction } from "./engine/common";
 // to build with a different engine, change this to a different file
 import { Borders, config, printDebug, doTileClient, GeometryTools } from "./util";
-import { workspace } from "./index";
+import { workspace, createTimer } from "./index";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;
@@ -69,9 +69,11 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 client.desktopChanged.connect(clientDesktopChange.bind(this, client));
                 client.activitiesChanged.connect(clientDesktopChange);
                 client.screenChanged.connect(clientDesktopChange.bind(this, client));
+                client.minimizedChanged.connect(clientMinimized.bind(this, client));
                 //client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
                 client.frameGeometryChanged.connect(clientGeometryChange);
                 client.clientMaximizedStateChanged.connect(clientMaximized);
+                client.fullScreenChanged.connect(clientFullScreen.bind(this, client));
                 client.hasBeenTiled = true;
             }
         }
@@ -80,10 +82,11 @@ export function rebuildLayout(this: any, isRepeat = false) {
 
     // workaround for setMaximize(false,false) breaking the layout on first run
     if (!isRepeat && repeatRebuild) {
-        let timer = new QTimer();
-        timer.singleShot = true;
-        timer.timeout.connect(rebuildLayout.bind(this, true));
-        timer.start(config.timerDelay);
+        let timer = createTimer();
+        timer.repeat = false;
+        timer.interval = config.timerDelay
+        timer.triggered.connect(rebuildLayout.bind(this, true));
+        timer.start();
     }
 }
 
@@ -252,9 +255,9 @@ export function removeClient(client: KWin.AbstractClient): void {
     untileClient(client);
 }
 
-export function clientFullScreenSet(client: KWin.AbstractClient, fullScreen: boolean, _user: boolean): void {
+export function clientFullScreen(client: KWin.AbstractClient): void {
     if (!client.wasTiled) return;
-    if (fullScreen) {
+    if (client.fullScreen) {
         printDebug(client.resourceClass + " enabled fullscreen", false);
         untileClient(client, true);
     } else {
@@ -265,14 +268,13 @@ export function clientFullScreenSet(client: KWin.AbstractClient, fullScreen: boo
 
 export function clientMinimized(client: KWin.AbstractClient): void {
     if (!client.wasTiled) return;
-    printDebug(client.resourceClass + " was minimized", false);
-    untileClient(client, true);
-}
-
-export function clientUnminimized(client: KWin.AbstractClient): void {
-    if (!client.wasTiled) return;
-    printDebug(client.resourceClass + " was unminimized", false);
-    tileClient(client);
+    if (client.minimized) {
+        printDebug(client.resourceClass + " was minimized", false);
+        untileClient(client, true);
+    } else {
+        printDebug(client.resourceClass + " was unminimized", false);
+        tileClient(client);
+    }
 }
 
 export function clientMaximized(client: KWin.AbstractClient, mode: KWin.MaximizeMode) {

@@ -35,6 +35,7 @@ class Config {
 export let config: Config;
 export function createConfig(): void {
     config = new Config();
+    printDebug("Config set - " + JSON.stringify(config), false);
 }
 
 let filterProcessCache: Set<string> = new Set;

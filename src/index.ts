@@ -8,16 +8,20 @@ export let workspace: KWin.WorkspaceWrapper;
 export let options: KWin.Options;
 export let kwin: KWin.Api;
 export let print: (...values: any[]) => void;
+export let createTimer: () => Qt.QTimer;
 export let showDialog: (text: string) => void;
 
 export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     workspace = api.workspace;
     options = api.options;
     kwin = api.kwin;
-    print = api.print;
+    print = qmlObjects.rootScript.printQml;
+    createTimer = qmlObjects.rootScript.createTimer;
     showDialog = qmlObjects.dialog.show;
     
     createConfig();
+    options.configChanged.connect(createConfig);
+    
     workspace.clientAdded.connect(main.addClient);
     workspace.clientRemoved.connect(main.removeClient);
 
@@ -25,9 +29,6 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     workspace.currentActivityChanged.connect(main.currentDesktopChange);
 
     workspace.clientActivated.connect(main.clientActivated);
-    workspace.clientMinimized.connect(main.clientMinimized);
-    workspace.clientUnminimized.connect(main.clientUnminimized);
-    workspace.clientFullScreenSet.connect(main.clientFullScreenSet);
 
     kwin.registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);
     kwin.registerShortcut("PoloniumCycleLayouts", "Polonium: Cycle layouts", "Meta+\\", shortcuts.cycleEngine);
