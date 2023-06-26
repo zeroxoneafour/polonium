@@ -70,7 +70,7 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 client.activitiesChanged.connect(clientDesktopChange);
                 client.screenChanged.connect(clientDesktopChange.bind(this, client));
                 client.minimizedChanged.connect(clientMinimized.bind(this, client));
-                //client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
+                client.quickTileModeChanged.connect(clientQuickTiled.bind(this, client));
                 client.frameGeometryChanged.connect(clientGeometryChange);
                 client.clientMaximizedStateChanged.connect(clientMaximized);
                 client.fullScreenChanged.connect(clientFullScreen.bind(this, client));
@@ -211,24 +211,27 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
     }
 }
 
-/*
+
 // What even is quick tiling
 export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
+    // if the client is removed from a tile or put into a generated tile, this triggers so make it not trigger
+    if (client.tile == null || client.tile.generated) return;
+    // get the root tile so we can insert into it if all else goes wrong
+    let rootTile = client.tile;
+    while (rootTile.parent != null) {
+        rootTile = rootTile.parent;
+    }
     printDebug(client.resourceClass + " has been quick tiled", false);
     const windowCenter = GeometryTools.rectCenter(client.frameGeometry);
-    if (client.tile != null) {
-        untileClient(client);
-        const tile = workspace.tilingForScreen(client.screen).bestTileForPosition(windowCenter.x, windowCenter.y);
-        if (tile == null) {
-            return;
-        }
-        windowCenter.x;
-        windowCenter.y;
-        const direction = GeometryTools.directionFromPointInRect(tile.absoluteGeometry, windowCenter);
-        tileClient(client, tile, direction);
+    untileClient(client);
+    let tile = workspace.tilingForScreen(client.screen).bestTileForPosition(windowCenter.x, windowCenter.y);
+    if (tile == null) {
+        tile = rootTile;
     }
+    const direction = GeometryTools.directionFromPointInRect(workspace.virtualScreenGeometry, windowCenter);
+    tileClient(client, tile, direction);
 }
-*/
+
 
 export function addClient(client: KWin.AbstractClient): void {
     client.oldDesktop = client.desktop;

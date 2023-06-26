@@ -37,6 +37,7 @@ declare namespace KWin {
         hasBeenTiled: boolean | undefined;
         // was just tiled
         wasTiled: boolean | undefined;
+        oldTile: Tile | null | undefined;
         // stuff to keep tabs on changes between locations
         oldActivities: Array<string> | undefined;
         oldDesktop: number | undefined;
@@ -68,6 +69,8 @@ declare namespace KWin {
         padding: number;
         split(direction: LayoutDirection): void;
         remove(): void;
+        // whether the engine generated the tile or not
+        generated: boolean | undefined;
     }
     enum LayoutDirection {
         Floating = 0,
@@ -92,6 +95,7 @@ declare namespace KWin {
     }
 
     interface WorkspaceWrapper {
+        readonly virtualScreenGeometry: Qt.QRect;
         activeClient: AbstractClient | null;
         activeScreen: number;
         currentActivity: string;
