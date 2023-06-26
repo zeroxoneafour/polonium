@@ -7,7 +7,7 @@
     border: none;
     padding: 2rem;
     background-color: var(--page-bg);
-    transition: 0.3s;
+    transition: inherit;
     max-width: 1010px;
     margin: auto;
 }
@@ -17,7 +17,8 @@
     height: 2.5rem;
 }
 
-.change-theme:hover .material-symbols-rounded {
+.change-theme:hover,
+.material-symbols-rounded:hover {
     font-variation-settings: 'FILL' 1;
 }
 
@@ -26,7 +27,12 @@
     display: inline-block;
 }
 
+.dropbutton {
+    background-color: var(--navgroup-bg);
+}
+
 .dropdown-content {
+    background-color: #00000000;
     margin: 0rem;
     padding: 0rem;
     display: none;
@@ -42,13 +48,19 @@
     border-radius: 0.2rem;
 }
 
+.dropdown .dropdown-content .dropdown-bg .dropitem {
+    margin: 0.2rem;
+}
+
+.dropdown:hover .dropbutton {
+    background-color: var(--hover-navgroup);
+    text-shadow: 0px 0px 10px #2f80ed;
+    font-variation-settings: 'FILL' 1;
+}
+
 .dropdown:hover .dropdown-content {
     display: block;
     top: 3rem;
-}
-
-.dropdown .dropdown-content .dropdown-bg .dropitem {
-    margin: 0.2rem;
 }
 
 .md h1,
@@ -92,4 +104,24 @@
 .md ul,
 .md ol {
     padding-top: 0rem;
+}
+
+.pre-container {
+    background-color: var(--navgroup-bg);
+    padding: 1rem;
+    margin: 1rem 0rem;
+    border-radius: 0.2rem;
+    position: relative;
+}
+
+.pre-container .pre-copy-button {
+    position: absolute;
+    top: 0rem;
+    right: 0rem;
+    margin: 1rem;
+    opacity: 0;
+}
+
+.pre-container:hover .pre-copy-button {
+    opacity: 1;
 }

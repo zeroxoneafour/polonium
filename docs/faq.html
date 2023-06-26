@@ -20,11 +20,7 @@
 </div>
 
 <script>
-  fetch("faq.md").then(function(response) {
-    response.text().then(function(text) {
-        document.getElementById("content").innerHTML = marked.parse(text);
-    });
-  });
+  markdownParse("faq.md", "content");
 </script>
 
 <footer>
