@@ -18,7 +18,7 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 {
   font-family: 'Lexend Zetta', sans-serif;
 }
 
@@ -29,6 +29,13 @@ h1 {
 pre {
   width: auto;
   overflow: auto;
+  margin: 0.2rem;
+}
+
+code {
+  background-color: var(--navgroup-bg);
+  border-radius: 0.2rem;
+  padding: 0rem 0.2rem;
 }
 
 svg {
@@ -79,7 +86,13 @@ button {
   cursor: pointer;
   color: var(--on-navgroup);
   background-color: var(--navgroup-bg);
+  padding: 0.2rem;
+  border-radius: 0.2rem;
   transition: 0.3s;
+}
+
+button:hover {
+  background-color: var(--hover-navgroup);
 }
 
 header,
