@@ -189,7 +189,8 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
         const tile = workspace.tilingForScreen(client.screen).bestTileForPosition(client.lastTileCenter.x, client.lastTileCenter.y);
         for (const desktop of desktops) {
             if (desktop.toString() == currentDesktop.toString() && tile != null) {
-                engine.putClientInTile(client, tile, direction);
+                const directionA = GeometryTools.directionFromPointInRect(tile.absoluteGeometry, client.lastTileCenter);
+                engine.putClientInTile(client, tile, directionA);
             } else {
                 engine.addClient(client, desktop);
             }
@@ -240,7 +241,8 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
 // What even is quick tiling
 export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
     // if the client is removed from a tile or put into a generated tile, this triggers so make it not trigger
-    if (client.tile == null || client.tile.generated) return;
+    if (client.tile == null || client.tile.generated || buildingLayout) return;
+    printDebug(client.tile.generated + "", true);
     // get the root tile so we can insert into it if all else goes wrong
     let rootTile = client.tile;
     while (rootTile.parent != null) {
