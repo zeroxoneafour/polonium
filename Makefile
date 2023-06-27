@@ -31,6 +31,7 @@ stop:
 	dbus-send --session --dest=org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript string:'$(NAME)'
 
 res: $(PKGDIR)
+	mkdir -p $(PKGDIR)/contents/{config,ui}
 	cp -f res/metadata.json $(PKGDIR)/
 	cp -f res/main.xml $(PKGDIR)/contents/config/
 	cp -f res/config.ui $(PKGDIR)/contents/ui/
@@ -38,6 +39,7 @@ res: $(PKGDIR)
 	sed -i "s/%NAME%/$(NAME)/" $(PKGDIR)/metadata.json
 
 src: polonium.mjs
+	mkdir -p $(PKGDIR)/contents/code
 	mv -f polonium.mjs $(PKGDIR)/contents/code/main.mjs
 	cp -f src/qml/* $(PKGDIR)/contents/code/
 
