@@ -55,6 +55,7 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 if (!client.isSingleTile) {
                     client.tile = tile;
                 }
+                client.lastTileCenter = GeometryTools.rectCenter(tile.absoluteGeometry);
             } else {
                 client.wasTiled = false;
                 if (config.borders == Borders.NoBorderTiled) {
@@ -169,6 +170,30 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
                 engine.addClient(client, desktop);
             }
         }
+    } else if (client.lastTileCenter != undefined) {
+        const currentDesktop = new Desktop;
+        let desktops: Array<Desktop> = new Array;
+        if (client.desktop == -1) {
+            for (let i = 0; i < workspace.desktops; i += 1) {
+                for (const activity of client.activities) {
+                    const desktop = new Desktop(client.screen, activity, i);
+                    desktops.push(desktop);
+                }
+            }
+        } else {
+            for (const activity of client.activities) {
+                const desktop = new Desktop(client.screen, activity, client.desktop);
+                desktops.push(desktop);
+            }
+        }
+        const tile = workspace.tilingForScreen(client.screen).bestTileForPosition(client.lastTileCenter.x, client.lastTileCenter.y);
+        for (const desktop of desktops) {
+            if (desktop.toString() == currentDesktop.toString() && tile != null) {
+                engine.putClientInTile(client, tile, direction);
+            } else {
+                engine.addClient(client, desktop);
+            }
+        }
     } else {
         engine.addClient(client);
     }
@@ -192,7 +217,7 @@ export function untileClient(this: any, client: KWin.AbstractClient, keepWasTile
 
 export function clientGeometryChange(this: any, client: KWin.AbstractClient, _oldgeometry: Qt.QRect): void {
     // dont interfere with minimizing, maximizing, fullscreening, being the single tile, or layout building
-    if (client.minimized || buildingLayout || client.maximized != 0 || client.fullScreen || client.isSingleTile) return;
+    if (client.minimized || buildingLayout || client.maximized == true || client.fullScreen || client.isSingleTile) return;
     // because kwin doesnt have a separate handler for screen changing, add it here
     if (client.oldScreen != client.screen) {
         clientDesktopChange(client);
@@ -237,7 +262,7 @@ export function addClient(client: KWin.AbstractClient): void {
     client.oldDesktop = client.desktop;
     client.oldScreen = client.screen;
     client.oldActivities = new Array;
-    client.maximized = 0;
+    client.maximized = false;
     client.isSingleTile = false;
     for (const activity of client.activities) client.oldActivities.push(activity);
     
@@ -280,20 +305,22 @@ export function clientMinimized(client: KWin.AbstractClient): void {
     }
 }
 
-export function clientMaximized(client: KWin.AbstractClient, mode: KWin.MaximizeMode) {
-    client.maximized = mode;
+export function clientMaximized(client: KWin.AbstractClient, h: boolean, v: boolean) {
+    const maximized = h || v;
+    client.maximized = maximized;
     if (!client.wasTiled) return;
-    if (client.isSingleTile && mode == 0) {
+    if (client.isSingleTile && maximized == false) {
         client.isSingleTile = false;
         return;
     } else if (client.isSingleTile) {
         client.wasTiled = true;
         return;
     }
-    printDebug("Maximize mode on " + client.resourceClass + " was changed to " + mode, false);
-    switch (mode) {
-        case 0: tileClient(client);
-        default: untileClient(client);
+    printDebug("Maximize mode on " + client.resourceClass + " was changed to " + maximized, false);
+    if (!maximized) {
+        tileClient(client);
+    } else {
+        untileClient(client);
     }
     client.wasTiled = true;
 }
