@@ -60,7 +60,8 @@ The engines are specific to desktops and are cycled in this order by pressing th
 1. BTree - Breadth-first binary tree engine, sort of balances windows
 2. Half - Put one main window on the left and several on the right. Can also be the other way around
 3. Three Column - Put one main window in the center and some on the left and right
-4. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
+4. Monocle - Place all of your windows in the center and stack them on top of each other
+5. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
 
 The default engine setting determines which engine desktops will start with.
 

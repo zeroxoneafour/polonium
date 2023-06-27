@@ -8,6 +8,8 @@
 * Website redesign from @HimDek
 * Added rudimentary monocle layout
 * Refactored some stuff to use more per-window signals instead of global kwin ones
+* Basic support for quick tile shortcuts and quick tiling
+* Windows return to roughly where they were previously when tiling and retiling
 
 ### 0.5.1
 * Added an optional direction parameter to `TilingEngine.putClientInTile` and most descending classes

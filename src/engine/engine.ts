@@ -99,6 +99,19 @@ export class EngineManager {
             rootTile.tiles[0].remove();
         }
         const ret = this.getEngine(desktop).buildLayout(rootTile);
+        // set the generated property on all tiles
+        let stack: Array<KWin.Tile> = [rootTile];
+        let stackNext: Array<KWin.Tile> = [];
+        while (stack.length != 0) {
+            for (const tile of stack) {
+                tile.generated = true;
+                for (let i = 0; i < tile.tiles.length; i += 1) {
+                    stackNext.push(tile.tiles[i]);
+                }
+            }
+            stack = stackNext;
+            stackNext = [];
+        }
         this.layoutBuilding = false;
         if (!rootTile.connected) {
             rootTile.connected = true;

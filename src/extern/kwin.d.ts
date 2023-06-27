@@ -37,12 +37,13 @@ declare namespace KWin {
         hasBeenTiled: boolean | undefined;
         // was just tiled
         wasTiled: boolean | undefined;
+        lastTileCenter: Qt.QPoint | undefined;
         // stuff to keep tabs on changes between locations
         oldActivities: Array<string> | undefined;
         oldDesktop: number | undefined;
         oldScreen: number | undefined;
         // for some reason, kwin doesn't include whether the window is maximized, so we add it ourselves
-        maximized: MaximizeMode | undefined;
+        maximized: boolean | undefined;
         // whether the client is the only tile on their screen or not
         isSingleTile: boolean | undefined;
         // signals
@@ -50,7 +51,7 @@ declare namespace KWin {
         desktopChanged: Signal<() => void>;
         fullScreenChanged: Signal<() => void>;
         activitiesChanged: Signal<(client: AbstractClient) => void>;
-        clientMaximizedStateChanged: Signal<(client: AbstractClient, mode: MaximizeMode) => void>;
+        clientMaximizedStateChanged: Signal<(client: AbstractClient, horizontal: boolean, vertical: boolean) => void>;
         quickTileModeChanged: Signal<() => void>;
         minimizedChanged: Signal<() => void>;
         // functions
@@ -68,17 +69,13 @@ declare namespace KWin {
         padding: number;
         split(direction: LayoutDirection): void;
         remove(): void;
+        // whether the engine generated the tile or not
+        generated: boolean | undefined;
     }
     enum LayoutDirection {
         Floating = 0,
         Horizontal,
         Vertical,
-    }
-    enum MaximizeMode {
-        MaximizeRestore = 0,
-        MaximizeVertical,
-        MaximizeHorizontal,
-        MaximizeFull,
     }
     interface RootTile extends Tile {
         parent: null;
@@ -92,6 +89,7 @@ declare namespace KWin {
     }
 
     interface WorkspaceWrapper {
+        readonly virtualScreenGeometry: Qt.QRect;
         activeClient: AbstractClient | null;
         activeScreen: number;
         currentActivity: string;
