@@ -101,36 +101,40 @@ export namespace GeometryTools {
             this.x = x;
             this.y = y;
         }
+        toString(): string {
+            return "GtQPoint(" + this.x + ", " + this.y + ")";
+        }
     }
 
     export function directionFromPointInRect(rect: Qt.QRect, point: Qt.QPoint): Direction {
+        const relativePoint = new QPoint(point.x - rect.x, point.y - rect.y)
         // vertical split
-        if (point.x < rect.x + (rect.width / 2)) { // left
+        if (relativePoint.x < (rect.width / 2)) { // left
             // horizontal split
-            if (point.y < rect.y + (rect.height / 2)) { // left top
+            if (relativePoint.y < (rect.height / 2)) { // left top
                 // position in diagonal cutting rect in half
                 // math here is too complicated for me to understand for comments
-                if ((point.x - rect.x) > (rect.width * (point.y - rect.y) / rect.height)) {
+                if (relativePoint.x > (rect.width * relativePoint.y / rect.height)) {
                     return new Direction(true, false, true); // left top, top leaning
                 } else {
                     return new Direction(true, false, false); // left top, left leaning
                 }
             } else { // left bottom
-                if ((point.x - rect.x) > (rect.width * (point.y - rect.y) / rect.height)) {
+                if (relativePoint.x > (rect.width * relativePoint.y / rect.height)) {
                     return new Direction(false, false, true); // left bottom, bottom leaning
                 } else {
                     return new Direction(false, false, false); // left bottom, left leaning
                 }
             }
         } else { // right
-            if (point.y < rect.y + (rect.height / 2)) { // right top
-                if ((point.x - rect.x) < (rect.width * (point.y - rect.y) / rect.height)) {
+            if (relativePoint.y < (rect.height / 2)) { // right top
+                if (relativePoint.x < (rect.width * relativePoint.y / rect.height)) {
                     return new Direction(true, true, true); // right top, top leaning
                 } else {
                     return new Direction(true, true, false); // right top, right leaning
                 }
             } else { // right bottom
-                if ((point.x - rect.x) < (rect.width * (point.y - rect.y) / rect.height)) {
+                if (relativePoint.x < (rect.width * relativePoint.y / rect.height)) {
                     return new Direction(false, true, true); // right bottom, bottom leaning
                 } else {
                     return new Direction(false, true, false); // right bottom, right leaning
