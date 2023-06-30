@@ -242,14 +242,13 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
 export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
     // if the client is removed from a tile or put into a generated tile, this triggers so make it not trigger
     if (client.tile == null || client.tile.generated || buildingLayout) return;
-    printDebug(client.tile.generated + "", true);
     // get the root tile so we can insert into it if all else goes wrong
     let rootTile = client.tile;
     while (rootTile.parent != null) {
         rootTile = rootTile.parent;
     }
     printDebug(client.resourceClass + " has been quick tiled", false);
-    const windowCenter = GeometryTools.rectCenter(client.frameGeometry);
+    const windowCenter = GeometryTools.rectCenter(client.tile.absoluteGeometry);
     untileClient(client);
     let tile = workspace.tilingForScreen(client.screen).bestTileForPosition(windowCenter.x, windowCenter.y);
     if (tile == null) {
