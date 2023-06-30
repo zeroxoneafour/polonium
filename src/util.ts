@@ -153,7 +153,7 @@ export namespace GeometryTools {
     
     // close enough
     export function rectCenter(rect: Qt.QRect): Qt.QPoint {
-        return new QPoint(rect.x + (rect.width + 1) / 2, rect.y + (rect.width + 1) / 2);
+        return new QPoint(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
     }
     
     export function invertDirection(direction: Direction): Direction {
