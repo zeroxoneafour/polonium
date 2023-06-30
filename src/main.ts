@@ -248,14 +248,15 @@ export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
         rootTile = rootTile.parent;
     }
     printDebug(client.resourceClass + " has been quick tiled", false);
-    const windowCenter = GeometryTools.rectCenter(client.tile.absoluteGeometry);
+    const tileCenter = GeometryTools.rectCenter(client.tile.absoluteGeometry);
     untileClient(client);
-    let tile = workspace.tilingForScreen(client.screen).bestTileForPosition(windowCenter.x, windowCenter.y);
+    let tile = workspace.tilingForScreen(client.screen).bestTileForPosition(tileCenter.x, tileCenter.y);
     if (tile == null) {
-        tile = rootTile;
+        tileClient(client);
+    } else {
+        const direction = GeometryTools.directionFromPointInRect(workspace.virtualScreenGeometry, tileCenter);
+        tileClient(client, tile, direction);
     }
-    const direction = GeometryTools.directionFromPointInRect(workspace.virtualScreenGeometry, windowCenter);
-    tileClient(client, tile, direction);
 }
 
 
