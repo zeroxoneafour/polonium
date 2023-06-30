@@ -147,7 +147,7 @@ export class EngineManager {
         // set layoutBuilding to prevent updateTiles from being called
         this.layoutBuilding = true;
         const desktop = new Desktop;
-        printDebug("Resizing tile in direction " + direction + " by " + amount + " of screen space on desktop " + desktop, false);
+        printDebug("Resizing tile " + tile.absoluteGeometry + " in direction " + direction + " by " + amount + " of screen space on desktop " + desktop, false);
         const ret = this.getEngine(desktop).resizeTile(tile, direction, amount);
         this.layoutBuilding = false;
         return ret;
@@ -187,6 +187,7 @@ export class EngineManager {
     }
     
     updateClientDesktop(client: KWin.AbstractClient, oldDesktops: Array<Desktop>): boolean {
+        printDebug("Updating desktop for client " + client.resourceClass, false);
         let newDesktops = new Array<Desktop>();
         if (client.desktop == -1) {
             for (let i = 0; i < workspace.desktops; i += 1) {
@@ -222,17 +223,17 @@ export class EngineManager {
     }
     
     putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Direction): boolean {
-        printDebug("Placing " + client.resourceClass + " in " + tile, false);
+        printDebug("Placing " + client.resourceClass + " in " + tile.absoluteGeometry + " with direction " + direction, false);
         return this.getEngine().putClientInTile(client, tile, direction);
     }
     
     clientOfTile(tile: KWin.Tile): KWin.AbstractClient | null {
-        printDebug("Getting client of " + tile, false);
+        printDebug("Getting client of " + tile.absoluteGeometry, false);
         return this.getEngine().clientOfTile(tile);
     }
     
     swapTiles(tileA: KWin.Tile, tileB: KWin.Tile): boolean {
-        printDebug("Swapping clients of " + tileA + " and " + tileB, false);
+        printDebug("Swapping clients of " + tileA.absoluteGeometry + " and " + tileB.absoluteGeometry, false);
         return this.getEngine().swapTiles(tileA, tileB);
     }
     
