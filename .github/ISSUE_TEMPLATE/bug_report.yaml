@@ -8,11 +8,11 @@ body:
     attributes:
       label: Before you make the issue, confirm that
       options:
-        - label: I am running the master build from GitHub actions
+        - label: You are running the master build from GitHub actions
           required: true
-        - label: I have read the [FAQ](https://zeroxoneafour.github.io/polonium/faq.html) and the [usage isnstructions](https://zeroxoneafour.github.io/polonium/usage.html)
+        - label: You have read the [FAQ](https://zeroxoneafour.github.io/polonium/faq.html) and the [usage isnstructions](https://zeroxoneafour.github.io/polonium/usage.html)
           required: true
-        - label: I have searched pull requests and issues and have found none similar to my issues
+        - label: You have searched pull requests and issues and have found none similar to my issues
           required: true
         - label: This problem comes from a failure in the tiling system and not a missing feature
           required: true
