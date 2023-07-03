@@ -12,7 +12,7 @@ body:
           required: true
         - label: You have read the FAQ and the usage instructions
           required: true
-        - label: You have searched pull requests and issues and have found none similar to my issues
+        - label: You have searched pull requests and issues and have found none similar to your issue
           required: true
         - label: This problem comes from a failure in the tiling system and not a missing feature
           required: true
