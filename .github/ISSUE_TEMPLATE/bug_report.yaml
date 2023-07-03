@@ -10,7 +10,7 @@ body:
       options:
         - label: You are running the master build from GitHub actions
           required: true
-        - label: You have read the [FAQ](https://zeroxoneafour.github.io/polonium/faq.html) and the [usage isnstructions](https://zeroxoneafour.github.io/polonium/usage.html)
+        - label: You have read the FAQ and the usage instructions
           required: true
         - label: You have searched pull requests and issues and have found none similar to my issues
           required: true
