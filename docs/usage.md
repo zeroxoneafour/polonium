@@ -46,6 +46,7 @@ Polonium requires that KWin be restarted every time the configuration is changed
 * Tile popup windows (check box) - Whether to tile windows marked as popup windows
 * Keep tiled below (check box) - Whether to keep tiled windows below other windows
 * Maximize single windows (check box) - Whether to maximize solo windows on desktops. May be slightly buggy
+* Unfullscreen windows when new windows are tiled (check box) - Whether to temporarily reduce windows from fullscreen when a new window is tiled
 * Resize amount (slider) - The amount to resize windows by, from 0.001 to 0.45 of the available desktop space
 * Callback delay (slider) - The time in milliseconds to wait before callbacks to rebuild the layout or update the desktop, from 1 to 200. Slower computers want more time
 * Default engine (dropdown) - The default tiling engine you want to use on new desktops
@@ -60,7 +61,8 @@ The engines are specific to desktops and are cycled in this order by pressing th
 1. BTree - Breadth-first binary tree engine, sort of balances windows
 2. Half - Put one main window on the left and several on the right. Can also be the other way around
 3. Three Column - Put one main window in the center and some on the left and right
-4. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
+4. Monocle - Place all of your windows in the center and stack them on top of each other
+5. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
 
 The default engine setting determines which engine desktops will start with.
 

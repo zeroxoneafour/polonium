@@ -5,12 +5,19 @@ import org.kde.kwin 2.0
 Item {
     id: rootScript
     
+    function createTimer() {
+        return Qt.createQmlObject("import QtQuick 2.0; Timer {}", rootScript);
+    }
+    
+    function printQml(string) {
+        print(string);
+    }
+
     Component.onCompleted: {
         const api = {
             "workspace": workspace,
             "options": options,
             "kwin": KWin,
-            "print": print,
         };
         const qmlObjects = {
             "rootScript": rootScript,

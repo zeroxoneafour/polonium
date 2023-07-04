@@ -1,17 +1,19 @@
 import { TilingEngine, Direction } from "./common";
 import { config, printDebug } from "../util";
-import { workspace, showDialog } from "../index";
+import { workspace, showDialog, createTimer } from "../index";
 
 // engines and engine enum
 import * as BTree from "./btree";
 import * as Half from "./half";
 import * as ThreeColumn from "./threecolumn";
+import * as Monocle from "./monocle";
 import * as Kwin from "./kwin";
 
 export enum EngineTypes {
     BTree = 0,
     Half,
     ThreeColumn,
+    Monocle,
     Kwin,
     // this enum member is used to loop the enum when iterating it
     _loop,
@@ -45,6 +47,8 @@ function engineForEnum(engine: EngineTypes): TilingEngine {
             return new Half.TilingEngine;
         case EngineTypes.ThreeColumn:
             return new ThreeColumn.TilingEngine;
+        case EngineTypes.Monocle:
+            return new Monocle.TilingEngine;
         case EngineTypes.Kwin: default:
             return new Kwin.TilingEngine;
     }
@@ -54,7 +58,7 @@ export class EngineManager {
     engineTypes: Map<string, EngineTypes> = new Map;
     engines: Map<string, TilingEngine> = new Map;
     layoutBuilding: boolean = false;
-    tileRebuildTimers: Map<KWin.RootTile, QTimer> = new Map;
+    tileRebuildTimers: Map<KWin.RootTile, Qt.QTimer> = new Map;
     
     private createNewEngine(desktop: Desktop): TilingEngine {
         this.engineTypes.set(desktop.toString(), config.defaultEngine);
@@ -95,6 +99,19 @@ export class EngineManager {
             rootTile.tiles[0].remove();
         }
         const ret = this.getEngine(desktop).buildLayout(rootTile);
+        // set the generated property on all tiles
+        let stack: Array<KWin.Tile> = [rootTile];
+        let stackNext: Array<KWin.Tile> = [];
+        while (stack.length != 0) {
+            for (const tile of stack) {
+                tile.generated = true;
+                for (let i = 0; i < tile.tiles.length; i += 1) {
+                    stackNext.push(tile.tiles[i]);
+                }
+            }
+            stack = stackNext;
+            stackNext = [];
+        }
         this.layoutBuilding = false;
         if (!rootTile.connected) {
             rootTile.connected = true;
@@ -108,12 +125,13 @@ export class EngineManager {
         if (this.layoutBuilding) return;
         if (!this.tileRebuildTimers.has(rootTile)) {
             printDebug("Creating tile update timer", false);
-            this.tileRebuildTimers.set(rootTile, new QTimer());
+            this.tileRebuildTimers.set(rootTile, createTimer());
             const timer = this.tileRebuildTimers.get(rootTile)!;
-            timer.singleShot = true;
-            timer.timeout.connect(this.updateTiles.bind(this, rootTile));
+            timer.repeat = false;
+            timer.triggered.connect(this.updateTiles.bind(this, rootTile));
+            timer.interval = config.timerDelay;
         }
-        this.tileRebuildTimers.get(rootTile)!.start(config.timerDelay);
+        this.tileRebuildTimers.get(rootTile)!.restart();
     }
 
     updateTiles(rootTile: KWin.RootTile): boolean {
@@ -129,7 +147,7 @@ export class EngineManager {
         // set layoutBuilding to prevent updateTiles from being called
         this.layoutBuilding = true;
         const desktop = new Desktop;
-        printDebug("Resizing tile in direction " + direction + " by " + amount + " of screen space on desktop " + desktop, false);
+        printDebug("Resizing tile " + tile.absoluteGeometry + " in direction " + direction + " by " + amount + " of screen space on desktop " + desktop, false);
         const ret = this.getEngine(desktop).resizeTile(tile, direction, amount);
         this.layoutBuilding = false;
         return ret;
@@ -169,6 +187,7 @@ export class EngineManager {
     }
     
     updateClientDesktop(client: KWin.AbstractClient, oldDesktops: Array<Desktop>): boolean {
+        printDebug("Updating desktop for client " + client.resourceClass, false);
         let newDesktops = new Array<Desktop>();
         if (client.desktop == -1) {
             for (let i = 0; i < workspace.desktops; i += 1) {
@@ -204,17 +223,17 @@ export class EngineManager {
     }
     
     putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Direction): boolean {
-        printDebug("Placing " + client.resourceClass + " in " + tile, false);
+        printDebug("Placing " + client.resourceClass + " in " + tile.absoluteGeometry + " with direction " + direction, false);
         return this.getEngine().putClientInTile(client, tile, direction);
     }
     
     clientOfTile(tile: KWin.Tile): KWin.AbstractClient | null {
-        printDebug("Getting client of " + tile, false);
+        printDebug("Getting client of " + tile.absoluteGeometry, false);
         return this.getEngine().clientOfTile(tile);
     }
     
     swapTiles(tileA: KWin.Tile, tileB: KWin.Tile): boolean {
-        printDebug("Swapping clients of " + tileA + " and " + tileB, false);
+        printDebug("Swapping clients of " + tileA.absoluteGeometry + " and " + tileB.absoluteGeometry, false);
         return this.getEngine().swapTiles(tileA, tileB);
     }
     

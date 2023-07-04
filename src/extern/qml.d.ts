@@ -2,13 +2,17 @@ declare interface CoreApi {
     workspace: KWin.WorkspaceWrapper;
     options: KWin.Options;
     kwin: KWin.Api;
-    print(...values: any[]): void;
 }
 
 declare namespace Qml {
     interface Main {
-        rootScript: object;
+        rootScript: RootScript;
         dialog: Dialog
+    }
+    
+    interface RootScript {
+        createTimer(): Qt.QTimer;
+        printQml(text: string): void;
     }
 
     interface Dialog {

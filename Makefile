@@ -1,5 +1,5 @@
 NAME = polonium
-VERSION = 0.5.1
+VERSION = 0.5.2
 
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
@@ -37,7 +37,7 @@ res: $(PKGDIR)
 	sed -i "s/%VERSION%/$(VERSION)/" $(PKGDIR)/metadata.json
 	sed -i "s/%NAME%/$(NAME)/" $(PKGDIR)/metadata.json
 
-src: polonium.mjs
+src: polonium.mjs $(PKGDIR)
 	mv -f polonium.mjs $(PKGDIR)/contents/code/main.mjs
 	cp -f src/qml/* $(PKGDIR)/contents/code/
 

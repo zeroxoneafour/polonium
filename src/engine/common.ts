@@ -13,7 +13,7 @@ export class Direction {
         this.primary = primary;
     }
     toString(): string {
-        return "(" + this.above ? "above" : "below" + ", " + this.right ? "right" : "left" + ")";
+        return "(" + (this.above ? "above" : "below") + ", " + (this.right ? "right" : "left") + ")";
     }
 }
 
@@ -25,7 +25,6 @@ export interface TilingEngine {
      * Lays out the tiles according to the engine's organization
      *
      * @param rootTile - The root tile to modify. It will not have any children
-     * @param desktop - The desktop it is on
      * @returns True if exited successfully, false otherwise
      */
     buildLayout(rootTile: KWin.RootTile): boolean;
@@ -51,9 +50,8 @@ export interface TilingEngine {
      */
     resizeTile(tile: KWin.Tile, direction: Direction, amount: number): boolean;
     /**
-     * Places clients based on desktop
+     * Places clients
      *
-     * @param desktop - The desktop it is on
      * @returns An array of tuples built as [client, its tile] for all registered clients
      */
     placeClients(): Array<[KWin.AbstractClient, KWin.Tile | null]>;

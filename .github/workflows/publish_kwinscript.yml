@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install dependencies
-      run: sudo apt-get install -y kpackagetool5 npm node-typescript
+      run: sudo apt-get install -y kpackagetool5 npm
 
     - name: Build with make
       run: |

@@ -2,6 +2,17 @@
 
 ## 0.5.0
 
+### 0.5.2
+* Fixed QTimer undefined bug
+* Added fullscreen handler on a per-window basis
+* Website redesign from @HimDek
+* Added rudimentary monocle layout
+* Refactored some stuff to use more per-window signals instead of global kwin ones
+* Basic support for quick tile shortcuts and quick tiling
+* Windows return to roughly where they were previously when tiling and retiling
+* Improved support for quick tile shortcuts
+* Basic unfullscreen when something is tiled (doesn't really work, kwin inconsistency?)
+
 ### 0.5.1
 * Added an optional direction parameter to `TilingEngine.putClientInTile` and most descending classes
 * Added code to set geometry of windows when not active to preserve their shape
