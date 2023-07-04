@@ -46,6 +46,8 @@ declare namespace KWin {
         maximized: boolean | undefined;
         // whether the client is the only tile on their screen or not
         isSingleTile: boolean | undefined;
+        // a client to refullscreen when this client is untiled
+        refullscreen: AbstractClient | undefined;
         // signals
         desktopPresenceChanged: Signal<(client: AbstractClient, desktop: number) => void>;
         desktopChanged: Signal<() => void>;
