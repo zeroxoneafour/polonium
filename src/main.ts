@@ -186,9 +186,12 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
                 desktops.push(desktop);
             }
         }
-        const tile = workspace.tilingForScreen(client.screen).bestTileForPosition(client.lastTileCenter.x, client.lastTileCenter.y);
+        let tile = workspace.tilingForScreen(client.screen).bestTileForPosition(client.lastTileCenter.x, client.lastTileCenter.y);
+        if (tile == null) {
+            tile = workspace.tilingForScreen(client.screen).rootTile;
+        }
         for (const desktop of desktops) {
-            if (desktop.toString() == currentDesktop.toString() && tile != null) {
+            if (desktop.toString() == currentDesktop.toString()) {
                 const directionA = GeometryTools.directionFromPointInRect(tile.absoluteGeometry, client.lastTileCenter);
                 engine.putClientInTile(client, tile, directionA);
             } else {
@@ -242,21 +245,15 @@ export function clientGeometryChange(this: any, client: KWin.AbstractClient, _ol
 export function clientQuickTiled(this: any, client: KWin.AbstractClient): void {
     // if the client is removed from a tile or put into a generated tile, this triggers so make it not trigger
     if (client.tile == null || client.tile.generated || buildingLayout) return;
-    // get the root tile so we can insert into it if all else goes wrong
-    let rootTile = client.tile;
-    while (rootTile.parent != null) {
-        rootTile = rootTile.parent;
-    }
     printDebug(client.resourceClass + " has been quick tiled", false);
     const tileCenter = GeometryTools.rectCenter(client.tile.absoluteGeometry);
     untileClient(client);
     let tile = workspace.tilingForScreen(client.screen).bestTileForPosition(tileCenter.x, tileCenter.y);
     if (tile == null) {
-        tileClient(client);
-    } else {
-        const direction = GeometryTools.directionFromPointInRect(workspace.virtualScreenGeometry, tileCenter);
-        tileClient(client, tile, direction);
+        tile = workspace.tilingForScreen(client.screen).rootTile;
     }
+    const direction = GeometryTools.directionFromPointInRect(workspace.virtualScreenGeometry, tileCenter);
+    tileClient(client, tile, direction);
 }
 
 
@@ -281,8 +278,10 @@ export function addClient(client: KWin.AbstractClient): void {
 }
 
 export function removeClient(client: KWin.AbstractClient): void {
-    printDebug(client.resourceClass + " was removed and untiled", false);
-    untileClient(client);
+    printDebug(client.resourceClass + " was removed", false);
+    if (client.tile != null || client.wasTiled == true) {
+        untileClient(client);
+    }
 }
 
 export function clientFullScreen(client: KWin.AbstractClient): void {
