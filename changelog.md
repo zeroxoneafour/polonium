@@ -11,6 +11,7 @@
 * Basic support for quick tile shortcuts and quick tiling
 * Windows return to roughly where they were previously when tiling and retiling
 * Improved support for quick tile shortcuts
+* Basic unfullscreen when something is tiled (doesn't really work, kwin inconsistency?)
 
 ### 0.5.1
 * Added an optional direction parameter to `TilingEngine.putClientInTile` and most descending classes

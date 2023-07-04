@@ -1,4 +1,4 @@
-import { EngineTypes } from "./engine/engine";
+import { EngineTypes, Desktop } from "./engine/engine";
 import { Direction } from "./engine/common";
 import { kwin, print } from "./index";
 
@@ -30,6 +30,7 @@ class Config {
     maximizeSingle: boolean = kwin.readConfig("MaximizeSingle", false);
     resizeAmount: number = kwin.readConfig("ResizeAmount", 10) / 1000;
     timerDelay: number = kwin.readConfig("TimerDelay", 10);
+    unfullscreen: boolean = kwin.readConfig("Unfullscreen", false);
 };
 
 export let config: Config;
@@ -90,6 +91,14 @@ export function doTileClient(client: KWin.AbstractClient): boolean {
     }
 	
     return !config.useProcessWhitelist;
+}
+
+export function clientOnDesktop(client: KWin.AbstractClient, desktop: Desktop): boolean {
+    if (client.screen != desktop.screen || (client.desktop != desktop.desktop && client.desktop != -1)) return false;
+    for (let i = 0; i < client.activities.length; i += 1) {
+        if (client.activities[i] == desktop.activity) return true;
+    }
+    return false;
 }
 
 export namespace GeometryTools {

@@ -3,7 +3,7 @@ import copy from "fast-copy";
 import { EngineManager, Desktop } from "./engine/engine";
 import { Direction } from "./engine/common";
 // to build with a different engine, change this to a different file
-import { Borders, config, printDebug, doTileClient, GeometryTools } from "./util";
+import { Borders, config, printDebug, doTileClient, clientOnDesktop, GeometryTools } from "./util";
 import { workspace, createTimer } from "./index";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
@@ -201,6 +201,16 @@ export function tileClient(this: any, client: KWin.AbstractClient, tile?: KWin.T
     } else {
         engine.addClient(client);
     }
+    if (config.unfullscreen) {
+        const clientList = workspace.clientList();
+        const desktop = new Desktop;
+        for (let i = 0; i < clientList.length; i += 1) {
+            if (clientList[i].fullScreen == true && clientOnDesktop(clientList[i], desktop)) {
+                clientList[i].fullScreen = false;
+                client.refullscreen = clientList[i];
+            }
+        }
+    }
     rebuildLayout();
 }
 
@@ -215,6 +225,10 @@ export function untileClient(this: any, client: KWin.AbstractClient, keepWasTile
     }
     if (config.keepTiledBelow) {
         client.keepBelow = false;
+    }
+    if (client.refullscreen != undefined) {
+        client.refullscreen.fullScreen = true;
+        client.refullscreen = undefined;
     }
     rebuildLayout();
 }
