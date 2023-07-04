@@ -29,6 +29,7 @@ declare namespace KWin {
         activities: Array<string>;
         resourceClass: Qt.QByteArray;
         caption: string;
+        minSize: Qt.QRect;
         // frameGeometry is read/write for abstractclient
         frameGeometry: Qt.QRect;
         screen: number;
@@ -79,6 +80,16 @@ declare namespace KWin {
         Horizontal,
         Vertical,
     }
+    enum ClientAreaOption {
+        PlacementArea = 0,
+        MovementArea,
+        MaximizeArea,
+        MaximizeFullArea,
+        FullScreenArea,
+        WorkArea,
+        FullArea,
+        ScreenArea,
+    }
     interface RootTile extends Tile {
         parent: null;
         layoutModified: Signal<() => void>;
@@ -103,6 +114,8 @@ declare namespace KWin {
         tilingForScreen(desktop: number): KWin.TileManager;
         supportInformation(): string;
         clientList(): QList<AbstractClient>;
+        clientArea(option: ClientAreaOption, screen: number, desktop: number): Qt.QRect;
+        clientArea(option: ClientAreaOption, client: AbstractClient): Qt.QRect;
         // doesnt actually exist in api but convenient place to keep state
         tmpLastActiveClient: AbstractClient | null | undefined;
         previousActiveClient: AbstractClient | null | undefined;
