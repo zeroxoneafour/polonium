@@ -47,7 +47,7 @@ Polonium requires that KWin be restarted every time the configuration is changed
 * Keep tiled below (check box) - Whether to keep tiled windows below other windows
 * Maximize single windows (check box) - Whether to maximize solo windows on desktops. May be slightly buggy
 * Unfullscreen windows when new windows are tiled (check box) - Whether to temporarily reduce windows from fullscreen when a new window is tiled
-* Resize amount (slider) - The amount to resize windows by, from 0.001 to 0.45 of the available desktop space
+* Resize amount (slider) - The amount to resize windows by, from 1 to 450 pixels at a time
 * Callback delay (slider) - The time in milliseconds to wait before callbacks to rebuild the layout or update the desktop, from 1 to 200. Slower computers want more time
 * Default engine (dropdown) - The default tiling engine you want to use on new desktops
 * BTree Insertion Point (dropdown) - Select where new windows should be inserted into the binary tree representation

@@ -146,9 +146,23 @@ export class EngineManager {
     resizeTile(tile: KWin.Tile, direction: Direction, amount: number): boolean {
         // set layoutBuilding to prevent updateTiles from being called
         this.layoutBuilding = true;
+        // there are some new things that go on behind the scenes
+        // all of the engines deal with sizes in relatives (QRectF) but the amount given in the function is now in pixels
+        // this means some new math must be added, putting it here so that the engine code can remain simple across new engines as well
         const desktop = new Desktop;
-        printDebug("Resizing tile " + tile.absoluteGeometry + " in direction " + direction + " by " + amount + " of screen space on desktop " + desktop, false);
-        const ret = this.getEngine(desktop).resizeTile(tile, direction, amount);
+        const parent = tile.parent;
+        // cant even resize root tile so yeah
+        if (parent == null) return false;
+        // convert pixels into a relative size based on the parent
+        let relativeAmount = 0;
+        // resizing vertically
+        if (direction.primary == true) {
+            relativeAmount = amount / parent.absoluteGeometry.height;
+        } else { // horizontally
+            relativeAmount = amount / parent.absoluteGeometry.width;
+        }
+        printDebug("Resizing tile " + tile.absoluteGeometry + " in direction " + direction + " by " + amount + " pixels on desktop " + desktop, false);
+        const ret = this.getEngine(desktop).resizeTile(tile, direction, relativeAmount);
         this.layoutBuilding = false;
         return ret;
     }

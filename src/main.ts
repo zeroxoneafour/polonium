@@ -56,6 +56,17 @@ export function rebuildLayout(this: any, isRepeat = false) {
                     client.tile = tile;
                 }
                 client.lastTileCenter = GeometryTools.rectCenter(tile.absoluteGeometry);
+                // attempt once to resize tiles to fit larger clients
+                if (tile.absoluteGeometry.width < client.minSize.width) {
+                    // todo: if on the left, resize to the right and vice versa
+                    engine.resizeTile(tile, new Direction(true, true, false), client.minSize.width - tile.absoluteGeometry.width);
+                    repeatRebuild = true;
+                }
+                if (tile.absoluteGeometry.height < client.minSize.height) {
+                    // todo: if on the left, resize to the right and vice versa
+                    engine.resizeTile(tile, new Direction(true, true, true), client.minSize.height - tile.absoluteGeometry.height);
+                    repeatRebuild = true;
+                }
             } else {
                 client.wasTiled = false;
                 if (config.borders == Borders.NoBorderTiled) {

@@ -1,6 +1,12 @@
 # changelog
 
-## 0.5.0
+## 0.6
+
+### 0.6.0
+* Sort of support minimum window sizes
+* Tile resizing done in pixels instead of relatives
+
+## 0.5
 
 ### 0.5.2
 * Fixed QTimer undefined bug

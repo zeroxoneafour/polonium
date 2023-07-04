@@ -29,6 +29,7 @@ declare namespace KWin {
         activities: Array<string>;
         resourceClass: Qt.QByteArray;
         caption: string;
+        minSize: Qt.QRect;
         // frameGeometry is read/write for abstractclient
         frameGeometry: Qt.QRect;
         screen: number;

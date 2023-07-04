@@ -28,7 +28,7 @@ class Config {
     keepTiledBelow: boolean = kwin.readConfig("KeepTiledBelow", true);
     defaultEngine: EngineTypes = kwin.readConfig("DefaultEngine", EngineTypes.BTree);
     maximizeSingle: boolean = kwin.readConfig("MaximizeSingle", false);
-    resizeAmount: number = kwin.readConfig("ResizeAmount", 10) / 1000;
+    resizeAmount: number = kwin.readConfig("ResizeAmount", 10);
     timerDelay: number = kwin.readConfig("TimerDelay", 10);
     unfullscreen: boolean = kwin.readConfig("Unfullscreen", false);
 };
