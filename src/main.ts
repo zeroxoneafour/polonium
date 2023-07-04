@@ -58,13 +58,27 @@ export function rebuildLayout(this: any, isRepeat = false) {
                 client.lastTileCenter = GeometryTools.rectCenter(tile.absoluteGeometry);
                 // attempt once to resize tiles to fit larger clients
                 if (tile.absoluteGeometry.width < client.minSize.width) {
-                    // todo: if on the left, resize to the right and vice versa
-                    engine.resizeTile(tile, new Direction(true, true, false), client.minSize.width - tile.absoluteGeometry.width);
+                    const resizeAmount = client.minSize.width - tile.absoluteGeometry.width + (tile.padding * 2);
+                    const screenArea = workspace.clientArea(6, client);
+                    const tileCenter = GeometryTools.rectCenter(tile.absoluteGeometry);
+                    // if on the right, resize to the left
+                    if (GeometryTools.directionFromPointInRect(screenArea, tileCenter).right) {
+                        engine.resizeTile(tile, new Direction(true, false, false), resizeAmount);
+                    } else {
+                        engine.resizeTile(tile, new Direction(true, true, false), resizeAmount);
+                    }
                     repeatRebuild = true;
                 }
                 if (tile.absoluteGeometry.height < client.minSize.height) {
-                    // todo: if on the left, resize to the right and vice versa
-                    engine.resizeTile(tile, new Direction(true, true, true), client.minSize.height - tile.absoluteGeometry.height);
+                    const resizeAmount = client.minSize.height - tile.absoluteGeometry.height + (tile.padding * 2);
+                    const screenArea = workspace.clientArea(6, client);
+                    const tileCenter = GeometryTools.rectCenter(tile.absoluteGeometry);
+                    // if above, resize down
+                    if (GeometryTools.directionFromPointInRect(screenArea, tileCenter).above) {
+                        engine.resizeTile(tile, new Direction(false, true, true), resizeAmount);
+                    } else {
+                        engine.resizeTile(tile, new Direction(true, true, true), resizeAmount);
+                    }
                     repeatRebuild = true;
                 }
             } else {
