@@ -24,9 +24,10 @@ PlasmaCore.Dialog {
     x: (screenGeometry.x + screenGeometry.width / 2) - width / 2;
     y: (screenGeometry.y + screenGeometry.height / 2) - height / 2;
 
-    type: PlasmaCore.Dialog.OnScreenDisplay
-    flags: Qt.Popup | Qt.WindowStaysOnTopHint
-    location: PlasmaCore.Types.Floating
+    type: PlasmaCore.Dialog.OnScreenDisplay;
+    flags: Qt.Popup | Qt.WindowStaysOnTopHint;
+    location: PlasmaCore.Types.Floating;
+    hideOnWindowDeactivate: true;
 
     function setSettings(s) {
         this.settings.engine = s.engine;
@@ -38,11 +39,14 @@ PlasmaCore.Dialog {
         this.desktop.screen = workspace.activeScreen;
         this.desktop.activity = workspace.currentActivity;
         this.desktop.desktop = workspace.currentDesktop;
+        
         // update settings
         engine.currentIndex = this.settings.engine;
         insertionPoint.currentIndex = this.settings.insertionPoint;
+        
         // Update current screen information
         this.screenGeometry = workspace.clientArea(KWin.FullScreenArea, workspace.activeScreen, workspace.currentDesktop);
+        
         // Show the popup
         this.visible = true;
     }
@@ -61,12 +65,14 @@ PlasmaCore.Dialog {
     
     mainItem: ColumnLayout {
         id: main;
-    
         Layout.alignment: Qt.AlignHCenter;
+        spacing: 10;
         
         RowLayout {
             Layout.fillWidth: true;
+            Layout.alignment: Qt.AlignHCenter;
             spacing: 10;
+            
             PC3.Label {
                 text: "Engine:";
             }
@@ -77,8 +83,10 @@ PlasmaCore.Dialog {
         }
         
         RowLayout {
+            Layout.alignment: Qt.AlignHCenter;
             Layout.fillWidth: true;
             spacing: 10;
+            
             PC3.Label {
                 text: "Insertion Point:";
             }
@@ -89,6 +97,9 @@ PlasmaCore.Dialog {
         }
         
         RowLayout {
+            Layout.alignment: Qt.AlignHCenter;
+            Layout.fillWidth: true;
+            
             PC3.Button {
                 text: "Save and close";
                 onClicked: {

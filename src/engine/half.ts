@@ -125,9 +125,9 @@ export class TilingEngine implements Engine.TilingEngine {
     
     addClient(client: KWin.AbstractClient): boolean {
         if (this.settings.insertionPoint == InsertionPoint.Active) {
-            const client = this.settings.lastActiveClient;
-            if (client != null && client.tile != null) { // or undefined
-                const tile = client.tile;
+            const lastClient = this.settings.lastActiveClient;
+            if (lastClient != null && lastClient.tile != null) { // or undefined
+                const tile = lastClient.tile;
                 if (this.nodeMap.inverse.has(tile) && tile.parent != null) return this.putClientInTile(client, tile);
             }
         }
