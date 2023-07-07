@@ -3,7 +3,7 @@ import * as Engine from "./engine/common";
 import { Desktop } from "./engine/engine";
 import { engine, rebuildLayout, untileClient, tileClient } from "./main";
 import { printDebug, config } from "./util";
-import { workspace } from "./index";
+import { workspace, settingsDialog } from "./index";
 
 export enum Direction {
     Above,
@@ -196,4 +196,16 @@ export function resizeTile(direction: Direction): void {
     if (activeTile == null) return;
     engine.resizeTile(activeTile, directionToEngineDirection(direction), config.resizeAmount);
     rebuildLayout();
+}
+
+export function showSettingsDialog(): void {
+    if (!settingsDialog.isVisible()) {
+        const settings = engine.getSettings(new Desktop);
+        if (settings != null) {
+            settingsDialog.setSettings(settings);
+        }
+        settingsDialog.show();
+    } else {
+        settingsDialog.saveAndHide();
+    }
 }

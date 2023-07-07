@@ -3,7 +3,7 @@ import QtQuick 2.0
 import org.kde.kwin 2.0
 
 Item {
-    id: rootScript
+    id: rootScript;
     
     function createTimer() {
         return Qt.createQmlObject("import QtQuick 2.0; Timer {}", rootScript);
@@ -22,18 +22,54 @@ Item {
         const qmlObjects = {
             "rootScript": rootScript,
             "dialog": dialog,
+            "settings": settings,
         }
         Polonium.init(api, qmlObjects);
     }
     
     Loader {
-        id: dialog
+        id: dialog;
 
         function show(text) {
             dialog.item.show(text);
         }
 
-        source: "dialog.qml"
+        source: "dialog.qml";
     }
-
+    
+    Loader {
+        id: settings;
+        
+        function isVisible() {
+            return settings.item.visible;
+        }
+        
+        function setSettings(c) {
+            settings.item.setSettings(c);
+        }
+        
+        function show() {
+            settings.item.show();
+        }
+        
+        function hide() {
+            settings.item.hide();
+        }
+        
+        function saveAndHide() {
+            settings.item.saveSettings();
+            settings.item.hide();
+        }
+        
+        signal saveSettings(a: var, b: var);
+        
+        source: "settings.qml";
+    }
+    
+    Connections {
+        target: settings.item;
+        function onSaveSettingsInternal(a, b) {
+            settings.saveSettings(a, b);
+        }
+    }
 }

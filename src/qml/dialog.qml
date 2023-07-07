@@ -34,7 +34,6 @@ PlasmaCore.Dialog {
     flags: Qt.Popup | Qt.WindowStaysOnTopHint
     location: PlasmaCore.Types.Floating
     outputOnly: true
-    // Spawn popup a little bit lower than the center of the screen for consistency
     x: (screenGeometry.x + screenGeometry.width / 2) - width / 2
     y: (screenGeometry.y + screenGeometry.height * 2 / 3) - height / 2
     visible: false

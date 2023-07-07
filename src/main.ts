@@ -378,3 +378,27 @@ export function clientActivated(client: KWin.AbstractClient) {
         client.noBorder = false;
     }
 }
+
+export function settingsDialogSaved(settings: Qml.Settings, qmlDesktop: Qml.Desktop): void {
+    const desktop = new Desktop(qmlDesktop.screen, qmlDesktop.activity, qmlDesktop.desktop);
+    printDebug("Settings saved as " + JSON.stringify(settings) + " for desktop " + desktop.toString(), false);
+    let rebuild = false;
+    if (engine.engineTypes.get(desktop.toString()) != settings.engine) {
+        const clients = engine.placeClients(desktop).map(x => x[0]);
+        for (const client of clients) {
+            client.wasTiled = false;
+            client.tile = null;
+        }
+        engine.setEngine(desktop, settings.engine);
+        for (const client of clients) {
+            if (client != undefined) { 
+                engine.addClient(client, desktop);
+            }
+        }
+        rebuild = true;
+    }
+    engine.setSettings(desktop, settings);
+    if (rebuild) {
+        rebuildLayout();
+    }
+}

@@ -1,7 +1,7 @@
 // an engine with a split down the middle, by default only appends windows to the right
 
 import { BiMap } from "mnemonist";
-import { printDebug } from "../util";
+import { printDebug, InsertionPoint } from "../util";
 import * as Engine from "./common";
 
 class Container {
@@ -12,6 +12,8 @@ class Container {
 }
 
 export class TilingEngine implements Engine.TilingEngine {
+    settings: Engine.Settings = new Engine.Settings;
+    
     left: Array<Container> = new Array;
     right: Array<Container> = new Array;
     nodeMap: BiMap<Container, KWin.Tile> = new BiMap;
@@ -122,10 +124,26 @@ export class TilingEngine implements Engine.TilingEngine {
     }
     
     addClient(client: KWin.AbstractClient): boolean {
-        if (this.left.length == 0) {
-            this.left.push(new Container(client));
+        if (this.settings.insertionPoint == InsertionPoint.Active) {
+            const lastClient = this.settings.lastActiveClient;
+            if (lastClient != null && lastClient.tile != null) { // or undefined
+                const tile = lastClient.tile;
+                if (this.nodeMap.inverse.has(tile) && tile.parent != null) return this.putClientInTile(client, tile);
+            }
+        }
+        let mainArr;
+        let secondArr;
+        if (this.settings.insertionPoint == InsertionPoint.Left) {
+            mainArr = this.left;
+            secondArr = this.right;
         } else {
-            this.right.push(new Container(client));
+            mainArr = this.right;
+            secondArr = this.left;
+        }
+        if (secondArr.length == 0) {
+            secondArr.push(new Container(client));
+        } else {
+            mainArr.push(new Container(client));
         }
         return true;
     }
