@@ -5,6 +5,9 @@
 ### 0.6.0
 * Sort of support minimum window sizes
 * Tile resizing done in pixels instead of relatives
+* Added live settings configuration per desktop
+* Added insertion points to Half and ThreeColumn
+* Added a bug with "selected" insertion point
 
 ## 0.5
 

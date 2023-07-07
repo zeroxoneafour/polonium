@@ -1,7 +1,7 @@
 // the famous three column layout
 
 import { BiMap } from "mnemonist";
-import { printDebug } from "../util";
+import { printDebug, InsertionPoint } from "../util";
 import * as Engine from "./common";
 
 class Container {
@@ -12,10 +12,12 @@ class Container {
 }
 
 export class TilingEngine implements Engine.TilingEngine {
+    settings: Engine.Settings = new Engine.Settings;
     columns = [new Array<Container>(), new Array<Container>(), new Array<Container>()];
     leftSize: number = 0.25;
     rightSize: number = 0.25;
     nodeMap = new BiMap<Container, KWin.Tile>();
+    
     buildLayout(rootTile: KWin.Tile): boolean {
         // setup
         let leftTile: KWin.Tile | undefined;
@@ -173,13 +175,31 @@ export class TilingEngine implements Engine.TilingEngine {
     }
 
     addClient(client: KWin.AbstractClient): boolean {
-        // center first, then right, then left
+        if (this.settings.insertionPoint == InsertionPoint.Active) {
+            const client = this.settings.lastActiveClient;
+            if (client != null && client.tile != null) { // or undefined
+                const tile = client.tile;
+                if (this.nodeMap.inverse.has(tile) && tile.parent != null) return this.putClientInTile(client, tile);
+            }
+        }
+        // center first
         if (this.columns[1].length == 0) {
             this.columns[1].push(new Container(client));
-        } else if (this.columns[2].length <= this.columns[0].length) {
-            this.columns[2].push(new Container(client));
         } else {
-            this.columns[0].push(new Container(client));
+            let mainArr;
+            let secondArr;
+            if (this.settings.insertionPoint == InsertionPoint.Left) {
+                mainArr = this.columns[0];
+                secondArr = this.columns[2];
+            } else {
+                mainArr = this.columns[2];
+                secondArr = this.columns[0];
+            }
+            if (mainArr.length > secondArr.length) {
+                secondArr.push(new Container(client));
+            } else {
+                mainArr.push(new Container(client));
+            }
         }
         return true;
     }

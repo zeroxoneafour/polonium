@@ -4,6 +4,7 @@ import * as Engine from "./common";
 import { workspace } from "../index";
 
 export class TilingEngine implements Engine.TilingEngine {
+    settings: Engine.Settings = new Engine.Settings;
     clients: Array<KWin.AbstractClient> = new Array;
     rootTile: KWin.RootTile | null = null;
     

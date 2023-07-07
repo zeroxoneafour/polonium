@@ -1,4 +1,4 @@
-import { TilingEngine, Direction } from "./common";
+import { TilingEngine, Direction, Settings } from "./common";
 import { config, printDebug } from "../util";
 import { workspace, showDialog, createTimer } from "../index";
 
@@ -56,7 +56,7 @@ function engineForEnum(engine: EngineTypes): TilingEngine {
 
 export class EngineManager {
     engineTypes: Map<string, EngineTypes> = new Map;
-    engines: Map<string, TilingEngine> = new Map;
+    private engines: Map<string, TilingEngine> = new Map;
     layoutBuilding: boolean = false;
     tileRebuildTimers: Map<KWin.RootTile, Qt.QTimer> = new Map;
     
@@ -87,6 +87,15 @@ export class EngineManager {
         const engine = engineForEnum(engineType);
         this.engines.set(desktop.toString(), engine);
         showDialog(EngineTypes[engineType]);
+        return true;
+    }
+    
+    setEngine(desktop: Desktop, engineType: EngineTypes): boolean {
+        engineType %= EngineTypes._loop;
+        printDebug("Setting engine for " + desktop + " to engine " + EngineTypes[engineType], false);
+        this.engineTypes.set(desktop.toString(), engineType);
+        const engine = engineForEnum(engineType);
+        this.engines.set(desktop.toString(), engine);
         return true;
     }
     
@@ -132,6 +141,18 @@ export class EngineManager {
             timer.interval = config.timerDelay;
         }
         this.tileRebuildTimers.get(rootTile)!.restart();
+    }
+    
+    setSettings(desktop: Desktop, qmlSettings: Qml.Settings): void {
+        const settings = new Settings(qmlSettings);
+        this.getEngine(desktop).settings = settings;
+    }
+    
+    getSettings(desktop: Desktop): Qml.Settings | null {
+        const engine = this.getEngine(desktop);
+        const engineType = this.engineTypes.get(desktop.toString());
+        if (engineType == undefined) return null;
+        return engine.settings.toQmlSettings(engineType);
     }
 
     updateTiles(rootTile: KWin.RootTile): boolean {

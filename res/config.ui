@@ -141,7 +141,7 @@
     </widget>
    </item>
    <item row="29" column="2">
-    <widget class="QComboBox" name="kcfg_BTreeInsertionPoint">
+    <widget class="QComboBox" name="kcfg_InsertionPoint">
      <property name="toolTip">
       <string>Select where in the binary tree representation of the window layout new windows are placed.
 &quot;Left&quot; and &quot;Right&quot; will keep the binary tree complete, filling the last layer from the selected direction.

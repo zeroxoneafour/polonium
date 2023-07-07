@@ -10,6 +10,7 @@ export let kwin: KWin.Api;
 export let print: (...values: any[]) => void;
 export let createTimer: () => Qt.QTimer;
 export let showDialog: (text: string) => void;
+export let settingsDialog: Qml.SettingsDialog;
 
 export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     workspace = api.workspace;
@@ -18,6 +19,7 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     print = qmlObjects.rootScript.printQml;
     createTimer = qmlObjects.rootScript.createTimer;
     showDialog = qmlObjects.dialog.show;
+    settingsDialog = qmlObjects.settings;
     
     createConfig();
     options.configChanged.connect(createConfig);
@@ -33,6 +35,7 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     kwin.registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", shortcuts.retileWindow);
     kwin.registerShortcut("PoloniumCycleLayouts", "Polonium: Cycle layouts", "Meta+\\", shortcuts.cycleEngine);
     kwin.registerShortcut("PoloniumRebuildLayout", "Polonium: Rebuild Layout", "Meta+Ctrl+Space", main.rebuildLayout);
+    kwin.registerShortcut("PoloniumShowSettings", "Polonium: Show Settings Dialog", "Meta+|", shortcuts.showSettingsDialog);
 
     kwin.registerShortcut("PoloniumFocusAbove", "Polonium: Focus Above", "Meta+K", shortcuts.focus.bind(this, shortcuts.Direction.Above));
     kwin.registerShortcut("PoloniumSwapAbove", "Polonium: Swap Above", "Ctrl+Meta+K", shortcuts.swap.bind(this, shortcuts.Direction.Above));
@@ -61,4 +64,5 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
 
     // build first time
     main.rebuildLayout();
+    settingsDialog.saveSettings.connect(main.settingsDialogSaved);
 }

@@ -7,7 +7,8 @@ declare interface CoreApi {
 declare namespace Qml {
     interface Main {
         rootScript: RootScript;
-        dialog: Dialog
+        dialog: Dialog;
+        settings: SettingsDialog;
     }
     
     interface RootScript {
@@ -17,5 +18,25 @@ declare namespace Qml {
 
     interface Dialog {
         show(text: string): void;
+    }
+    
+    interface SettingsDialog {
+        isVisible(): boolean;
+        show(): void;
+        hide(): void;
+        saveAndHide(): void;
+        setSettings(s: Settings): void;
+        saveSettings: Signal<(settings: Settings, desktop: Desktop) => void>;
+    }
+    
+    interface Settings {
+        engine: number;
+        insertionPoint: number;
+    }
+    
+    interface Desktop {
+        screen: number;
+        activity: string;
+        desktop: number;
     }
 }

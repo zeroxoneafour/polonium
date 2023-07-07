@@ -1,3 +1,6 @@
+import { config, InsertionPoint } from "../util";
+import { workspace } from "../index";
+
 // dont expect nice doc comments anywhere other than here, this is the only part of the project meant for expansion
 
 export class Direction {
@@ -17,10 +20,35 @@ export class Direction {
     }
 }
 
+// default config overrides
+export class Settings {
+    insertionPoint: InsertionPoint;
+    constructor(qmlSettings?: Qml.Settings) {
+        if (qmlSettings == undefined) {
+            this.insertionPoint = config.insertionPoint;
+        } else {
+            this.insertionPoint = qmlSettings.insertionPoint;
+        }
+    }
+    get lastActiveClient(): KWin.AbstractClient | null | undefined {
+        return workspace.previousActiveClient;
+    }
+    toQmlSettings(engine: number): Qml.Settings {
+        return {
+            engine: engine,
+            insertionPoint: this.insertionPoint,
+        };
+    }
+}
+
 /**
  * Interface that can be built off of to create a custom tiling engine
  */
 export interface TilingEngine {
+    /**
+     * Setting overrides for the current engine
+     */
+    settings: Settings;
     /**
      * Lays out the tiles according to the engine's organization
      *

@@ -39,9 +39,11 @@ class RootTile extends Tile {
 }
 
 export class TilingEngine implements Engine.TilingEngine {
+    settings: Engine.Settings = new Engine.Settings;
     fakeRootTile: RootTile = new RootTile(1);
     untiledClients: Array<KWin.AbstractClient> = new Array;
     tileMap: BiMap<Tile, KWin.Tile> = new BiMap;
+    
     buildLayout(rootTile: KWin.RootTile): boolean {
         this.tileMap.clear();
         this.tileMap.set(this.fakeRootTile, rootTile);

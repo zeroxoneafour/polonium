@@ -10,7 +10,7 @@ export enum Borders {
     BorderAll,
 }
 
-export enum BTreeInsertionPoint {
+export enum InsertionPoint {
     Left = 0,
     Right,
     Active,
@@ -24,7 +24,7 @@ class Config {
     filterClientCaption: Array<string> = kwin.readConfig("FilterClientCaption", "").split(',').map((x: string) => x.trim());
     tilePopups: boolean = kwin.readConfig("TilePopups", false);
     borders: Borders = kwin.readConfig("Borders", Borders.NoBorderTiled);
-    btreeInsertionPoint: BTreeInsertionPoint = kwin.readConfig("BTreeInsertionPoint", BTreeInsertionPoint.Left);
+    insertionPoint: InsertionPoint = kwin.readConfig("InsertionPoint", InsertionPoint.Left);
     keepTiledBelow: boolean = kwin.readConfig("KeepTiledBelow", true);
     defaultEngine: EngineTypes = kwin.readConfig("DefaultEngine", EngineTypes.BTree);
     maximizeSingle: boolean = kwin.readConfig("MaximizeSingle", false);
