@@ -287,7 +287,11 @@ export class EngineManager {
     
     putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Direction): boolean {
         printDebug("Placing " + client.resourceClass + " in " + tile.absoluteGeometry + " with direction " + direction, false);
-        return this.getEngine().putClientInTile(client, tile, direction);
+        if (!this.getEngine().putClientInTile(client, tile, direction)) {
+            return this.getEngine().addClient(client);
+        } else {
+            return true;
+        }
     }
     
     clientOfTile(tile: KWin.Tile): KWin.AbstractClient | null {
