@@ -4,10 +4,20 @@ import { EngineManager, Desktop } from "./engine/engine";
 import { Direction } from "./engine/common";
 // to build with a different engine, change this to a different file
 import { Borders, config, printDebug, doTileClient, clientOnDesktop, GeometryTools } from "./util";
-import { workspace, createTimer } from "./index";
+import { workspace, createTimer, createDBusCall, dbusClientInstalled } from "./index";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
-export const engine: EngineManager = new EngineManager;
+export let engine: EngineManager;
+let setSettingsDbus: KWin.DBusCall;
+
+export function initMain(): void {
+    engine = new EngineManager;
+    setSettingsDbus = createDBusCall();
+    setSettingsDbus.service = "org.polonium.SettingSaver";
+    setSettingsDbus.path = "/saver";
+    setSettingsDbus.dbusInterface = "org.polonium.SettingSaver";
+    setSettingsDbus.method = "SetSettings";
+}
 
 // boolean to stop geometrychange from interfering
 let buildingLayout: boolean = false;
@@ -379,6 +389,7 @@ export function clientActivated(client: KWin.AbstractClient) {
     }
 }
 
+
 export function settingsDialogSaved(settings: Qml.Settings, qmlDesktop: Qml.Desktop): void {
     const desktop = new Desktop(qmlDesktop.screen, qmlDesktop.activity, qmlDesktop.desktop);
     printDebug("Settings saved as " + JSON.stringify(settings) + " for desktop " + desktop.toString(), false);
@@ -400,5 +411,9 @@ export function settingsDialogSaved(settings: Qml.Settings, qmlDesktop: Qml.Desk
     engine.setSettings(desktop, settings);
     if (rebuild) {
         rebuildLayout();
+    }
+    if (dbusClientInstalled) {
+        setSettingsDbus.arguments = [desktop.toString(), JSON.stringify(settings)];
+        setSettingsDbus.call();
     }
 }
