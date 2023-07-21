@@ -65,6 +65,8 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     workspace.lastActivity = workspace.currentActivity;
     workspace.lastDesktop = workspace.currentDesktop;
 
+    main.initMain();
+    
     // build first time
     main.rebuildLayout();
     settingsDialog.saveSettings.connect(main.settingsDialogSaved);

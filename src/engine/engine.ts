@@ -1,6 +1,6 @@
 import { TilingEngine, Direction, Settings } from "./common";
 import { config, printDebug } from "../util";
-import { workspace, showDialog, createTimer } from "../index";
+import { workspace, showDialog, createTimer, createDBusCall, dbusClientInstalled } from "../index";
 
 // engines and engine enum
 import * as BTree from "./btree";
@@ -59,11 +59,39 @@ export class EngineManager {
     private engines: Map<string, TilingEngine> = new Map;
     layoutBuilding: boolean = false;
     tileRebuildTimers: Map<KWin.RootTile, Qt.QTimer> = new Map;
+    getSettingsDbus: KWin.DBusCall = createDBusCall();
+    
+    constructor() {
+        this.getSettingsDbus.service = "org.polonium.SettingSaver";
+        this.getSettingsDbus.path = "/saver";
+        this.getSettingsDbus.dbusInterface = "org.polonium.SettingSaver";
+        this.getSettingsDbus.method = "GetSettings";
+        this.getSettingsDbus.finished.connect(((returnValues: string[]) => {
+            if (returnValues[1].length == 0) return;
+            let desktop = returnValues[0];
+            let settings: Qml.Settings = JSON.parse(returnValues[1]);
+            let engine: TilingEngine | undefined;
+            printDebug("Restoring settings for desktop " + returnValues[0] + " as " + returnValues[1], false);
+            if (settings.engine != this.engineTypes.get(desktop)) {
+                engine = engineForEnum(settings.engine);
+                this.engineTypes.set(desktop, settings.engine);
+                this.engines.set(desktop, engine);
+            } else {
+                engine = this.engines.get(desktop);
+            }
+            if (engine == undefined) return;
+            engine.settings = new Settings(settings);
+        }).bind(this));
+    }
     
     private createNewEngine(desktop: Desktop): TilingEngine {
         this.engineTypes.set(desktop.toString(), config.defaultEngine);
         const engine = engineForEnum(config.defaultEngine);
         this.engines.set(desktop.toString(), engine);
+        if (dbusClientInstalled) {
+            this.getSettingsDbus.arguments = [desktop.toString()];
+            this.getSettingsDbus.call();
+        }
         return engine;
     }
 
