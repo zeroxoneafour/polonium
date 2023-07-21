@@ -4,7 +4,7 @@ import { EngineManager, Desktop } from "./engine/engine";
 import { Direction } from "./engine/common";
 // to build with a different engine, change this to a different file
 import { Borders, config, printDebug, doTileClient, clientOnDesktop, GeometryTools } from "./util";
-import { workspace, createTimer } from "./index";
+import { workspace, createTimer, createDBusCall } from "./index";
 
 // change this to set the engine, may have a feature to edit this in real time in the future
 export const engine: EngineManager = new EngineManager;

@@ -2,6 +2,7 @@ declare namespace KWin {
     interface Api {
         readConfig(key: string, defaultValue?: any): any;
         registerShortcut(id: string, desc: string, keybind: string, callback: Function): void;
+        callDBus(): void;
     }
     interface Toplevel {
         readonly popupWindow: boolean;
@@ -136,5 +137,14 @@ declare namespace KWin {
     }
     interface Options {
         configChanged: Signal<() => void>;
+    }
+    interface DBusCall {
+        service: string,
+        path: string,
+        dbusInterface: string,
+        method: string,
+        arguments: any[],
+        finished: Signal<(returnValues: any[]) => void>;
+        call(): void;
     }
 }

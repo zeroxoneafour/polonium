@@ -14,6 +14,7 @@ declare namespace Qml {
     interface RootScript {
         createTimer(): Qt.QTimer;
         printQml(text: string): void;
+        createDBusCall(): KWin.DBusCall;
     }
 
     interface Dialog {

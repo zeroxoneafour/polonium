@@ -7,6 +7,7 @@
 * Tile resizing done in pixels instead of relatives
 * Added live settings configuration per desktop
 * Added insertion points to Half and ThreeColumn
+* Added DBus interface to persist some settings across logouts
 
 ## 0.5
 
