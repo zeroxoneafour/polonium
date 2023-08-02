@@ -78,6 +78,9 @@ export class TilingEngine implements Engine.TilingEngine {
         let stackNext: Array<TreeNode> = [];
         this.nodeMap.set(this.rootNode, rootTile);
         let i = 0;
+        if (this.settings.rotation) {
+            i += 1;
+        }
         while (stack.length > 0) {
             for (const node of stack) {
                 if (node.children != null) {

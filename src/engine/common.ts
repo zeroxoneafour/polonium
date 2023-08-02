@@ -16,18 +16,21 @@ export class Direction {
         this.primary = primary;
     }
     toString(): string {
-        return "(" + (this.above ? "above" : "below") + ", " + (this.right ? "right" : "left") + ")";
+        return "(" + (this.above ? "above" : "below") + ", " + (this.right ? "right" : "left") + ", " + (this.primary ? "vertical" : "horizontal") + ")";
     }
 }
 
 // default config overrides
 export class Settings {
     insertionPoint: InsertionPoint;
+    rotation: boolean;
     constructor(qmlSettings?: Qml.Settings) {
         if (qmlSettings == undefined) {
             this.insertionPoint = config.insertionPoint;
+            this.rotation = config.rotation;
         } else {
             this.insertionPoint = qmlSettings.insertionPoint;
+            this.rotation = qmlSettings.rotation;
         }
     }
     get lastActiveClient(): KWin.AbstractClient | null | undefined {
@@ -37,6 +40,7 @@ export class Settings {
         return {
             engine: engine,
             insertionPoint: this.insertionPoint,
+            rotation: this.rotation,
         };
     }
 }

@@ -15,5 +15,6 @@
         <entry name="ResizeAmount" type="int"><default>10</default></entry>
         <entry name="TimerDelay" type="int"><default>10</default></entry>
         <entry name="Unfullscreen" type="bool"><default>false</default></entry>
+        <entry name="Rotation" type="bool"><default>false</default></entry>
     </group>
 </kcfg>

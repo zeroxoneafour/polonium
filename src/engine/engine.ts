@@ -54,6 +54,10 @@ function engineForEnum(engine: EngineTypes): TilingEngine {
     }
 }
 
+function isQmlSetting(setting: object): setting is Qml.Settings {
+    return "insertionPoint" in setting;
+}
+
 export class EngineManager {
     engineTypes: Map<string, EngineTypes> = new Map;
     private engines: Map<string, TilingEngine> = new Map;
@@ -69,7 +73,11 @@ export class EngineManager {
         this.getSettingsDbus.finished.connect(((returnValues: string[]) => {
             if (returnValues[1].length == 0) return;
             let desktop = returnValues[0];
-            let settings: Qml.Settings = JSON.parse(returnValues[1]);
+            let settings = JSON.parse(returnValues[1]);
+            if (!isQmlSetting(settings)) {
+                printDebug("Invalid settings for desktop " + returnValues[0], true);
+                return;
+            }
             let engine: TilingEngine | undefined;
             printDebug("Restoring settings for desktop " + returnValues[0] + " as " + returnValues[1], false);
             if (settings.engine != this.engineTypes.get(desktop)) {

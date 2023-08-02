@@ -32,27 +32,47 @@ export class TilingEngine implements Engine.TilingEngine {
             centerTile = rootTile;
         } else if (this.columns[0].length == 0 && this.columns[2].length != 0) {
             // center and right
-            rootTile.split(1);
-            rootTile.tiles[1].relativeGeometry.width = this.rightSize;
-            rootTile.tiles[0].relativeGeometry.width = 1 - this.rightSize;
+            if (this.settings.rotation) {
+                rootTile.split(2);
+                rootTile.tiles[1].relativeGeometry.height = this.rightSize;
+                rootTile.tiles[0].relativeGeometry.height = 1 - this.rightSize;
+            } else {
+                rootTile.split(1);
+                rootTile.tiles[1].relativeGeometry.width = this.rightSize;
+                rootTile.tiles[0].relativeGeometry.width = 1 - this.rightSize;
+            }
             centerTile = rootTile.tiles[0];
             rightTile = rootTile.tiles[1];
         } else if (this.columns[0].length != 0 && this.columns[2].length == 0) {
             // center and left
-            rootTile.split(1);
-            rootTile.tiles[0].relativeGeometry.width = this.leftSize;
-            rootTile.tiles[1].relativeGeometry.width = 1 - this.leftSize;
-            centerTile = rootTile.tiles[1];
+            if (this.settings.rotation) {
+                rootTile.split(2);
+                rootTile.tiles[0].relativeGeometry.height = this.leftSize;
+                rootTile.tiles[1].relativeGeometry.height = 1 - this.leftSize;
+            } else {
+                rootTile.split(1);
+                rootTile.tiles[0].relativeGeometry.width = this.leftSize;
+                rootTile.tiles[1].relativeGeometry.width = 1 - this.leftSize;
+            }
             leftTile = rootTile.tiles[0];
+            centerTile = rootTile.tiles[1];
         } else if (this.columns[0].length != 0 && this.columns[2].length != 0) {
             // all columns
-            rootTile.split(1);
-            rootTile.tiles[1].split(1);
-            rootTile.tiles[0].relativeGeometry.width = this.leftSize;
-            rootTile.tiles[2].relativeGeometry.width = this.rightSize;
-            rootTile.tiles[1].relativeGeometry.width = 1 - this.leftSize - this.rightSize;
-            centerTile = rootTile.tiles[1];
+            if (this.settings.rotation) {
+                rootTile.split(2);
+                rootTile.tiles[1].split(2);
+                rootTile.tiles[0].relativeGeometry.height = this.leftSize;
+                rootTile.tiles[2].relativeGeometry.height = this.rightSize;
+                rootTile.tiles[1].relativeGeometry.height = 1 - this.leftSize - this.rightSize;
+            } else {
+                rootTile.split(1);
+                rootTile.tiles[1].split(1);
+                rootTile.tiles[0].relativeGeometry.width = this.leftSize;
+                rootTile.tiles[2].relativeGeometry.width = this.rightSize;
+                rootTile.tiles[1].relativeGeometry.width = 1 - this.leftSize - this.rightSize;
+            }
             leftTile = rootTile.tiles[0];
+            centerTile = rootTile.tiles[1];
             rightTile = rootTile.tiles[2];
         }
         if (leftTile != undefined) {
@@ -62,8 +82,14 @@ export class TilingEngine implements Engine.TilingEngine {
                 let container = left[i];
                 // set the size if not the last one
                 if (i != left.length - 1) {
-                    splitTile.split(2);
-                    leftTile.tiles[i].relativeGeometry.height = 1/left.length;
+                    let height = 1/left.length;
+                    if (this.settings.rotation) {
+                        splitTile.split(1);
+                        leftTile.tiles[i].relativeGeometry.width = height;
+                    } else {
+                        splitTile.split(2);
+                        leftTile.tiles[i].relativeGeometry.height = height;
+                    }
                     this.nodeMap.set(container, leftTile.tiles[i]);
                     splitTile = leftTile.tiles[i+1];
                 } else {
@@ -78,9 +104,14 @@ export class TilingEngine implements Engine.TilingEngine {
                 let container = right[i];
                 // set the size if not the last one
                 if (i != right.length - 1) {
-                    splitTile.split(2);
-                    rightTile.tiles[i].relativeGeometry.height = 1/right.length;
-                    this.nodeMap.set(container, rightTile.tiles[i]);
+                    let height = 1/right.length;
+                    if (this.settings.rotation) {
+                        splitTile.split(1);
+                        rightTile.tiles[i].relativeGeometry.width = height;
+                    } else {
+                        splitTile.split(2);
+                        rightTile.tiles[i].relativeGeometry.height = height;
+                    }                    this.nodeMap.set(container, rightTile.tiles[i]);
                     splitTile = rightTile.tiles[i+1];
                 } else {
                     this.nodeMap.set(container, splitTile);
@@ -94,9 +125,14 @@ export class TilingEngine implements Engine.TilingEngine {
                 let container = center[i];
                 // set the size if not the last one
                 if (i != center.length - 1) {
-                    splitTile.split(2);
-                    centerTile.tiles[i].relativeGeometry.height = 1/center.length;
-                    this.nodeMap.set(container, centerTile.tiles[i]);
+                    let height = 1/center.length;
+                    if (this.settings.rotation) {
+                        splitTile.split(1);
+                        centerTile.tiles[i].relativeGeometry.width = height;
+                    } else {
+                        splitTile.split(2);
+                        centerTile.tiles[i].relativeGeometry.height = height;
+                    }                    this.nodeMap.set(container, centerTile.tiles[i]);
                     splitTile = centerTile.tiles[i+1];
                 } else {
                     this.nodeMap.set(container, splitTile);
@@ -108,36 +144,47 @@ export class TilingEngine implements Engine.TilingEngine {
     
     updateTiles(rootTile: KWin.RootTile): boolean {
         if (this.columns[0].length == 0 && this.columns[2].length != 0) {
-            this.rightSize = rootTile.tiles[1].relativeGeometry.width;
+            if (this.settings.rotation) {
+                this.rightSize = rootTile.tiles[1].relativeGeometry.height;
+            } else {
+                this.rightSize = rootTile.tiles[1].relativeGeometry.width;
+            }
         } else if (this.columns[0].length != 0 && this.columns[2].length == 0) {
-            this.leftSize = rootTile.tiles[0].relativeGeometry.width;
+            if (this.settings.rotation) {
+                this.leftSize = rootTile.tiles[0].relativeGeometry.height;
+            } else {
+                this.leftSize = rootTile.tiles[0].relativeGeometry.width;
+            }
         } else if (this.columns[0].length != 0 && this.columns[2].length != 0) {
-            this.rightSize = rootTile.tiles[2].relativeGeometry.width;
-            this.leftSize = rootTile.tiles[0].relativeGeometry.width;
+            if (this.settings.rotation) {
+                this.rightSize = rootTile.tiles[2].relativeGeometry.height;
+                this.leftSize = rootTile.tiles[0].relativeGeometry.height;
+            } else {
+                this.rightSize = rootTile.tiles[2].relativeGeometry.width;
+                this.leftSize = rootTile.tiles[0].relativeGeometry.width;
+            }
         }
         return true;
     }
     
     resizeTile(tile: KWin.Tile, direction: Engine.Direction, amount: number): boolean {
-        // only resize left/right
-        if (direction.primary) return false;
         const container = this.nodeMap.inverse.get(tile);
         if (container == null) return false;
         // left
         if (this.columns[0].includes(container)) {
-            if (direction.right) {
+            if ((direction.right && !this.settings.rotation) || (!direction.above && this.settings.rotation)) {
                 this.leftSize += amount;
             } else {
                 this.leftSize -= amount;
             }
         } else if (this.columns[1].includes(container)) {
-            if (direction.right) {
+            if ((direction.right && !this.settings.rotation) || (!direction.above && this.settings.rotation)) {
                 this.rightSize -= amount;
             } else {
                 this.leftSize -= amount;
             }
         } else if (this.columns[2].includes(container)) {
-            if (direction.right) {
+            if ((direction.right && !this.settings.rotation) || (!direction.above && this.settings.rotation)) {
                 this.rightSize -= amount;
             } else {
                 this.rightSize += amount;
@@ -227,12 +274,12 @@ export class TilingEngine implements Engine.TilingEngine {
             if (direction == undefined) {
                 array.splice(array.indexOf(container), 0, newContainer);
             } else {
-                if (direction.right && this.columns[2].length == 0) {
+                if ((direction.right && !this.settings.rotation) || (!direction.above && this.settings.rotation) && this.columns[2].length == 0) {
                     this.columns[2].push(newContainer);
-                } else if (!direction.right && this.columns[0].length == 0) {
+                } else if (!((direction.right && !this.settings.rotation) || (!direction.above && this.settings.rotation)) && this.columns[0].length == 0) {
                     this.columns[0].push(newContainer);
                 } else {
-                    if (direction.above) {
+                    if ((direction.above && !this.settings.rotation) || (!direction.right && this.settings.rotation)) {
                         array.splice(array.indexOf(container), 0, newContainer);
                     } else {
                         array.splice(array.indexOf(container) + 1, 0, newContainer);
@@ -243,7 +290,7 @@ export class TilingEngine implements Engine.TilingEngine {
             if (direction == undefined) {
                 array.splice(array.indexOf(container), 0, newContainer);
             } else {
-                if (direction.above) {
+                if ((direction.above && !this.settings.rotation) || (!direction.right && this.settings.rotation)) {
                     array.splice(array.indexOf(container), 0, newContainer);
                 } else {
                     array.splice(array.indexOf(container) + 1, 0, newContainer);

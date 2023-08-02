@@ -12,6 +12,8 @@ PlasmaCore.Dialog {
         engine: 0,
         // 0 - left side, 1 - right side, 2 - active
         insertionPoint: 1,
+        // 90 degree rotation
+        rotation: false,
     })
     
     property var desktop: ({
@@ -32,6 +34,7 @@ PlasmaCore.Dialog {
     function setSettings(s) {
         this.settings.engine = s.engine;
         this.settings.insertionPoint = s.insertionPoint;
+        this.settings.rotation = s.rotation;
     }
     
     function show() {
@@ -43,6 +46,7 @@ PlasmaCore.Dialog {
         // update settings
         engine.currentIndex = this.settings.engine;
         insertionPoint.currentIndex = this.settings.insertionPoint;
+        rotation.checkState = this.settings.rotation ? Qt.Checked : Qt.Unchecked;
         
         // Update current screen information
         this.screenGeometry = workspace.clientArea(KWin.FullScreenArea, workspace.activeScreen, workspace.currentDesktop);
@@ -60,6 +64,7 @@ PlasmaCore.Dialog {
     function saveSettings() {
         this.settings.engine = engine.currentIndex;
         this.settings.insertionPoint = insertionPoint.currentIndex;
+        this.settings.rotation = (rotation.checkState == Qt.Checked);
         this.saveSettingsInternal(this.settings, this.desktop);
     }
     
@@ -93,6 +98,17 @@ PlasmaCore.Dialog {
             PC3.ComboBox {
                 id: insertionPoint;
                 model: ["Left", "Right", "Selected"];
+            }
+        }
+        
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter;
+            Layout.fillWidth: true;
+            spacing: 10;
+            
+            PC3.CheckBox {
+                id: rotation;
+                text: "Rotate layout";
             }
         }
         
