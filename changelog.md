@@ -8,6 +8,7 @@
 * Added live settings configuration per desktop
 * Added insertion points to Half and ThreeColumn
 * Added DBus interface to persist some settings across logouts
+* Fixed bug in retiling with several screens
 
 ## 0.5
 

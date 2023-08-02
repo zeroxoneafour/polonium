@@ -33,6 +33,7 @@ declare namespace Qml {
     interface Settings {
         engine: number;
         insertionPoint: number;
+        rotation: boolean;
     }
     
     interface Desktop {

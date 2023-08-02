@@ -31,6 +31,7 @@ class Config {
     resizeAmount: number = kwin.readConfig("ResizeAmount", 10);
     timerDelay: number = kwin.readConfig("TimerDelay", 10);
     unfullscreen: boolean = kwin.readConfig("Unfullscreen", false);
+    rotation: boolean = kwin.readConfig("Rotation", false);
 };
 
 export let config: Config;

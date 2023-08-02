@@ -33,8 +33,17 @@ export class TilingEngine implements Engine.TilingEngine {
                 let container = mainArray[i];
                 // set the size if not the last one
                 if (i != mainArray.length - 1) {
-                    previousTile.split(2);
-                    topTile.tiles[i].relativeGeometry.height = 1/mainArray.length;
+                    if (this.settings.rotation) {
+                        previousTile.split(1);
+                    } else {
+                        previousTile.split(2);
+                    }
+                    let height = 1/mainArray.length;
+                    if (this.settings.rotation) {
+                        topTile.tiles[i].relativeGeometry.width = height;
+                    } else {
+                        topTile.tiles[i].relativeGeometry.height = height;
+                    }
                     this.nodeMap.set(container, topTile.tiles[i]);
                     previousTile = topTile.tiles[i+1];
                 } else {
@@ -42,20 +51,37 @@ export class TilingEngine implements Engine.TilingEngine {
                 }
             }
         } else {
-            rootTile.split(1);
+            if (this.settings.rotation) {
+                rootTile.split(2);
+            } else {
+                rootTile.split(1);
+            }
             let leftTile = rootTile.tiles[0];
             let rightTile = rootTile.tiles[1];
             let topLeftTile = leftTile;
             let topRightTile = rightTile;
-            leftTile.relativeGeometry.width = this.middleSplit;
-            rightTile.relativeGeometry.width = 1 - this.middleSplit;
-            
+            if (this.settings.rotation) {
+                leftTile.relativeGeometry.height = this.middleSplit;
+                rightTile.relativeGeometry.height = 1 - this.middleSplit;
+            } else {
+                leftTile.relativeGeometry.width = this.middleSplit;
+                rightTile.relativeGeometry.width = 1 - this.middleSplit;
+            }
             for (let i = 0; i < this.left.length; i += 1) {
                 let container = this.left[i];
                 // set the size if not the last one
                 if (i != this.left.length - 1) {
-                    leftTile.split(2);
-                    topLeftTile.tiles[i].relativeGeometry.height = 1/this.left.length;
+                    if (this.settings.rotation) {
+                        leftTile.split(1);
+                    } else {
+                        leftTile.split(2);
+                    }
+                    let height = 1/this.left.length;
+                    if (this.settings.rotation) {
+                        topLeftTile.tiles[i].relativeGeometry.width = height;
+                    } else {
+                        topLeftTile.tiles[i].relativeGeometry.height = height;
+                    }
                     this.nodeMap.set(container, topLeftTile.tiles[i]);
                     leftTile = topLeftTile.tiles[i+1];
                 } else {
@@ -66,8 +92,17 @@ export class TilingEngine implements Engine.TilingEngine {
                 let container = this.right[i];
                 // set the size if not the last one
                 if (i != this.right.length - 1) {
-                    rightTile.split(2);
-                    topRightTile.tiles[i].relativeGeometry.height = 1/this.right.length;
+                    if (this.settings.rotation) {
+                        rightTile.split(1);
+                    } else {
+                        rightTile.split(2);
+                    }
+                    let height = 1/this.right.length;
+                    if (this.settings.rotation) {
+                        topRightTile.tiles[i].relativeGeometry.width = height;
+                    } else {
+                        topRightTile.tiles[i].relativeGeometry.height = height;
+                    }
                     this.nodeMap.set(container, topRightTile.tiles[i]);
                     rightTile = topRightTile.tiles[i+1];
                 } else {
@@ -80,18 +115,31 @@ export class TilingEngine implements Engine.TilingEngine {
     
     updateTiles(rootTile: KWin.RootTile): boolean {
         if (this.left.length != 0 && this.right.length != 0) {
-            this.middleSplit = rootTile.tiles[0].relativeGeometry.width;
+            if (rootTile.layoutDirection == 1) { // horiz
+                this.middleSplit = rootTile.tiles[0].relativeGeometry.width;
+            } else { // vert (rotated)
+                this.middleSplit = rootTile.tiles[0].relativeGeometry.height;
+            }
         }
         return true;
     }
     
     resizeTile(_tile: KWin.Tile, direction: Engine.Direction, amount: number): boolean {
-        // only resize left/right
-        if (direction.primary) return false;
-        if (direction.right) {
-            this.middleSplit += amount;
+        // only resize left/right or up/down if rotated
+        if (this.settings.rotation && direction.primary) {
+            if (direction.above) {
+                this.middleSplit -= amount;
+            } else {
+                this.middleSplit += amount;
+            }
+        } else if (!(this.settings.rotation || direction.primary)) {
+            if (direction.right) {
+                this.middleSplit += amount;
+            } else {
+                this.middleSplit -= amount;
+            }
         } else {
-            this.middleSplit -= amount;
+            return false;
         }
         while (this.middleSplit > 0.85) {
             this.middleSplit -= amount;
@@ -164,7 +212,7 @@ export class TilingEngine implements Engine.TilingEngine {
                 if (direction == undefined) {
                     array.splice(array.indexOf(container), 0, newContainer);
                 } else {
-                    if (direction.above) {
+                    if ((direction.above && !this.settings.rotation) || (!direction.right && this.settings.rotation)) {
                         array.splice(array.indexOf(container), 0, newContainer);
                     } else {
                         array.splice(array.indexOf(container) + 1, 0, newContainer);
@@ -180,7 +228,7 @@ export class TilingEngine implements Engine.TilingEngine {
                 if (direction == undefined) {
                     array.splice(array.indexOf(container), 0, newContainer);
                 } else {
-                    if (direction.above) {
+                    if ((direction.above && !this.settings.rotation) || (!direction.right && this.settings.rotation)) {
                         array.splice(array.indexOf(container), 0, newContainer);
                     } else {
                         array.splice(array.indexOf(container) + 1, 0, newContainer);
