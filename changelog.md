@@ -9,6 +9,8 @@
 * Added insertion points to Half and ThreeColumn
 * Added DBus interface to persist some settings across logouts
 * Fixed bug in retiling with several screens
+* Added rotation option to orient most layouts on their sides
+* Added reset option to DBus to reset settings
 
 ## 0.5
 
