@@ -184,6 +184,10 @@ export class EngineManager {
         this.getEngine(desktop).settings = settings;
     }
     
+    removeSettings(desktop: Desktop): void {
+        this.getEngine(desktop).settings = new Settings;
+    }
+    
     getSettings(desktop: Desktop): Qml.Settings | null {
         const engine = this.getEngine(desktop);
         const engineType = this.engineTypes.get(desktop.toString());
@@ -213,7 +217,7 @@ export class EngineManager {
         // convert pixels into a relative size based on the parent
         let relativeAmount = 0;
         // resizing vertically
-        if (direction.primary == true) {
+        if (direction.primary) {
             relativeAmount = amount / parent.absoluteGeometry.height;
         } else { // horizontally
             relativeAmount = amount / parent.absoluteGeometry.width;
