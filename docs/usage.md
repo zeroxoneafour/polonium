@@ -38,7 +38,7 @@ To configure Polonium, go to KWin Scripts and click the configuration icon next 
 
 Polonium requires that KWin be restarted every time the configuration is changed. Usually, you can do this by logging out and back in.
 
-### Tiling options
+### General config
 * Filter window titles (line input) - Window titles to filter out (ie. not tile)
 * Filter processes (line input) - Processes to filter out
   - Invert (check box) - Whether to treat the filter processes input as a whitelist instead of a blacklist, and only tile things in the input
@@ -49,8 +49,11 @@ Polonium requires that KWin be restarted every time the configuration is changed
 * Unfullscreen windows when new windows are tiled (check box) - Whether to temporarily reduce windows from fullscreen when a new window is tiled
 * Resize amount (slider) - The amount to resize windows by, from 1 to 450 pixels at a time
 * Callback delay (slider) - The time in milliseconds to wait before callbacks to rebuild the layout or update the desktop, from 1 to 200. Slower computers want more time
-* Default engine (dropdown) - The default tiling engine you want to use on new desktops
-* BTree Insertion Point (dropdown) - Select where new windows should be inserted into the binary tree representation
+
+### Engine options
+* Layout engine (dropdown) - The default tiling engine you want to use on new desktops
+* Insertion point (dropdown) - Select where new windows should be inserted into the layout
+* Rotate layout (check box) - Whether to rotate the layout 90 degrees (split horizontally instead of vertically)
 
 ### Debug options
 * Debug mode (check box) - Whether to spam your user journal with debug messages or not
@@ -65,6 +68,14 @@ The engines are specific to desktops and are cycled in this order by pressing th
 5. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
 
 The default engine setting determines which engine desktops will start with.
+
+### Engine settings
+
+Pressing the Polonium: Show Settings Dialog keybind will allow you to configure setting overrides per-desktop. All [engine options](#engine-options) are supported.
+
+### Setting preservation
+
+Installing and enabling the optional [Polonium Setting Saver Daemon](https://github.com/zeroxoneafour/dbus-saver) will allow you to preserve settings across KWin restarts on a per-desktop basis.
 
 ## Getting a log
 
