@@ -28,6 +28,7 @@ declare namespace Qml {
         saveAndHide(): void;
         setSettings(s: Settings): void;
         saveSettings: Signal<(settings: Settings, desktop: Desktop) => void>;
+        removeSettings: Signal<(desktop: Desktop) => void>;
     }
     
     interface Settings {

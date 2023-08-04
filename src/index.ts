@@ -69,7 +69,8 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     
     // build first time
     main.rebuildLayout();
-    settingsDialog.saveSettings.connect(main.settingsDialogSaved);
+    settingsDialog.saveSettings.connect(main.settingsDialogSave);
+    settingsDialog.removeSettings.connect(main.settingsDialogRemove);
     
     // check if dbus service is installed
     let checkCall = createDBusCall();

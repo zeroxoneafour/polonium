@@ -60,12 +60,17 @@ PlasmaCore.Dialog {
     }
     
     signal saveSettingsInternal(settings: var, desktop: var);
+    signal removeSettingsInternal(desktop: var);
     
     function saveSettings() {
         this.settings.engine = engine.currentIndex;
         this.settings.insertionPoint = insertionPoint.currentIndex;
         this.settings.rotation = (rotation.checkState == Qt.Checked);
         this.saveSettingsInternal(this.settings, this.desktop);
+    }
+    
+    function removeSettings() {
+        this.removeSettingsInternal(this.desktop);
     }
     
     mainItem: ColumnLayout {
@@ -126,6 +131,20 @@ PlasmaCore.Dialog {
             PC3.Button {
                 text: "Close without saving";
                 onClicked: {
+                    settingsDialog.hide();
+                }
+            }
+        }
+        
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter;
+            Layout.fillWidth: true;
+            spacing: 10;
+            
+            PC3.Button {
+                text: "Remove custom settings and close";
+                onClicked: {
+                    settingsDialog.removeSettings();
                     settingsDialog.hide();
                 }
             }

@@ -66,6 +66,7 @@ Item {
         }
         
         signal saveSettings(a: var, b: var);
+        signal removeSettings(a: var);
         
         source: "settings.qml";
     }
@@ -74,6 +75,9 @@ Item {
         target: settings.item;
         function onSaveSettingsInternal(a, b) {
             settings.saveSettings(a, b);
+        }
+        function onRemoveSettingsInternal(a) {
+            settings.removeSettings(a);
         }
     }
 }

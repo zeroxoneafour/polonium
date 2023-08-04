@@ -14,7 +14,7 @@ Make sure the shortcuts are set under the KWin tab of the Shortcuts setting. Aft
 
 ### This works on Wayland but not X11
 
-X11 is not officially supported, but you can drop an issue and I can see if I can fix it. Include a log!
+X11 is not officially supported, but you can drop an issue and I can see if I can fix it. Include a log! If I personally don't encounter the error, there is a good chance it will not be fixed.
 
 ### There is a latency before windows are fixed/tiles are updated OR windows will not fix/tiles won't update
 

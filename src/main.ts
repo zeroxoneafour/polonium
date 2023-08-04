@@ -9,14 +9,23 @@ import { workspace, createTimer, createDBusCall, dbusClientInstalled } from "./i
 // change this to set the engine, may have a feature to edit this in real time in the future
 export let engine: EngineManager;
 let setSettingsDbus: KWin.DBusCall;
+let removeSettingsDbus: KWin.DBusCall;
 
 export function initMain(): void {
     engine = new EngineManager;
+    
     setSettingsDbus = createDBusCall();
     setSettingsDbus.service = "org.polonium.SettingSaver";
     setSettingsDbus.path = "/saver";
     setSettingsDbus.dbusInterface = "org.polonium.SettingSaver";
     setSettingsDbus.method = "SetSettings";
+
+    removeSettingsDbus = createDBusCall();
+    removeSettingsDbus.service = "org.polonium.SettingSaver";
+    removeSettingsDbus.path = "/saver";
+    removeSettingsDbus.dbusInterface = "org.polonium.SettingSaver";
+    removeSettingsDbus.method = "RemoveSettings";
+
 }
 
 // boolean to stop geometrychange from interfering
@@ -389,11 +398,34 @@ export function clientActivated(client: KWin.AbstractClient) {
     }
 }
 
+export function settingsDialogRemove(qmlDesktop: Qml.Desktop): void {
+    const desktop = new Desktop(qmlDesktop.screen, qmlDesktop.activity, qmlDesktop.desktop);
+    printDebug("Removing settings for desktop " + desktop.toString(), false);
+    if (engine.engineTypes.get(desktop.toString()) != config.defaultEngine) {
+        const clients = engine.placeClients(desktop).map(x => x[0]);
+        for (const client of clients) {
+            client.wasTiled = false;
+            client.tile = null;
+        }
+        engine.setEngine(desktop, config.defaultEngine);
+        for (const client of clients) {
+            if (client != undefined) { 
+                engine.addClient(client, desktop);
+            }
+        }
+    } else {
+        engine.removeSettings(desktop);
+    }
+    rebuildLayout();
+    if (dbusClientInstalled) {
+        removeSettingsDbus.arguments = [desktop.toString()];
+        removeSettingsDbus.call();
+    }
+}
 
-export function settingsDialogSaved(settings: Qml.Settings, qmlDesktop: Qml.Desktop): void {
+export function settingsDialogSave(settings: Qml.Settings, qmlDesktop: Qml.Desktop): void {
     const desktop = new Desktop(qmlDesktop.screen, qmlDesktop.activity, qmlDesktop.desktop);
     printDebug("Settings saved as " + JSON.stringify(settings) + " for desktop " + desktop.toString(), false);
-    let rebuild = false;
     if (engine.engineTypes.get(desktop.toString()) != settings.engine) {
         const clients = engine.placeClients(desktop).map(x => x[0]);
         for (const client of clients) {
@@ -406,12 +438,9 @@ export function settingsDialogSaved(settings: Qml.Settings, qmlDesktop: Qml.Desk
                 engine.addClient(client, desktop);
             }
         }
-        rebuild = true;
     }
     engine.setSettings(desktop, settings);
-    if (rebuild) {
-        rebuildLayout();
-    }
+    rebuildLayout();
     if (dbusClientInstalled) {
         setSettingsDbus.arguments = [desktop.toString(), JSON.stringify(settings)];
         setSettingsDbus.call();
