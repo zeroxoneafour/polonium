@@ -82,7 +82,7 @@ Installing and enabling the optional [Polonium Setting Saver Daemon](https://git
 Sometimes you may have to get a log. To do this, enable debug mode in the settings. Next, restart KWin. Then, execute the following command -
 
 ```
-journalctl --user --no-pager -e | grep "Polonium"
+journalctl --user --no-pager -e | grep -i "polonium"
 ```
 
 Logs are required for bug reports if the bug has to do with tiling.
