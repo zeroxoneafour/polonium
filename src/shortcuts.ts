@@ -209,3 +209,19 @@ export function showSettingsDialog(): void {
         settingsDialog.saveAndHide();
     }
 }
+
+export function switchEngine(e: number): void {
+    const desktop = new Desktop;
+    const clients = engine.placeClients(desktop).map(x => x[0]);
+    for (const client of clients) {
+        client.wasTiled = false;
+        client.tile = null;
+    }
+    engine.setEngine(desktop, e, true);
+    for (const client of clients) {
+        if (client != undefined) { 
+            engine.addClient(client, desktop);
+        }
+    }
+    rebuildLayout();
+}

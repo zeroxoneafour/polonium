@@ -60,6 +60,13 @@ export function init(this: any, api: CoreApi, qmlObjects: Qml.Main): void {
     kwin.registerShortcut("PoloniumResizeTileDown", "Polonium: Resize Tile Down", "Meta+Shift+Down", shortcuts.resizeTile.bind(this, shortcuts.Direction.Below));
     kwin.registerShortcut("PoloniumResizeTileLeft", "Polonium: Resize Tile Left", "Meta+Shift+Left", shortcuts.resizeTile.bind(this, shortcuts.Direction.Left));
     kwin.registerShortcut("PoloniumResizeTileRight", "Polonium: Resize Tile Right", "Meta+Shift+Right", shortcuts.resizeTile.bind(this, shortcuts.Direction.Right));
+    
+    // no default bindings, add your own if you so choose
+    kwin.registerShortcut("PoloniumEngineBTree", "Polonium: Switch to BTree Engine", "", shortcuts.switchEngine.bind(this, 0));
+    kwin.registerShortcut("PoloniumEngineHalf", "Polonium: Switch to Half Engine", "", shortcuts.switchEngine.bind(this, 1));
+    kwin.registerShortcut("PoloniumEngineThreeColumn", "Polonium: Switch to Three Column Engine", "", shortcuts.switchEngine.bind(this, 2));
+    kwin.registerShortcut("PoloniumEngineMonocle", "Polonium: Switch to Monocle Engine", "", shortcuts.switchEngine.bind(this, 3));
+    kwin.registerShortcut("PoloniumEngineKWin", "Polonium: Switch to KWin Engine", "", shortcuts.switchEngine.bind(this, 4));
 
     workspace.lastActiveScreen = workspace.activeScreen;
     workspace.lastActivity = workspace.currentActivity;

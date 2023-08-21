@@ -117,21 +117,19 @@ export class EngineManager {
             return false;
         }
         engineType += 1;
-        engineType %= EngineTypes._loop;
-        printDebug("Setting engine for " + desktop + " to engine " + EngineTypes[engineType], false);
-        this.engineTypes.set(desktop.toString(), engineType);
-        const engine = engineForEnum(engineType);
-        this.engines.set(desktop.toString(), engine);
-        showDialog(EngineTypes[engineType]);
+        this.setEngine(desktop, engineType, true)
         return true;
     }
     
-    setEngine(desktop: Desktop, engineType: EngineTypes): boolean {
+    setEngine(desktop: Desktop, engineType: EngineTypes, dialog: boolean = false): boolean {
         engineType %= EngineTypes._loop;
         printDebug("Setting engine for " + desktop + " to engine " + EngineTypes[engineType], false);
         this.engineTypes.set(desktop.toString(), engineType);
         const engine = engineForEnum(engineType);
         this.engines.set(desktop.toString(), engine);
+        if (dialog) {
+            showDialog(EngineTypes[engineType]);
+        }
         return true;
     }
     

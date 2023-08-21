@@ -278,13 +278,13 @@ export function untileClient(this: any, client: KWin.AbstractClient, keepWasTile
 }
 
 export function clientGeometryChange(this: any, client: KWin.AbstractClient, _oldgeometry: Qt.QRect): void {
-    // dont interfere with minimizing, maximizing, fullscreening, being the single tile, or layout building
-    if (client.minimized || buildingLayout || client.maximized == true || client.fullScreen || client.isSingleTile) return;
     // because kwin doesnt have a separate handler for screen changing, add it here
     if (client.oldScreen != client.screen) {
         clientDesktopChange(client);
         return;
     }
+    // dont interfere with minimizing, maximizing, fullscreening, being the single tile, or layout building
+    if (client.minimized || buildingLayout || client.maximized == true || client.fullScreen || client.isSingleTile) return;
     // only allow this function to handle movements when the client is visible
     let desktop = new Desktop;
     if (client.screen != desktop.screen || !client.activities.includes(desktop.activity) || !(client.desktop == desktop.desktop || client.desktop == -1)) return;

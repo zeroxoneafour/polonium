@@ -95,8 +95,8 @@ export class TilingEngine implements Engine.TilingEngine {
                 }
                 for (const tile of realTile.tiles) {
                     const newTile = new Tile(fakeTile, tile.relativeGeometry, tile.layoutDirection);
-                    for (const client of tile.windows) {
-                        newTile.windows.push(client);
+                    for (let i = 0; i < realTile.windows.length; i += 1) {
+                        newTile.windows.push(realTile.windows[i]);
                     }
                     this.tileMap.set(newTile, tile);
                     stackNext.push(tile);
