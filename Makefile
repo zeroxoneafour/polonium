@@ -1,12 +1,12 @@
-NAME = polonium
-VERSION = 0.6.0
+NAME = $(shell npm pkg get name | tr -d '"')
+VERSION = $(shell npm pkg get version | tr -d '"')
 
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
 
 .NOTPARALLEL: all
 
-all: build install cleanall start
+all: build clean
 
 build: res src
 	zip -r $(PKGFILE) $(PKGDIR)

@@ -1,0 +1,19 @@
+{
+    "include": [
+        "src/"
+    ],
+    "exclude": [
+        "*.*",
+        "pkg/"
+    ],
+    "compilerOptions": {
+        "baseUrl": "./src/",
+        "target": "es5",
+        "module": "es6",
+        "moduleResolution": "node",
+        "removeComments": true,
+        "lib": ["es2022"],
+        "alwaysStrict": true,
+        "strict": true
+    }
+}

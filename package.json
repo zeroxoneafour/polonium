@@ -1,0 +1,33 @@
+{
+  "name": "polonium",
+  "version": "1.0.0",
+  "description": "A tiling window manager for KWin",
+  "main": "src/index.ts",
+  "private": true,
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeroxoneafour/polonium.git"
+  },
+  "keywords": [
+    "kwin",
+    "tiling-window-manager"
+  ],
+  "author": "Vaughan Milliman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zeroxoneafour/polonium/issues"
+  },
+  "homepage": "https://github.com/zeroxoneafour/polonium#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "esbuild": "^0.19.4",
+    "eslint": "^8.50.0",
+    "fast-copy": "^3.0.1",
+    "mnemonist": "^0.39.5",
+    "typescript": "^5.2.2"
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "root": true,
+    "ignorePatterns": ["/pkg"],
+    "env": {
+        "es6": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "tsconfig.json",
+        "sourceType": "module"
+    },
+    "rules": {
+        "brace-style": ["error", "allman"],
+        "indent": ["error", 2],
+        "quotes": ["error", "double"]
+    }
+}
