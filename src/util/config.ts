@@ -2,7 +2,7 @@
 
 import Controller from "controller";
 
-export default class GlobalConfig
+export default class Config
 {
     ctrl: Controller;
     debug: boolean;

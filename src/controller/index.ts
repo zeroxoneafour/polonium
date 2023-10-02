@@ -5,7 +5,9 @@ import * as Qml from "extern/qml";
 
 import Log from "util/log";
 import Config from "util/config";
-import { AbstractFactory } from "util/common";
+
+import { Desktop } from "engines";
+import { EngineManager } from "engines/manager";
 
 export default class Controller
 {
@@ -16,7 +18,6 @@ export default class Controller
     
     log: Log;
     config: Config;
-    factory: AbstractFactory;
     
     engineManager: EngineManager;
 
@@ -29,11 +30,15 @@ export default class Controller
         
         this.log = new Log(this);
         this.config = new Config(this);
-        this.factory = new AbstractFactory(this);
     }
     
+    private initStaticProperties(): void
+    {
+        Desktop.initStatic(this);
+    }
     init(): void
     {
+        this.initStaticProperties();
         this.log.info("Polonium initialized!");
     }
 }

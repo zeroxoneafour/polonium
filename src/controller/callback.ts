@@ -1,7 +1,6 @@
 // callback.ts - A class for easy dispatching of various callbacks with global knowledge though the controller
 
 import Controller from "controller";
-import { Desktop } from "util/common";
 
 abstract class CallbackManager
 {
@@ -12,6 +11,17 @@ abstract class CallbackManager
     }
 }
 
-export class WindowCallbacks extends CallbackManager
+export class Common extends CallbackManager
 {
+    
+}
+
+export class Managed extends CallbackManager
+{
+    
+}
+
+export class Shortcuts extends CallbackManager
+{
+    
 }
