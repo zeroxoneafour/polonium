@@ -1,16 +1,20 @@
 // config.ts - Static config class
 
-import Controller from "controller";
+import { kwinApi } from "global";
 
-export default class Config
+class Config
 {
-    ctrl: Controller;
     debug: boolean;
-    constructor(ctrl: Controller)
+    constructor()
     {
-        this.ctrl = ctrl;
-        let readConfig = ctrl.kwinApi.readConfig;
+        let readConfig = kwinApi.readConfig;
         this.debug = readConfig("Debug", false);
     }
-    
 }
+
+export class ConfigCreator
+{
+    static 
+}
+
+export default 

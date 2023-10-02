@@ -1,35 +1,45 @@
 // log.ts - Logging support
 
-import Controller from "controller";
+import { KwinApi } from "global";
+import Config from "util/config";
 
-export default class Log
+class LogClass
 {
-    ctrl: Controller;
-    constructor(ctrl: Controller)
-    {
-        this.ctrl = ctrl;
-    }
     private print(opener: string, stuff: any[])
     {
         let ret = opener;
-        for (const s in stuff)
-        {
+        for (const s in stuff) {
             ret += " ";
             ret += s;
         }
-        this.ctrl.qmlObjects.root.print(ret);
+        KwinApi.print(ret);
     }
+    
     debug(...stuff: any[])
     {
-        if (!this.ctrl.config.debug) return;
-        this.print("Polonium DBG:", stuff);
+        if (!Config.debug) return;
+        print("Polonium DBG:", stuff);
     }
+    
     info(...stuff: any[])
     {
-        this.print("Polonium INF:", stuff);
+        print("Polonium INF:", stuff);
     }
+    
     error(...stuff: any[])
     {
-        this.print("Polonium ERR:", stuff);
+        print("Polonium ERR:", stuff);
     }
 }
+
+export class LogCreator
+{
+    static log: LogClass;
+    static init()
+    {
+        this.log = new LogClass();
+    }
+}
+
+const log = LogCreator.log;
+export default Log = log;
