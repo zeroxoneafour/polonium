@@ -34,7 +34,12 @@ export interface QTimer
     stop(): void;
 }
 
-export interface QDBusCall
-{
-    
+export interface DBusCall {
+    service: string,
+    path: string,
+    dbusInterface: string,
+    method: string,
+    arguments: any[],
+    finished: Signal<(returnValues: any[]) => void>;
+    call(): void;
 }

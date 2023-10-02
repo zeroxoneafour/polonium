@@ -1,22 +1,16 @@
 // config.ts - Static config class
 
-import { api } from "util/global";
+import Controller from "controller";
 
 export default class GlobalConfig
 {
-    static debug: boolean;
-    static init()
+    ctrl: Controller;
+    debug: boolean;
+    constructor(ctrl: Controller)
     {
-        let readConfig = api.readConfig;
+        this.ctrl = ctrl;
+        let readConfig = ctrl.kwinApi.readConfig;
         this.debug = readConfig("Debug", false);
     }
     
-}
-
-export class EngineConfig
-{
-    constructor(desktop?: string)
-    {
-        GlobalConfig.debug;
-    }
 }

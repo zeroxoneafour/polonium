@@ -1,1 +1,6 @@
-// geometry.ts - Useful geometry function
+// geometry.ts - Useful geometry functions
+
+export default class GeometryTools
+{
+    
+}

@@ -1,11 +1,15 @@
 // log.ts - Logging support
 
-import Config from "util/config";
-import { qmlObjects } from "util/global";
+import Controller from "controller";
 
 export default class Log
 {
-    private static print(opener: string, stuff: any[])
+    ctrl: Controller;
+    constructor(ctrl: Controller)
+    {
+        this.ctrl = ctrl;
+    }
+    private print(opener: string, stuff: any[])
     {
         let ret = opener;
         for (const s in stuff)
@@ -13,18 +17,18 @@ export default class Log
             ret += " ";
             ret += s;
         }
-        qmlObjects.root.print(ret);
+        this.ctrl.qmlObjects.root.print(ret);
     }
-    static debug(...stuff: any[])
+    debug(...stuff: any[])
     {
-        if (!Config.debug) return;
+        if (!this.ctrl.config.debug) return;
         this.print("Polonium DBG:", stuff);
     }
-    static info(...stuff: any[])
+    info(...stuff: any[])
     {
         this.print("Polonium INF:", stuff);
     }
-    static error(...stuff: any[])
+    error(...stuff: any[])
     {
         this.print("Polonium ERR:", stuff);
     }

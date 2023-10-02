@@ -1,44 +1,22 @@
 // engines.ts - Interface from engines to the controller and a few helper classes for engines
 
 import { Client, LayoutDirection } from "extern/kwin";
-import { EngineConfig } from "util/config";
-import { workspace } from "util/global";
+import GlobalConfig from "util/config";
+import Desktop from "common/desktop";
+import Controller from "controller";
 
-export class Desktop {
-    screen: number;
-    activity: string;
-    desktop: number;
-    toString(): string {
-        return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
-    }
-    constructor(screen?: number, activity?: string, desktop?: number) {
-        if (screen == undefined || activity == undefined || desktop == undefined) {
-            this.screen = workspace.activeScreen;
-            this.activity = workspace.currentActivity;
-            this.desktop = workspace.currentDesktop;
-        } else {
-            this.screen = screen;
-            this.activity = activity;
-            this.desktop = desktop;
-        }
-    }
-}
 
 
 export abstract class TilingEngine
 {
     rootTile: RootTile = new RootTile(LayoutDirection.Horizontal);
     config: EngineConfig;
-    constructor(desktop?: Desktop)
+    ctrl: Controller;
+    
+    constructor(ctrl: Controller)
     {
-        if (desktop !== undefined)
-        {
-            this.config = new EngineConfig(desktop.toString());
-        }
-        else
-        {
-            this.config = new EngineConfig();
-        }
+        this.ctrl = ctrl;
+        this.config = new EngineConfig(ctrl.config);
     }
 }
 
