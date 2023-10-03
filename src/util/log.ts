@@ -5,6 +5,21 @@ import Config from "util/config";
 
 class LogClass
 {
+    private static instance: LogClass | null = null;
+    static get Instance()
+    {
+        if (this.instance == null)
+        {
+            this.instance = new LogClass();
+        }
+        return this.instance;
+    }
+
+    private printFn: Function;
+    private constructor()
+    {
+        printFn = QmlObjects.root.print;
+    }
     private print(opener: string, stuff: any[])
     {
         let ret = opener;
@@ -14,10 +29,9 @@ class LogClass
         }
         QmlObjects.root.print(ret);
     }
-    
     debug(...stuff: any[])
     {
-        if (!Config.debug) return;
+        if (!Config.Debug) return;
         this.print("Polonium DBG:", stuff);
     }
     
@@ -32,14 +46,5 @@ class LogClass
     }
 }
 
-export class LogCreator
-{
-    static log: LogClass;
-    static init()
-    {
-        this.log = new LogClass();
-    }
-}
-
-const Log = LogCreator.log;
+const Log = LogClass.Instance;
 export default Log;
