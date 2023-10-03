@@ -10,7 +10,7 @@
         "Icon": "preferences-system-windows-effect-presentwindows",
         "Id": "%NAME%",
         "License": "MIT",
-        "Name": "Polonium",
+        "Name": "Polonium v1.0 TEST",
         "ServiceTypes": [
             "KWin/Script"
         ],

@@ -20,6 +20,12 @@ export interface QPoint
     y: number;
 }
 
+export interface QSize
+{
+    width: number;
+    height: number;
+}
+
 export interface QTimer
 {
     interval: number;

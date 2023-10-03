@@ -1,5 +1,5 @@
 {
-  "name": "polonium",
+  "name": "polonium-test",
   "version": "1.0.0",
   "description": "A tiling window manager for KWin",
   "main": "src/index.ts",

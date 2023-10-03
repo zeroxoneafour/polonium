@@ -6,39 +6,38 @@ import * as Qml from "extern/qml";
 import Log from "util/log";
 import Config from "util/config";
 
-import { Desktop } from "engines";
-import { EngineManager } from "engines/manager";
+import { LogCreator } from "util/log";
+import { ConfigCreator } from "util/config";
+import { GlobalVariables, Workspace } from "common/index";
+
+import { Desktop } from "driver/index";
+import { DriverManager } from "driver";
 
 export default class Controller
 {
-    workspace: Kwin.Workspace;
-    options: Kwin.Options;
-    kwinApi: Kwin.Api;
-    qmlObjects: Qml.Objects;
-    
-    log: Log;
-    config: Config;
-    
-    engineManager: EngineManager;
+    manager: DriverManager = new DriverManager();
 
     constructor(qmlApi: Qml.Api, qmlObjects: Qml.Objects)
     {
-        this.workspace = qmlApi.workspace;
-        this.options = qmlApi.options;
-        this.kwinApi = qmlApi.api;
-        this.qmlObjects = qmlObjects;
-        
-        this.log = new Log(this);
-        this.config = new Config(this);
+        GlobalVariables.init(qmlApi, qmlObjects);
     }
     
-    private initStaticProperties(): void
+    private createGlobals(): void
     {
-        Desktop.initStatic(this);
+        LogCreator.init();
+        ConfigCreator.init();
     }
+    
+    private bindSignals(): void
+    {
+        Workspace.
+    }
+    
     init(): void
     {
-        this.initStaticProperties();
-        this.log.info("Polonium initialized!");
+        this.createGlobals();
+        Log.debug("Globals created");
+        this.bindSignals();
+        Log.debug("Signals binded");
     }
 }

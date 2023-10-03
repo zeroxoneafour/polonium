@@ -2,5 +2,4 @@
 
 export default class GeometryTools
 {
-    
 }

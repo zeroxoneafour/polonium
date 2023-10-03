@@ -5,7 +5,9 @@ import * as Qt from "extern/qt";
 // AbstractClient
 export interface Client
 {
-    readonly minSize: Qt.QPoint;
+    readonly minSize: Qt.QSize;
+    readonly resourceClass: string;
+    tile: Tile;
 }
 
 export enum LayoutDirection

@@ -1,6 +1,6 @@
 // log.ts - Logging support
 
-import { KwinApi } from "global";
+import { QmlObjects } from "common";
 import Config from "util/config";
 
 class LogClass
@@ -12,23 +12,23 @@ class LogClass
             ret += " ";
             ret += s;
         }
-        KwinApi.print(ret);
+        QmlObjects.root.print(ret);
     }
     
     debug(...stuff: any[])
     {
         if (!Config.debug) return;
-        print("Polonium DBG:", stuff);
+        this.print("Polonium DBG:", stuff);
     }
     
     info(...stuff: any[])
     {
-        print("Polonium INF:", stuff);
+        this.print("Polonium INF:", stuff);
     }
     
     error(...stuff: any[])
     {
-        print("Polonium ERR:", stuff);
+        this.print("Polonium ERR:", stuff);
     }
 }
 
@@ -41,5 +41,5 @@ export class LogCreator
     }
 }
 
-const log = LogCreator.log;
-export default Log = log;
+const Log = LogCreator.log;
+export default Log;

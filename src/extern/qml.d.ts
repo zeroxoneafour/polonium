@@ -1,7 +1,7 @@
 // qml.d.ts - Declarations for external QML methods
 
 import { Workspace, Options, Api as KwinApi } from "extern/kwin";
-import { QTimer, QDBusCall } from "extern/qt";
+import { QTimer, DBusCall } from "extern/qt";
 
 export interface Api
 {
@@ -19,5 +19,5 @@ export interface Root
 {
     print(s: string): void;
     createTimer(): QTimer;
-    createDBusCall(): QDBusCall;
+    createDBusCall(): DBusCall;
 }

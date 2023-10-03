@@ -1,46 +1,7 @@
-// engines.ts - Interface from engines to the controller and a few helper classes for engines
+// engines/common.ts - Common classes and structures used by the engines
 
-import { Client, LayoutDirection, Workspace } from "extern/kwin";
-import Controller from "controller";
-
-export interface IDesktop
-{
-    screen: number;
-    activity: string;
-    desktop: number;
-}
-
-export class Desktop implements IDesktop
-{
-    private static ctrl: Controller;
-    static initStatic(ctrl: Controller)
-    {
-        this.ctrl = ctrl;
-    }
-    screen: number;
-    activity: string;
-    desktop: number;
-    toString(): string
-    {
-        return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
-    }
-    constructor(d?: IDesktop)
-    {
-        let workspace = Desktop.ctrl.workspace;
-        if (d === undefined)
-        {
-            this.screen = workspace.activeScreen;
-            this.activity = workspace.currentActivity;
-            this.desktop = workspace.currentDesktop;
-        }
-        else
-        {
-            this.screen = d.screen;
-            this.activity = d.activity;
-            this.desktop = d.desktop;
-        }
-    }
-}
+import { LayoutDirection, Client as KwinClient } from "extern/kwin";
+import { QSize } from "extern/qt";
 
 export interface IEngineConfig
 {
@@ -49,38 +10,28 @@ export interface IEngineConfig
 
 export class EngineConfig implements IEngineConfig
 {
-    private static ctrl: Controller;
-    static initStatic(ctrl: Controller)
-    {
-        this.ctrl = ctrl;
-    }
 }
 
-export abstract class TilingEngine
+export class Client
 {
-    rootTile: RootTile = new RootTile(LayoutDirection.Horizontal);
-    config: EngineConfig;
+    name: string;
+    minSize: QSize;
     
-    constructor()
+    constructor(client: KwinClient)
     {
-        this.config = new EngineConfig();
+        this.name = client.resourceClass;
+        this.minSize = client.minSize;
     }
 }
 
-export interface ITile
-{
-    parent: Tile | null;
-    tiles: Tile[];
-    layoutDirection: LayoutDirection;
-}
-
-export class Tile implements ITile
+export class Tile
 {
     parent: Tile | null;
     tiles: Tile[] = [];
     layoutDirection: LayoutDirection = LayoutDirection.Horizontal;
     // requested size in pixels, may not be honored
-    requestedSize: number | null = null;
+    requestedSize: QSize | null = null;
+    client: Client | null = null;
     
     constructor(parent?: Tile)
     {
@@ -89,15 +40,57 @@ export class Tile implements ITile
         {
             return;
         }
-        if (this.parent.layoutDirection === LayoutDirection.Horizontal)
-        {
-            this.layoutDirection = LayoutDirection.Vertical;
-        }
-        else
-        {
-            this.layoutDirection = LayoutDirection.Horizontal;
-        }
         this.parent.tiles.push(this);
+    }
+    
+    // adds a tile that will split perpendicularly to the parent
+    addPerpendicular(): void
+    {
+        let splitDirection = LayoutDirection.Horizontal;
+        if (this.layoutDirection == LayoutDirection.Horizontal)
+        {
+            splitDirection = LayoutDirection.Vertical;
+        }
+        const childTile = new Tile(this);
+        childTile.layoutDirection = splitDirection;
+    }
+    
+    // adds a child that will split parallel to the parent. Not as useful
+    addParallel(): void
+    {
+        const childTile = new Tile(this);
+        childTile.layoutDirection = this.layoutDirection;
+    }
+    
+    // split a tile perpendicularly
+    split(): void
+    {
+        this.addPerpendicular();
+        this.addPerpendicular();
+    }
+    
+    // becomes one of its children, destroying it and other children it has. tile is assumed to be a child of the method caller
+    consume(child: Tile): void
+    {
+        const tiles = child.tiles;
+        for (const tile of this.tiles)
+        {
+            tile.remove();
+        }
+        this.tiles = tiles;
+    }
+    
+    // removes a tile and all its children
+    remove(): void
+    {
+        const parent = this.parent;
+        if (parent == null)
+        {
+            return;
+        }
+        parent.tiles.splice(parent.tiles.indexOf(this), 1);
+        this.tiles = [];
+        this.client = null;
     }
 }
 
@@ -109,4 +102,28 @@ export class RootTile extends Tile
         super();
         this.layoutDirection = layoutDirection;
     }
+}
+
+export interface ITilingEngine
+{
+    rootTile: RootTile;
+    config: EngineConfig;
+    
+    addClient(c: Client): void;
+    removeClient(c: Client): void;
+}
+
+export abstract class TilingEngine implements ITilingEngine
+{
+    rootTile: RootTile = new RootTile(LayoutDirection.Horizontal);
+    
+    config: EngineConfig;
+    
+    constructor()
+    {
+        this.config = new EngineConfig();
+    }
+    
+    abstract addClient(c: Client): void;
+    abstract removeClient(c: Client): void;
 }

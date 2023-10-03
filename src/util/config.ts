@@ -1,20 +1,25 @@
 // config.ts - Static config class
 
-import { kwinApi } from "global";
+import { KwinApi } from "common";
 
-class Config
+class ConfigClass
 {
     debug: boolean;
     constructor()
     {
-        let readConfig = kwinApi.readConfig;
+        let readConfig = KwinApi.readConfig;
         this.debug = readConfig("Debug", false);
     }
 }
 
 export class ConfigCreator
 {
-    static 
+    static config: ConfigClass;
+    static init()
+    {
+        this.config = new ConfigClass();
+    }
 }
 
-export default 
+const Config = ConfigCreator.config;
+export default Config;
