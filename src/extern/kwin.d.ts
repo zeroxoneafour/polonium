@@ -1,12 +1,16 @@
 // kwin.d.ts - Declarations around the KWin API
 
-import * as Qt from "extern/qt";
+import * as Qt from "./qt";
 
 // AbstractClient
 export interface Client
 {
     readonly minSize: Qt.QSize;
     readonly resourceClass: string;
+    readonly desktop: number;
+    readonly activities: string[];
+    readonly screen: number;
+    readonly normalWindow: boolean;
     tile: Tile;
 }
 
@@ -40,15 +44,24 @@ export interface RootTile extends Tile
 
 export interface Workspace
 {
+    readonly numScreens: number;
+    readonly activeScreen: number;
+    
     activeClient: Client | null;
-    activeScreen: number;
-    currentActivity: string;
     currentDesktop: number;
+    desktops: number;
+    currentActivity: string;
+    
+    tilingForScreen(scr: number): RootTile;
+    
+    clientAdded: Qt.Signal<(c: Client) => void>;
+    clientRemoved: Qt.Signal<(c: Client) => void>;
+    currentDesktopChanged: Qt.Signal<(d: number) => void>;
 }
 
 export interface Options
 {
-    configChanged: Qt.Signal<() => void>
+    configChanged: Qt.Signal<() => void>;
 }
 
 export interface Api

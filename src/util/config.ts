@@ -1,6 +1,7 @@
 // config.ts - Static config class
 
-import { KwinApi } from "common";
+import { KwinApi } from "../common";
+import { EngineType } from "../engines";
 
 class ConfigClass
 {
@@ -17,9 +18,11 @@ class ConfigClass
     {
         let readConfig = KwinApi.readConfig;
         this.debug = readConfig("Debug", false);
+        this.engineType = readConfig("EngineType", EngineType.BTree);
     }
     
     debug: boolean;
+    engineType: EngineType;
 }
 
 const Config = ConfigClass.Instance;

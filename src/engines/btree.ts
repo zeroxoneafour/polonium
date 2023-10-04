@@ -1,7 +1,7 @@
 // btree.ts - Implementation of binary tree layout
 
-import { TilingEngine, Tile, Client } from "engines";
-import Log from "util/log";
+import { TilingEngine, Tile, Client } from "./";
+import Log from "../util/log";
 
 export default class BTreeEngine extends TilingEngine
 {

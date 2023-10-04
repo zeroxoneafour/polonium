@@ -1,7 +1,10 @@
-// engines/common.ts - Common classes and structures used by the engines
+// engines/index.ts - Common classes and structures used by the engines
 
-import { LayoutDirection, Client as KwinClient } from "extern/kwin";
-import { QSize } from "extern/qt";
+// if you uncomment this it doesnt compile?!
+//import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
+import { QSize } from "../extern/qt";
+
+import BTree from "./btree";
 
 export interface IEngineConfig
 {
@@ -43,8 +46,8 @@ export class Tile
         this.parent.tiles.push(this);
     }
     
-    // adds a tile that will split perpendicularly to the parent
-    addPerpendicular(): void
+    // adds a child that will split perpendicularly to the parent
+    addChild(): void
     {
         let splitDirection = LayoutDirection.Horizontal;
         if (this.layoutDirection == LayoutDirection.Horizontal)
@@ -55,8 +58,8 @@ export class Tile
         childTile.layoutDirection = splitDirection;
     }
     
-    // adds a child that will split parallel to the parent. Not as useful
-    addParallel(): void
+    // adds a child that will split parallel to the parent. Not really recommeneded
+    addChildParallel(): void
     {
         const childTile = new Tile(this);
         childTile.layoutDirection = this.layoutDirection;
@@ -65,32 +68,42 @@ export class Tile
     // split a tile perpendicularly
     split(): void
     {
-        this.addPerpendicular();
-        this.addPerpendicular();
+        this.addChild();
+        this.addChild();
     }
     
     // becomes one of its children, destroying it and other children it has. tile is assumed to be a child of the method caller
     consume(child: Tile): void
     {
         const tiles = child.tiles;
-        for (const tile of this.tiles)
-        {
-            tile.remove();
-        }
+        this.removeChildren();
         this.tiles = tiles;
     }
     
     // removes a tile and all its children
-    remove(): void
+    remove(batchRemove: boolean = false): void
     {
         const parent = this.parent;
         if (parent == null)
         {
             return;
         }
-        parent.tiles.splice(parent.tiles.indexOf(this), 1);
+        if (!batchRemove)
+        {
+            parent.tiles.splice(parent.tiles.indexOf(this), 1);
+        }
         this.tiles = [];
         this.client = null;
+    }
+    
+    // remove child tiles
+    removeChildren(): void
+    {
+        for (const tile of this.tiles)
+        {
+            tile.remove(true);
+        }
+        this.tiles = [];
     }
 }
 
@@ -104,16 +117,7 @@ export class RootTile extends Tile
     }
 }
 
-export interface ITilingEngine
-{
-    rootTile: RootTile;
-    config: EngineConfig;
-    
-    addClient(c: Client): void;
-    removeClient(c: Client): void;
-}
-
-export abstract class TilingEngine implements ITilingEngine
+export abstract class TilingEngine
 {
     rootTile: RootTile = new RootTile(LayoutDirection.Horizontal);
     
@@ -126,4 +130,19 @@ export abstract class TilingEngine implements ITilingEngine
     
     abstract addClient(c: Client): void;
     abstract removeClient(c: Client): void;
+}
+
+export enum EngineType
+{
+    BTree = 0,
+    _loop,
+}
+
+export class TilingEngineFactory
+{
+    newEngine(t: EngineType): TilingEngine
+    {
+        t %= EngineType._loop;
+        return new BTree();
+    }
 }

@@ -1,7 +1,7 @@
 // log.ts - Logging support
 
-import { QmlObjects } from "common";
-import Config from "util/config";
+import { QmlObjects } from "../common";
+import Config from "./config";
 
 class LogClass
 {

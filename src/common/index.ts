@@ -1,7 +1,7 @@
 // global.ts - Initialize "global" variables
 
-import * as Kwin from "extern/kwin";
-import { Api, Objects } from "extern/qml";
+import * as Kwin from "../extern/kwin";
+import { Api, Objects } from "../extern/qml";
 
 export class GlobalVariables
 {

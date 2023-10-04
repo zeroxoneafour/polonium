@@ -1,17 +1,15 @@
 // controller.ts - Main controller object of the script
 
-import * as Kwin from "extern/kwin";
-import * as Qml from "extern/qml";
+import * as Kwin from "../extern/kwin";
+import * as Qml from "../extern/qml";
 
-import Log from "util/log";
-import Config from "util/config";
+import Log from "../util/log";
+import Config from "../util/config";
 
-import { LogCreator } from "util/log";
-import { ConfigCreator } from "util/config";
-import { GlobalVariables, Workspace } from "common/index";
+import { GlobalVariables, Workspace } from "../common";
+import { DriverManager } from "../driver";
 
-import { Desktop } from "driver/index";
-import { DriverManager } from "driver";
+import * as BasicActions from "./actions/basic";
 
 export default class Controller
 {
@@ -22,21 +20,14 @@ export default class Controller
         GlobalVariables.init(qmlApi, qmlObjects);
     }
     
-    private createGlobals(): void
-    {
-        LogCreator.init();
-        ConfigCreator.init();
-    }
-    
     private bindSignals(): void
     {
-        Workspace.
+        Workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
+        Workspace.clientRemoved.connect(BasicActions.clientRemoved.bind(this));
     }
     
     init(): void
     {
-        this.createGlobals();
-        Log.debug("Globals created");
         this.bindSignals();
         Log.debug("Signals binded");
     }

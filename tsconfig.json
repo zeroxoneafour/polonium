@@ -7,10 +7,9 @@
         "pkg/"
     ],
     "compilerOptions": {
-        "baseUrl": "./src/",
-        "target": "es5",
+        "target": "es3",
         "module": "es6",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "removeComments": true,
         "lib": ["es2022"],
         "alwaysStrict": true,
