@@ -1,10 +1,11 @@
 // engines/index.ts - Common classes and structures used by the engines
 
 // if you uncomment this it doesnt compile?!
-//import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
 import { QSize } from "../extern/qt";
 
 import BTree from "./btree";
+
+import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
 
 export interface IEngineConfig
 {
@@ -31,7 +32,7 @@ export class Tile
 {
     parent: Tile | null;
     tiles: Tile[] = [];
-    layoutDirection: LayoutDirection = LayoutDirection.Horizontal;
+    layoutDirection: LayoutDirection = 1;
     // requested size in pixels, may not be honored
     requestedSize: QSize | null = null;
     client: Client | null = null;
@@ -49,10 +50,10 @@ export class Tile
     // adds a child that will split perpendicularly to the parent
     addChild(): void
     {
-        let splitDirection = LayoutDirection.Horizontal;
-        if (this.layoutDirection == LayoutDirection.Horizontal)
+        let splitDirection: LayoutDirection = 1;
+        if (this.layoutDirection == 1)
         {
-            splitDirection = LayoutDirection.Vertical;
+            splitDirection = 2;
         }
         const childTile = new Tile(this);
         childTile.layoutDirection = splitDirection;
@@ -119,7 +120,7 @@ export class RootTile extends Tile
 
 export abstract class TilingEngine
 {
-    rootTile: RootTile = new RootTile(LayoutDirection.Horizontal);
+    rootTile: RootTile = new RootTile(1);
     
     config: EngineConfig;
     

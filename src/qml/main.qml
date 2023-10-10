@@ -15,11 +15,11 @@ Item
 
     function createTimer()
     {
-        return Qt.createQmlObject("import QtQuick 2.15; Timer {}", rootScript);
+        return Qt.createQmlObject("import QtQuick 2.15; Timer {}", root);
     }
     
     function createDBusCall() {
-        return Qt.createQmlObject("import QtQuick 2.15; import org.kde.kwin 2.0; DBusCall {}", rootScript);
+        return Qt.createQmlObject("import QtQuick 2.15; import org.kde.kwin 2.0; DBusCall {}", root);
     }
     
     Component.onCompleted:

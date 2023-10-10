@@ -1,10 +1,10 @@
 // driver.ts - Interface from drivers/engines to the controller
 
-import { Workspace } from "../common";
 import { TilingDriver } from "./driver";
 import { TilingEngineFactory, EngineType } from "../engines";
 import { Client, RootTile } from "../extern/kwin";
 
+import { Controller } from "../controller";
 import Log from "../util/log";
 import Config from "../util/config";
 
@@ -24,20 +24,11 @@ export class Desktop implements IDesktop
     {
         return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
     }
-    constructor(d?: IDesktop)
+    constructor(d: IDesktop)
     {
-        if (d === undefined)
-        {
-            this.screen = Workspace.activeScreen;
-            this.activity = Workspace.currentActivity;
-            this.desktop = Workspace.currentDesktop;
-        }
-        else
-        {
-            this.screen = d.screen;
-            this.activity = d.activity;
-            this.desktop = d.desktop;
-        }
+        this.screen = d.screen;
+        this.activity = d.activity;
+        this.desktop = d.desktop;
     }
     
     static fromClient(client: Client): Desktop[]
@@ -54,15 +45,15 @@ export class Desktop implements IDesktop
         return ret;
     }
     
-    static currentScreens(): Desktop[]
+    static currentScreens(c: Controller): Desktop[]
     {
         let ret = [];
-        for (let i = 0; i < Workspace.numScreens; i += 1)
+        for (let i = 0; i < c.workspace.numScreens; i += 1)
         {
             ret.push(new Desktop({
                 screen: i,
-                activity: Workspace.currentActivity,
-                desktop: Workspace.currentDesktop,
+                activity: c.workspace.currentActivity,
+                desktop: c.workspace.currentDesktop,
             }));
         }
         return ret;
@@ -73,7 +64,12 @@ export class DriverManager
 {
     private drivers: Map<string, TilingDriver> = new Map;
     private engineFactory: TilingEngineFactory = new TilingEngineFactory();
+    private ctrl: Controller;
     
+    constructor(c: Controller)
+    {
+        this.ctrl = c;
+    }
     private getDriver(desktop: Desktop): TilingDriver
     {
         const desktopString = desktop.toString();
@@ -92,20 +88,20 @@ export class DriverManager
         let desktops: Desktop[];
         if (scr == undefined)
         {
-            desktops = Desktop.currentScreens();
+            desktops = Desktop.currentScreens(this.ctrl);
         }
         else
         {
             desktops = [new Desktop({
-               screen: scr, 
-               activity: Workspace.currentActivity, 
-               desktop: Workspace.currentDesktop, 
+                screen: scr, 
+                activity: this.ctrl.workspace.currentActivity, 
+                desktop: this.ctrl.workspace.currentDesktop, 
             })];
         }
         for (const desktop of desktops)
         {
             const driver = this.getDriver(desktop);
-            driver.buildLayout(Workspace.tilingForScreen(desktop.screen));
+            driver.buildLayout(this.ctrl.workspace.tilingForScreen(desktop.screen));
         }
     }
     addClient(client: Client, desktops?: Desktop[]): void

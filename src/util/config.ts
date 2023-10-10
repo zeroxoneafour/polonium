@@ -1,29 +1,42 @@
 // config.ts - Static config class
 
-import { KwinApi } from "../common";
 import { EngineType } from "../engines";
+import { Controller } from "../controller";
+import { Api } from "../extern/kwin";
 
 class ConfigClass
 {
-    private static instance: ConfigClass | null = null;
+    private static instance: ConfigClass;
+    static init(c: Controller)
+    {
+        this.instance = new ConfigClass(c);
+    }
     static get Instance()
     {
-        if (this.instance == null)
-        {
-            this.instance = new ConfigClass();
-        }
         return this.instance;
     }
-    private constructor()
+    private readConfigFn: Api["readConfig"];
+    private constructor(c: Controller)
     {
-        let readConfig = KwinApi.readConfig;
-        this.debug = readConfig("Debug", false);
-        this.engineType = readConfig("EngineType", EngineType.BTree);
+        this.readConfigFn = c.kwinApi.readConfig;
+        this.readConfig();
     }
     
-    debug: boolean;
-    engineType: EngineType;
+    readConfig()
+    {
+        let rc = this.readConfigFn;
+        this.debug = rc("Debug", false);
+        this.engineType = rc("EngineType", EngineType.BTree);        
+    }
+    
+    debug: boolean = false;
+    engineType: EngineType = EngineType.BTree;
 }
 
 const Config = ConfigClass.Instance;
 export default Config;
+
+export function init(c: Controller)
+{
+    ConfigClass.init(c);
+}

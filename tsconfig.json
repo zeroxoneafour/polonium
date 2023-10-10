@@ -7,11 +7,11 @@
         "pkg/"
     ],
     "compilerOptions": {
-        "target": "es3",
+        "target": "es2016",
         "module": "es6",
-        "moduleResolution": "bundler",
+        "moduleResolution": "node",
         "removeComments": true,
-        "lib": ["es2022"],
+        "lib": ["es2016"],
         "alwaysStrict": true,
         "strict": true
     }

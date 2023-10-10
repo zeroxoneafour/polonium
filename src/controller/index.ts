@@ -4,31 +4,58 @@ import * as Kwin from "../extern/kwin";
 import * as Qml from "../extern/qml";
 
 import Log from "../util/log";
+import { init as initLog } from "../util/log";
 import Config from "../util/config";
+import { init as initConfig } from "../util/config";
 
-import { GlobalVariables, Workspace } from "../common";
-import { DriverManager } from "../driver";
+import { DriverManager, Desktop } from "../driver";
 
 import * as BasicActions from "./actions/basic";
 
-export default class Controller
+export class Controller
 {
-    manager: DriverManager = new DriverManager();
+    workspace: Kwin.Workspace;
+    options: Kwin.Options;
+    kwinApi: Kwin.Api;
+    qmlObjects: Qml.Objects;
+
+    manager: DriverManager = new DriverManager(this);
+    
+    get currentDesktop(): Desktop
+    {
+        return new Desktop(
+            {
+                screen: this.workspace.activeScreen,
+                activity: this.workspace.currentActivity,
+                desktop: this.workspace.currentDesktop,
+            }
+        );
+    }
 
     constructor(qmlApi: Qml.Api, qmlObjects: Qml.Objects)
     {
-        GlobalVariables.init(qmlApi, qmlObjects);
+        this.workspace = qmlApi.workspace;
+        this.options = qmlApi.options;
+        this.kwinApi = qmlApi.kwin;
+        this.qmlObjects = qmlObjects;
     }
     
+    private initGlobals(): void
+    {
+        initConfig(this);
+        initLog(this);
+    }
     private bindSignals(): void
     {
-        Workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
-        Workspace.clientRemoved.connect(BasicActions.clientRemoved.bind(this));
+        this.workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
+        this.workspace.clientRemoved.connect(BasicActions.clientRemoved.bind(this));
     }
     
     init(): void
     {
+        this.initGlobals();
+        Log.debug("Globals initialized");
         this.bindSignals();
-        Log.debug("Signals binded");
+        Log.debug("Signals bound");
     }
 }

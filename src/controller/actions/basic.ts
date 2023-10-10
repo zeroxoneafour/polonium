@@ -1,7 +1,7 @@
 // actions/basic.ts - Basic actions performed by the window manager, such as adding or deleting clients
 
 import * as Kwin from "../../extern/kwin";
-import Controller from "../";
+import { Controller } from "../";
 import Log from "../../util/log";
 
 function tileClient(c: Kwin.Client): boolean

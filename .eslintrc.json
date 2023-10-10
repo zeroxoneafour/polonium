@@ -1,6 +1,6 @@
 {
     "root": true,
-    "ignorePatterns": ["/pkg"],
+    "ignorePatterns": ["/pkg", "*.qml"],
     "env": {
         "es6": true
     },
@@ -11,7 +11,7 @@
     },
     "rules": {
         "brace-style": ["error", "allman"],
-        "indent": ["error", 2],
+        "indent": ["error", 4],
         "quotes": ["error", "double"]
     }
 }

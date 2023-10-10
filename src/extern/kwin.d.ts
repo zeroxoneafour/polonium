@@ -14,12 +14,11 @@ export interface Client
     tile: Tile;
 }
 
-export enum LayoutDirection
-{
-    Floating = 0,
-    Horizontal,
-    Vertical,
-}
+/** floating = 0
+ * horizontal = 1
+ * vertical = 2
+*/
+export type LayoutDirection = 0 | 1 | 2;
 
 export interface Tile
 {

@@ -1,37 +1,37 @@
 // log.ts - Logging support
 
-import { QmlObjects } from "../common";
 import Config from "./config";
+import { Controller } from "../controller";
 
 class LogClass
 {
-    private static instance: LogClass | null = null;
+    private static instance: LogClass;
     static get Instance()
     {
-        if (this.instance == null)
-        {
-            this.instance = new LogClass();
-        }
         return this.instance;
     }
-
-    private printFn: Function;
-    private constructor()
+    static init(c: Controller)
     {
-        printFn = QmlObjects.root.print;
+        this.instance = new LogClass(c);
+    }
+    private printFn: Function;
+    private constructor(c: Controller)
+    {
+        this.printFn = c.qmlObjects.root.printQml;
     }
     private print(opener: string, stuff: any[])
     {
         let ret = opener;
-        for (const s in stuff) {
+        for (const s in stuff)
+        {
             ret += " ";
             ret += s;
         }
-        QmlObjects.root.print(ret);
+        this.printFn(ret);
     }
     debug(...stuff: any[])
     {
-        if (!Config.Debug) return;
+        if (!Config.debug) return;
         this.print("Polonium DBG:", stuff);
     }
     
@@ -48,3 +48,8 @@ class LogClass
 
 const Log = LogClass.Instance;
 export default Log;
+
+export function init(c: Controller)
+{
+    LogClass.init(c);
+}

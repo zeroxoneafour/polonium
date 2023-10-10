@@ -1,5 +1,10 @@
 # changelog
 
+## 1.0b
+
+### 1.0b1
+* Rewrote entire engine
+
 ## 0.6
 
 ### 0.6.0

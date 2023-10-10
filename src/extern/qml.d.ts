@@ -7,7 +7,7 @@ export interface Api
 {
     workspace: Workspace;
     options: Options;
-    api: KwinApi;
+    kwin: KwinApi;
 }
 
 export interface Objects
@@ -17,7 +17,7 @@ export interface Objects
 
 export interface Root
 {
-    print(s: string): void;
+    printQml(s: string): void;
     createTimer(): QTimer;
     createDBusCall(): DBusCall;
 }

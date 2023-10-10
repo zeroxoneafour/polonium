@@ -30,6 +30,9 @@ start: stop
 stop:
 	dbus-send --session --dest=org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript string:'$(NAME)'
 
+lint:
+	npx eslint "src/**"
+
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/
 	cp -f res/main.xml $(PKGDIR)/contents/config/
@@ -43,7 +46,7 @@ src: polonium.mjs $(PKGDIR)
 
 polonium.mjs:
 	npm install
-	./node_modules/esbuild/bin/esbuild --bundle src/index.ts --outfile=polonium.mjs --format=esm --platform=neutral
+	npx esbuild --bundle src/index.ts --outfile=polonium.mjs --format=esm --platform=neutral
 
 $(PKGDIR):
 	mkdir -p $(PKGDIR)
