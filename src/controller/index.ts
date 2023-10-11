@@ -49,6 +49,7 @@ export class Controller
     {
         this.workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
         this.workspace.clientRemoved.connect(BasicActions.clientRemoved.bind(this));
+        this.workspace.currentDesktopChanged.connect(BasicActions.currentDesktopChange.bind(this));
     }
     
     init(): void

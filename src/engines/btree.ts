@@ -1,82 +1,170 @@
 // btree.ts - Implementation of binary tree layout
 
-import { TilingEngine, Tile, Client } from "./";
+import { Tile, Client, TilingEngine, RootTile } from "./";
 import Log from "../util/log";
+import BiMap from "mnemonist/bi-map";
 
-export default class BTreeEngine extends TilingEngine
+class TreeNode
 {
-    addClient(client: Client): void
+    parent: TreeNode | null = null;
+    sibling: TreeNode | null = null;
+    children: [TreeNode, TreeNode] | null = null;
+    client: Client | null = null;
+    // the ratio between the size of the children nodes relative to parent. >0.5 means first child is bigger, <0.5 means smaller
+    // splits tile
+    split(): void
     {
-        let check: Tile[] = [this.rootTile];
-        let checkNext: Tile[] = [];
-        while (check.length > 0)
+        // cannot already have children
+        if (this.children != null) return;
+        this.children = [new TreeNode, new TreeNode]
+        this.children[0].parent = this;
+        this.children[0].sibling = this.children[1];
+        this.children[1].parent = this;
+        this.children[1].sibling = this.children[0];
+    }
+    // removes self
+    remove(): void
+    {
+        // cannot have children or be root
+        if (this.children != null || this.sibling == null || this.parent == null) return;
+        // if sibling has children, move them to the parent and leave both siblings to be garbage collected
+        if (this.sibling.children != null)
         {
-            for (const tile of check)
+            this.parent.children = this.sibling.children;
+            for (const child of this.parent.children)
             {
-                if (tile.client == null)
+                // help the adoption
+                child.parent = this.parent;
+            }
+        }
+        else
+        { // otherwise just move windows over
+            this.parent.client = this.sibling.client;
+            this.parent.children = null;
+        }
+        // say goodbye
+        this.parent = null;
+        this.sibling.parent = null;
+        this.sibling.sibling = null;
+        this.sibling = null;
+    }
+}
+
+class RootNode extends TreeNode
+{
+    parent: null = null;
+    sibling: null = null;
+    remove(): void
+    {
+        // for root node, if the node needs to be removed just reset it
+        this.children = null;
+        this.client = null;
+    }
+}
+
+export class BTreeEngine extends TilingEngine
+{
+    rootNode: RootNode = new RootNode;
+    nodeMap: BiMap<TreeNode, Tile> = new BiMap;
+    
+    buildLayout()
+    {
+        this.rootTile = new RootTile(1);
+        // set up
+        this.nodeMap = new BiMap;
+        // modify rootTile
+        let stack: TreeNode[] = [this.rootNode];
+        let stackNext: TreeNode[] = [];
+        this.nodeMap.set(this.rootNode, this.rootTile);
+        while (stack.length > 0)
+        {
+            for (const node of stack)
+            {
+                if (node.client != null)
                 {
-                    tile.client = client;
-                    return;
+                    this.nodeMap.get(node)!.client = node.client;
                 }
-                else if (tile.tiles.length == 0)
+                if (node.children != null)
                 {
+                    const tile = this.nodeMap.get(node)!;
                     tile.split();
-                    tile.tiles[0].client = tile.client;
-                    tile.client = null;
-                    tile.tiles[1].client = client;
+                    
+                    this.nodeMap.set(node.children[0], tile.tiles[0]);
+                    this.nodeMap.set(node.children[1], tile.tiles[1]);
+                    
+                    stackNext.push(node.children[0]);
+                    stackNext.push(node.children[1]);
+                }
+            }
+            stack = stackNext;
+            stackNext = [];
+        }
+    }
+
+    
+    addClient(client: Client)
+    {
+        let stack: TreeNode[] = [this.rootNode];
+        let stackNext: TreeNode[] = [];
+        while (stack.length > 0)
+        {
+            for (const node of stack)
+            {
+                if (node.children == null)
+                {
+                    if (node.client != null)
+                    {
+                        node.split();
+                        node.children![0].client = node.client;
+                        node.children![1].client = client;
+                        node.client = null;
+                    }
+                    else
+                    {
+                        node.client = client;
+                    }
                     return;
                 }
                 else
                 {
-                    for (const t of tile.tiles)
+                    for (const child of node.children)
                     {
-                        checkNext.push(t);
+                        stackNext.push(child);
                     }
                 }
             }
-            check = checkNext;
-            checkNext = [];
+            stack = stackNext;
+            stackNext = [];
         }
-        // congrats, you broke it
-        Log.error("Failed to add", client.name, "to binary tree engine");
     }
     
-    removeClient(client: Client): void
+    removeClient(client: Client)
     {
-        if (this.rootTile.client == client)
+        let stack: TreeNode[] = [this.rootNode];
+        let stackNext: TreeNode[] = [];
+        let deleteQueue: TreeNode[] = [];
+        while (stack.length > 0)
         {
-            this.rootTile.client = null;
-            return;
-        }
-        let check: Tile[] = [this.rootTile];
-        let checkNext: Tile[] = [];
-        while (check.length > 0)
-        {
-            for (const tile of check)
+            for (const node of stack)
             {
-                if (tile.client == client)
+                if (node.client == client)
                 {
-                    // cant be null
-                    const parent = tile.parent!;
-                    let index = 0;
-                    if (parent.tiles.indexOf(tile) == 0)
-                    {
-                        index = 1;
-                    }
-                    // should destroy parent's tiles (including this one) and bring up children
-                    parent.consume(parent.tiles[index]);
-                    return;
+                    deleteQueue.push(node);
                 }
-                else
+                if (node.children != null)
                 {
-                    for (const t of tile.tiles)
+                    for (const child of node.children)
                     {
-                        checkNext.push(t);
+                        stackNext.push(child);
                     }
                 }
             }
-            check = checkNext;
+            stack = stackNext;
+            stackNext = [];
         }
-        Log.error("Failed to remove", client.name, "from binary tree engine");
+        for (const node of deleteQueue)
+        {
+            node.remove();
+        }
     }
 }

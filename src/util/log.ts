@@ -1,28 +1,24 @@
 // log.ts - Logging support
 
 import Config from "./config";
+import { Root } from "../extern/qml";
 import { Controller } from "../controller";
 
 class LogClass
 {
-    private static instance: LogClass;
-    static get Instance()
-    {
-        return this.instance;
-    }
-    static init(c: Controller)
-    {
-        this.instance = new LogClass(c);
-    }
-    private printFn: Function;
-    private constructor(c: Controller)
+    private printFn: Root["printQml"] | undefined;
+    init(c: Controller)
     {
         this.printFn = c.qmlObjects.root.printQml;
     }
     private print(opener: string, stuff: any[])
     {
+        if (this.printFn == undefined)
+        {
+            return;
+        }
         let ret = opener;
-        for (const s in stuff)
+        for (const s of stuff)
         {
             ret += " ";
             ret += s;
@@ -46,10 +42,10 @@ class LogClass
     }
 }
 
-const Log = LogClass.Instance;
+let Log = new LogClass();
 export default Log;
 
 export function init(c: Controller)
 {
-    LogClass.init(c);
+    Log.init(c);
 }

@@ -1,6 +1,7 @@
 // driver/driver.ts - Mapping from engines to Kwin API
 
-import { TilingEngine, Tile, Client, EngineType } from "../engines";
+import { TilingEngine, Tile, Client } from "../engines";
+import { EngineType } from "../engines/factory";
 import * as Kwin from "../extern/kwin";
 import BiMap from "mnemonist/bi-map";
 import Log from "../util/log";
@@ -20,7 +21,12 @@ export class TilingDriver
     
     buildLayout(rootTile: Kwin.RootTile)
     {
+        // clear root tile
+        while (rootTile.tiles.length > 0) {
+            rootTile.tiles[0].remove();
+        }
         this.tiles.clear();
+        this.engine.buildLayout();
         let stack: Tile[] = [this.engine.rootTile];
         let stackNext: Tile[] = [];
         this.tiles.set(rootTile, this.engine.rootTile);
@@ -29,20 +35,23 @@ export class TilingDriver
             for (const tile of stack)
             {
                 const kwinTile = this.tiles.inverse.get(tile)!;
-                for (let i = 0; i < tile.tiles.length; i += 1)
+                if (tile.tiles.length > 1)
                 {
-                    // tiling has weird splitting mechanics, so hopefully this code can help with that
-                    if (i == 0)
+                    for (let i = 0; i < tile.tiles.length; i += 1)
                     {
+                        // tiling has weird splitting mechanics, so hopefully this code can help with that
+                        if (i == 0)
+                        {
+                            kwinTile.split(tile.layoutDirection);
+                        }
+                        else if (i > 1)
+                        {
+                            kwinTile.tiles[i].split(tile.layoutDirection);
+                        }
                         kwinTile.split(tile.layoutDirection);
+                        this.tiles.set(kwinTile.tiles[i], tile.tiles[i]);
+                        stackNext.push(tile.tiles[i]);
                     }
-                    else if (i > 1)
-                    {
-                        kwinTile.tiles[i].split(tile.layoutDirection);
-                    }
-                    kwinTile.split(tile.layoutDirection);
-                    this.tiles.set(kwinTile.tiles[i], tile.tiles[i]);
-                    stackNext.push(tile.tiles[i]);
                 }
                 if (tile.client != null)
                 {

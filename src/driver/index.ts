@@ -1,7 +1,7 @@
 // driver.ts - Interface from drivers/engines to the controller
 
 import { TilingDriver } from "./driver";
-import { TilingEngineFactory, EngineType } from "../engines";
+import { TilingEngineFactory, EngineType } from "../engines/factory";
 import { Client, RootTile } from "../extern/kwin";
 
 import { Controller } from "../controller";
@@ -34,7 +34,7 @@ export class Desktop implements IDesktop
     static fromClient(client: Client): Desktop[]
     {
         let ret = [];
-        for (const activity in client.activities)
+        for (const activity of client.activities)
         {
             ret.push(new Desktop({
                 screen: client.screen,
@@ -101,7 +101,7 @@ export class DriverManager
         for (const desktop of desktops)
         {
             const driver = this.getDriver(desktop);
-            driver.buildLayout(this.ctrl.workspace.tilingForScreen(desktop.screen));
+            driver.buildLayout(this.ctrl.workspace.tilingForScreen(desktop.screen).rootTile);
         }
     }
     addClient(client: Client, desktops?: Desktop[]): void
@@ -112,6 +112,7 @@ export class DriverManager
         }
         for (const desktop of desktops)
         {
+            Log.debug(desktop);
             const driver = this.getDriver(desktop);
             driver.addClient(client);
         }

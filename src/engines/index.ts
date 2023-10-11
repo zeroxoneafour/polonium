@@ -1,9 +1,6 @@
 // engines/index.ts - Common classes and structures used by the engines
 
-// if you uncomment this it doesnt compile?!
 import { QSize } from "../extern/qt";
-
-import BTree from "./btree";
 
 import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
 
@@ -46,7 +43,7 @@ export class Tile
         }
         this.parent.tiles.push(this);
     }
-    
+        
     // adds a child that will split perpendicularly to the parent
     addChild(): void
     {
@@ -73,12 +70,37 @@ export class Tile
         this.addChild();
     }
     
-    // becomes one of its children, destroying it and other children it has. tile is assumed to be a child of the method caller
-    consume(child: Tile): void
+    // have a tile replace its parent, destroying its siblings
+    secede(): void
     {
-        const tiles = child.tiles;
-        this.removeChildren();
-        this.tiles = tiles;
+        const parent = this.parent;
+        // cant secede as root
+        if (parent == null)
+        {
+            return;
+        }
+        this.parent = parent.parent;
+        if (this.parent != null)
+        {
+            this.parent.tiles[this.parent.tiles.indexOf(parent)] = this;
+            for (const tile of parent.tiles)
+            {
+                if (tile != this)
+                {
+                    tile.remove(true);
+                }
+            }
+            parent.tiles = [];
+            parent.client = null;
+        }
+        else
+        {
+            // special case for roottile because it cant be destroyed
+            parent.client = this.client;
+            parent.tiles = this.tiles;
+            this.tiles = [];
+            this.client = null;
+        }
     }
     
     // removes a tile and all its children
@@ -121,7 +143,6 @@ export class RootTile extends Tile
 export abstract class TilingEngine
 {
     rootTile: RootTile = new RootTile(1);
-    
     config: EngineConfig;
     
     constructor()
@@ -129,21 +150,8 @@ export abstract class TilingEngine
         this.config = new EngineConfig();
     }
     
+    abstract buildLayout(): void;
+
     abstract addClient(c: Client): void;
     abstract removeClient(c: Client): void;
-}
-
-export enum EngineType
-{
-    BTree = 0,
-    _loop,
-}
-
-export class TilingEngineFactory
-{
-    newEngine(t: EngineType): TilingEngine
-    {
-        t %= EngineType._loop;
-        return new BTree();
-    }
 }

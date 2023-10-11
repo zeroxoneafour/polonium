@@ -11,7 +11,9 @@ export interface Client
     readonly activities: string[];
     readonly screen: number;
     readonly normalWindow: boolean;
-    tile: Tile;
+    
+    frameGeometry: Qt.QRect;
+    tile: Tile | null;
 }
 
 /** floating = 0
@@ -41,6 +43,11 @@ export interface RootTile extends Tile
     parent: null;
 }
 
+export interface TileManager
+{
+    rootTile: RootTile;
+}
+
 export interface Workspace
 {
     readonly numScreens: number;
@@ -51,11 +58,16 @@ export interface Workspace
     desktops: number;
     currentActivity: string;
     
-    tilingForScreen(scr: number): RootTile;
+    clientList(): Client[];
+    tilingForScreen(scr: number): TileManager;
     
     clientAdded: Qt.Signal<(c: Client) => void>;
     clientRemoved: Qt.Signal<(c: Client) => void>;
     currentDesktopChanged: Qt.Signal<(d: number) => void>;
+    
+    // things added that we need
+    lastActivity: string | undefined;
+    lastDesktop: number | undefined;
 }
 
 export interface Options
