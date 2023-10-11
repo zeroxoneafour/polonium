@@ -2,7 +2,7 @@ name: Make polonium.kwinscript
 
 on:
   push:
-    branches: [ "local" ]
+    branches: [ "local", "v1.0" ]
   pull_request:
     branches: [ "master" ]
 

@@ -22,7 +22,8 @@ export class TilingDriver
     buildLayout(rootTile: Kwin.RootTile)
     {
         // clear root tile
-        while (rootTile.tiles.length > 0) {
+        while (rootTile.tiles.length > 0)
+        {
             rootTile.tiles[0].remove();
         }
         this.tiles.clear();

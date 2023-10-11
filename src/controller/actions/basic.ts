@@ -35,12 +35,15 @@ export function clientRemoved(this: Controller, client: Kwin.Client)
     this.manager.rebuildLayout();
 }
 
-export function currentDesktopChange(this: Controller): void {
+export function currentDesktopChange(this: Controller)
+{
     // set geometry for all clients manually to avoid resizing when tiles are deleted
     const clientList = this.workspace.clientList();
-    for (let i = 0; i < clientList.length; i += 1) {
+    for (let i = 0; i < clientList.length; i += 1)
+    {
         const client = clientList[i];
-        if (client.tile != null && client.activities.includes(this.workspace.lastActivity!) && client.desktop == this.workspace.lastDesktop) {
+        if (client.tile != null && client.activities.includes(this.workspace.lastActivity!) && client.desktop == this.workspace.lastDesktop)
+        {
             const tile = client.tile;
             client.tile = null;
             client.frameGeometry = tile.absoluteGeometry;
