@@ -3,10 +3,8 @@
 import * as Kwin from "../extern/kwin";
 import * as Qml from "../extern/qml";
 
-import Log from "../util/log";
-import { init as initLog } from "../util/log";
-import Config from "../util/config";
-import { init as initConfig } from "../util/config";
+import Log, { init as initLog } from "../util/log";
+import Config, { init as initConfig } from "../util/config";
 
 import { DriverManager, Desktop } from "../driver";
 

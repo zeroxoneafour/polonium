@@ -27,7 +27,6 @@ export class TilingDriver
             rootTile.tiles[0].remove();
         }
         this.tiles.clear();
-        this.engine.buildLayout();
         let stack: Tile[] = [this.engine.rootTile];
         let stackNext: Tile[] = [];
         this.tiles.set(rootTile, this.engine.rootTile);
@@ -79,6 +78,7 @@ export class TilingDriver
         const client = new Client(kwinClient);
         this.clients.set(kwinClient, client);
         this.engine.addClient(client);
+        this.engine.buildLayout();
     }
     
     removeClient(kwinClient: Kwin.Client): void
@@ -90,5 +90,6 @@ export class TilingDriver
         }
         this.clients.delete(kwinClient);
         this.engine.removeClient(client);
+        this.engine.buildLayout();
     }
 }

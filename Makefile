@@ -32,6 +32,7 @@ stop:
 
 lint:
 	npx eslint "src/**"
+	./scripts/sonarqube.sh
 
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/

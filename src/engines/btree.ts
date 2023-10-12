@@ -64,8 +64,8 @@ class RootNode extends TreeNode
 
 export class BTreeEngine extends TilingEngine
 {
-    rootNode: RootNode = new RootNode;
-    nodeMap: BiMap<TreeNode, Tile> = new BiMap;
+    private rootNode: RootNode = new RootNode;
+    private nodeMap: BiMap<TreeNode, Tile> = new BiMap;
     
     buildLayout()
     {

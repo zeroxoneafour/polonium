@@ -39,9 +39,8 @@ export function currentDesktopChange(this: Controller)
 {
     // set geometry for all clients manually to avoid resizing when tiles are deleted
     const clientList = this.workspace.clientList();
-    for (let i = 0; i < clientList.length; i += 1)
+    for (const client of clientList)
     {
-        const client = clientList[i];
         if (client.tile != null && client.activities.includes(this.workspace.lastActivity!) && client.desktop == this.workspace.lastDesktop)
         {
             const tile = client.tile;
