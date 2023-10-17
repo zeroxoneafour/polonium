@@ -3,6 +3,7 @@
 import { Tile, Client, TilingEngine, RootTile } from "./";
 import Log from "../util/log";
 import BiMap from "mnemonist/bi-map";
+import Queue from "mnemonist/queue";
 
 class TreeNode
 {
@@ -73,94 +74,82 @@ export class BTreeEngine extends TilingEngine
         // set up
         this.nodeMap = new BiMap;
         // modify rootTile
-        let stack: TreeNode[] = [this.rootNode];
-        let stackNext: TreeNode[] = [];
+        let queue: Queue<TreeNode> = new Queue();
+        queue.enqueue(this.rootNode);
         this.nodeMap.set(this.rootNode, this.rootTile);
-        while (stack.length > 0)
+        while (queue.size > 0)
         {
-            for (const node of stack)
+            const node = queue.dequeue()!;
+            if (node.client != null)
             {
-                if (node.client != null)
-                {
-                    this.nodeMap.get(node)!.client = node.client;
-                }
-                if (node.children != null)
-                {
-                    const tile = this.nodeMap.get(node)!;
-                    tile.split();
-                    
-                    this.nodeMap.set(node.children[0], tile.tiles[0]);
-                    this.nodeMap.set(node.children[1], tile.tiles[1]);
-                    
-                    stackNext.push(node.children[0]);
-                    stackNext.push(node.children[1]);
-                }
+                this.nodeMap.get(node)!.client = node.client;
             }
-            stack = stackNext;
-            stackNext = [];
+            if (node.children != null)
+            {
+                const tile = this.nodeMap.get(node)!;
+                tile.split();
+                
+                this.nodeMap.set(node.children[0], tile.tiles[0]);
+                this.nodeMap.set(node.children[1], tile.tiles[1]);
+                
+                queue.enqueue(node.children[0]);
+                queue.enqueue(node.children[1]);
+            }
         }
     }
 
     
     addClient(client: Client)
     {
-        let stack: TreeNode[] = [this.rootNode];
-        let stackNext: TreeNode[] = [];
-        while (stack.length > 0)
+        let queue: Queue<TreeNode> = new Queue();
+        queue.enqueue(this.rootNode);
+        while (queue.size > 0)
         {
-            for (const node of stack)
+            const node = queue.dequeue()!;
+            if (node.children == null)
             {
-                if (node.children == null)
+                if (node.client != null)
                 {
-                    if (node.client != null)
-                    {
-                        node.split();
-                        node.children![0].client = node.client;
-                        node.children![1].client = client;
-                        node.client = null;
-                    }
-                    else
-                    {
-                        node.client = client;
-                    }
-                    return;
+                    node.split();
+                    node.children![0].client = node.client;
+                    node.children![1].client = client;
+                    node.client = null;
                 }
                 else
                 {
-                    for (const child of node.children)
-                    {
-                        stackNext.push(child);
-                    }
+                    node.client = client;
+                }
+                return;
+            }
+            else
+            {
+                for (const child of node.children)
+                {
+                    queue.enqueue(child);
                 }
             }
-            stack = stackNext;
-            stackNext = [];
         }
     }
     
     removeClient(client: Client)
     {
-        let stack: TreeNode[] = [this.rootNode];
-        let stackNext: TreeNode[] = [];
+        let queue: Queue<TreeNode> = new Queue();
+        queue.enqueue(this.rootNode);
         let deleteQueue: TreeNode[] = [];
-        while (stack.length > 0)
+        while (queue.size > 0)
         {
-            for (const node of stack)
+            const node = queue.dequeue()!;
+            if (node.client == client)
             {
-                if (node.client == client)
+                deleteQueue.push(node);
+            }
+            if (node.children != null)
+            {
+                for (const child of node.children)
                 {
-                    deleteQueue.push(node);
-                }
-                if (node.children != null)
-                {
-                    for (const child of node.children)
-                    {
-                        stackNext.push(child);
-                    }
+                    queue.enqueue(child);
                 }
             }
-            stack = stackNext;
-            stackNext = [];
         }
         for (const node of deleteQueue)
         {

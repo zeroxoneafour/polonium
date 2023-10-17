@@ -2,6 +2,8 @@
 
 import * as Qt from "./qt";
 
+import { Desktop } from "../driver";
+
 // AbstractClient
 export interface Client
 {
@@ -14,6 +16,11 @@ export interface Client
     
     frameGeometry: Qt.QRect;
     tile: Tile | null;
+    
+    desktopChanged: Qt.Signal<() => void>;
+    
+    previousDesktops: Desktop[] | undefined;
+    wasTiled: boolean | undefined;
 }
 
 /** floating = 0
@@ -26,7 +33,8 @@ export interface Tile
 {
     tiles: Tile[];
     windows: Client[];
-    absoluteGeometry: Qt.QRect;
+    readonly absoluteGeometry: Qt.QRect;
+    absoluteGeometryInScreen: Qt.QRect;
     relativeGeometry: Qt.QRect;
     layoutDirection: LayoutDirection;
     parent: Tile | null;

@@ -3,8 +3,9 @@
 import * as Kwin from "../../extern/kwin";
 import { Controller } from "../";
 import Log from "../../util/log";
+import { attachClientHooks } from "./clienthooks";
 
-function tileClient(c: Kwin.Client): boolean
+function doTileClient(c: Kwin.Client): boolean
 {
     if (c.normalWindow)
     {
@@ -18,11 +19,12 @@ function tileClient(c: Kwin.Client): boolean
 
 export function clientAdded(this: Controller, client: Kwin.Client)
 {
-    if (!tileClient(client))
+    if (!doTileClient(client))
     {
         Log.debug("Not tiling client", client.resourceClass);
         return;
     }
+    attachClientHooks.bind(this)(client);
     Log.debug("Tiling client", client.resourceClass);
     this.manager.addClient(client);
     this.manager.rebuildLayout();
@@ -38,8 +40,7 @@ export function clientRemoved(this: Controller, client: Kwin.Client)
 export function currentDesktopChange(this: Controller)
 {
     // set geometry for all clients manually to avoid resizing when tiles are deleted
-    const clientList = this.workspace.clientList();
-    for (const client of clientList)
+    for (const client of Array.from(this.workspace.clientList()))
     {
         if (client.tile != null && client.activities.includes(this.workspace.lastActivity!) && client.desktop == this.workspace.lastDesktop)
         {

@@ -116,6 +116,7 @@ export class DriverManager
             const driver = this.getDriver(desktop);
             driver.addClient(client);
         }
+        client.wasTiled = true;
     }
     removeClient(client: Client, desktops?: Desktop[]): void
     {
@@ -128,5 +129,6 @@ export class DriverManager
             const driver = this.getDriver(desktop);
             driver.removeClient(client);
         }
+        client.wasTiled = false;
     }
 }

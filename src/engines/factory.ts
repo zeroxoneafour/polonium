@@ -6,6 +6,7 @@ import { BTreeEngine } from "./btree";
 export const enum EngineType
 {
     BTree = 0,
+    Half,
     _loop,
 }
 

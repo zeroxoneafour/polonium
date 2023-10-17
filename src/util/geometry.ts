@@ -53,7 +53,7 @@ export class GSize implements QSize
         this.height = s.height;
     }
     
-    static fromRect(r: QRect)
+    static fromRect(r: QRect): GSize
     {
         return new GSize(
             {
@@ -61,5 +61,30 @@ export class GSize implements QSize
                 "height": r.height,
             }
         )
+    }
+    
+    // compare two sizes and grow the caller if it is too small
+    fitSize(s: QSize)
+    {
+        if (this.height < s.height)
+        {
+            this.height = s.height;
+        }
+        if (this.width < s.width)
+        {
+            this.width = s.width;
+        }
+    }
+    
+    write(s: QSize)
+    {
+        if (s.width != this.width)
+        {
+            s.width = this.width;
+        }
+        if (s.height != this.height)
+        {
+            s.height = this.height;            
+        }
     }
 }

@@ -6,14 +6,6 @@ export interface Signal<T extends Function>
     disconnect(callback: T): void;
 }
 
-export interface QRect
-{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-}
-
 export interface QPoint
 {
     x: number;
@@ -22,6 +14,14 @@ export interface QPoint
 
 export interface QSize
 {
+    width: number;
+    height: number;
+}
+
+export interface QRect extends QPoint, QSize
+{
+    x: number;
+    y: number;
     width: number;
     height: number;
 }
