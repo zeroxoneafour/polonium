@@ -4,6 +4,13 @@ import { EngineType } from "../engines/factory";
 import { Controller } from "../controller";
 import { Api } from "../extern/kwin";
 
+export const enum InsertionPoint
+{
+    Left = 0,
+    Right,
+    Active
+}
+
 class ConfigClass
 {
     private readConfigFn: Api["readConfig"] | undefined;
@@ -22,11 +29,13 @@ class ConfigClass
             return;
         }
         this.debug = rc("Debug", false);
-        this.engineType = rc("EngineType", EngineType.BTree);        
+        this.engineType = rc("EngineType", EngineType.BTree);
+        this.insertionPoint = rc("InsertionPoint", InsertionPoint.Left);
     }
     
     debug: boolean = false;
     engineType: EngineType = EngineType.BTree;
+    insertionPoint: InsertionPoint = InsertionPoint.Left;
 }
 
 let Config = new ConfigClass();

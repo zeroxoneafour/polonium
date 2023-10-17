@@ -2,7 +2,7 @@
 
 import * as Qt from "./qt";
 
-import { Desktop } from "../driver";
+import { IDesktop } from "../driver";
 
 // AbstractClient
 export interface Client
@@ -19,7 +19,7 @@ export interface Client
     
     desktopChanged: Qt.Signal<() => void>;
     
-    previousDesktops: Desktop[] | undefined;
+    previousDesktops: IDesktop[] | undefined;
     wasTiled: boolean | undefined;
 }
 
@@ -34,7 +34,6 @@ export interface Tile
     tiles: Tile[];
     windows: Client[];
     readonly absoluteGeometry: Qt.QRect;
-    absoluteGeometryInScreen: Qt.QRect;
     relativeGeometry: Qt.QRect;
     layoutDirection: LayoutDirection;
     parent: Tile | null;

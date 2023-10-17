@@ -43,6 +43,7 @@ export class TilingDriver
     buildLayout(rootTile: Kwin.RootTile, placeClients: boolean = true): [Kwin.Client, Kwin.Tile][]
     {
         const ret: [Kwin.Client, Kwin.Tile][] = [];
+        const rootTileSize = rootTile.absoluteGeometry;
         // remove bugged clients
         this.fixClients();
         // clear root tile
@@ -96,9 +97,10 @@ export class TilingDriver
                     kwinClient.tile = kwinTile;                    
                 }
             }
-            // write ending tile size to expand tile, for some reason size cant be written to???
-            //Log.debug(kwinTile.absoluteGeometryInScreen.width, kwinTile.absoluteGeometryInScreen.height);
-            //tileSize.write(kwinTile.absoluteGeometryInScreen);
+            // absolutegeometry is read only, so make sizing relative
+            tileSize.height /= rootTileSize.height;
+            tileSize.width /= rootTileSize.width;
+            tileSize.write(kwinTile.relativeGeometry);
         }
         return ret;
     }

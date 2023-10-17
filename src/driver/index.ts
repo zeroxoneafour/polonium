@@ -112,7 +112,6 @@ export class DriverManager
         }
         for (const desktop of desktops)
         {
-            Log.debug(desktop);
             const driver = this.getDriver(desktop);
             driver.addClient(client);
         }

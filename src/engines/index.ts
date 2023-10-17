@@ -1,12 +1,12 @@
 // engines/index.ts - Common classes and structures used by the engines
 
 import { QSize } from "../extern/qt";
-
+import { InsertionPoint } from "../util/config";
 import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
 
 export interface IEngineConfig
 {
-    
+    insertionPoint: 
 }
 
 export class EngineConfig implements IEngineConfig
