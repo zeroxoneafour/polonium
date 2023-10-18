@@ -1,6 +1,7 @@
 // btree.ts - Implementation of binary tree layout
 
 import { Tile, Client, TilingEngine, RootTile } from "./";
+import { InsertionPoint } from "../util/config";
 import Log from "../util/log";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
@@ -98,7 +99,6 @@ export class BTreeEngine extends TilingEngine
         }
     }
 
-    
     addClient(client: Client)
     {
         let queue: Queue<TreeNode> = new Queue();
@@ -111,8 +111,16 @@ export class BTreeEngine extends TilingEngine
                 if (node.client != null)
                 {
                     node.split();
-                    node.children![0].client = node.client;
-                    node.children![1].client = client;
+                    if (this.config.insertionPoint == InsertionPoint.Left)
+                    {
+                        node.children![0].client = client;
+                        node.children![1].client = node.client;
+                    }
+                    else
+                    {
+                        node.children![0].client = node.client;
+                        node.children![1].client = client;
+                    }
                     node.client = null;
                 }
                 else
@@ -123,7 +131,12 @@ export class BTreeEngine extends TilingEngine
             }
             else
             {
-                for (const child of node.children)
+                const children = Array.from(node.children);
+                if (this.config.insertionPoint == InsertionPoint.Right)
+                {
+                    children.reverse();
+                }
+                for (const child of children)
                 {
                     queue.enqueue(child);
                 }

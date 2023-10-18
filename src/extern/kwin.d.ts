@@ -18,6 +18,8 @@ export interface Client
     tile: Tile | null;
     
     desktopChanged: Qt.Signal<() => void>;
+    activitiesChanged: Qt.Signal<() => void>;
+    screenChanged: Qt.Signal<() => void>;
     
     previousDesktops: IDesktop[] | undefined;
     wasTiled: boolean | undefined;

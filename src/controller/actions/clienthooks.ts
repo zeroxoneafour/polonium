@@ -7,6 +7,8 @@ export function attachClientHooks(this: Controller, client: Kwin.Client)
 {
     client.previousDesktops = Desktop.fromClient(client);
     client.desktopChanged.connect(clientDesktopChanged.bind(this, client));
+    client.activitiesChanged.connect(clientDesktopChanged.bind(this, client));
+    client.screenChanged.connect(clientDesktopChanged.bind(this, client));
 }
 
 function clientDesktopChanged(this: Controller, client: Kwin.Client)

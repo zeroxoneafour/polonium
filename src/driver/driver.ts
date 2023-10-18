@@ -59,9 +59,14 @@ export class TilingDriver
         {
             const tile = queue.dequeue()!;
             const kwinTile = this.tiles.inverse.get(tile)!;
-            if (tile.tiles.length > 1)
+            kwinTile.layoutDirection = tile.layoutDirection;
+            
+            // 1 is vertical, 2 is horizontal
+            const horizontal = (kwinTile.layoutDirection == 1);
+            const tilesLen = tile.tiles.length;
+            if (tilesLen > 1)
             {
-                for (let i = 0; i < tile.tiles.length; i += 1)
+                for (let i = 0; i < tilesLen; i += 1)
                 {
                     // tiling has weird splitting mechanics, so hopefully this code can help with that
                     if (i == 0)
@@ -71,6 +76,16 @@ export class TilingDriver
                     else if (i > 1)
                     {
                         kwinTile.tiles[i].split(tile.layoutDirection);
+                    }
+                    
+                    // evenly distribute tile sizes before doing custom resizing
+                    if (horizontal)
+                    {
+                        kwinTile.tiles[i].relativeGeometry.width = kwinTile.relativeGeometry.width / tilesLen;
+                    }
+                    else
+                    {
+                        kwinTile.tiles[i].relativeGeometry.height = kwinTile.relativeGeometry.height / tilesLen;
                     }
                     this.tiles.set(kwinTile.tiles[i], tile.tiles[i]);
                     queue.enqueue(tile.tiles[i]);
