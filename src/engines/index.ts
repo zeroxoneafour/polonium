@@ -150,6 +150,11 @@ export class RootTile extends Tile
     }
 }
 
+export const enum Direction
+{
+    
+}
+
 export abstract class TilingEngine
 {
     rootTile: RootTile = new RootTile(1);
@@ -160,8 +165,14 @@ export abstract class TilingEngine
         this.config = new EngineConfig();
     }
     
+    // creates the root tile layout
     abstract buildLayout(): void;
-
+    // adds a new client to the engine
     abstract addClient(c: Client): void;
+    // removes a client
     abstract removeClient(c: Client): void;
+    // places a client in a specific tile, in the direction d
+    abstract putClientInTile(c: Client, t: Tile, d?: Direction): void;
+    // called after subtiles are edited (ex. sizes) so the engine can update them internally if needed
+    abstract regenerateLayout(): void;
 }

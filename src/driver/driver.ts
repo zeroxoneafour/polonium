@@ -1,8 +1,10 @@
 // driver/driver.ts - Mapping from engines to Kwin API
 
-import { TilingEngine, Tile, Client } from "../engines";
+import { DriverManager } from "./";
+import { TilingEngine, Tile, Client, Direction } from "../engines";
 import { EngineType } from "../engines/factory";
 import { GSize } from "../util/geometry";
+import { InsertionPoint } from "../util/config";
 import * as Kwin from "../extern/kwin";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
@@ -12,40 +14,23 @@ export class TilingDriver
 {
     engine: TilingEngine;
     engineType: EngineType;
+    manager: DriverManager;
+    
     tiles: BiMap<Kwin.Tile, Tile> = new BiMap();
     clients: BiMap<Kwin.Client, Client> = new BiMap();
+    clientsToNull: Kwin.Client[] = [];
     
-    constructor(engine: TilingEngine, engineType: EngineType)
+    constructor(engine: TilingEngine, engineType: EngineType, manager: DriverManager)
     {
         this.engine = engine;
         this.engineType = engineType;
-    }
-    
-    // lint client issues that can happen
-    fixClients()
-    {
-        let n = 0;
-        for (const client of this.clients.keys())
-        {
-            if (client == undefined)
-            {
-                n += 1;
-                this.engine.removeClient(this.clients.get(client)!);
-            }
-        }
-        if (n > 0)
-        {
-            Log.debug("Removed", n, "dead clients");
-            this.engine.buildLayout();
-        }
+        this.manager = manager;
     }
     
     buildLayout(rootTile: Kwin.RootTile, placeClients: boolean = true): [Kwin.Client, Kwin.Tile][]
     {
         const ret: [Kwin.Client, Kwin.Tile][] = [];
         const rootTileSize = rootTile.absoluteGeometry;
-        // remove bugged clients
-        this.fixClients();
         // clear root tile
         while (rootTile.tiles.length > 0)
         {
@@ -55,10 +40,19 @@ export class TilingDriver
         let queue: Queue<Tile> = new Queue();
         queue.enqueue(this.engine.rootTile);
         this.tiles.set(rootTile, this.engine.rootTile);
+        
+        // set clients marked for untiling to null tiles
+        for (const client of this.clientsToNull)
+        {
+            client.tile = null;
+        }
+        this.clientsToNull = [];
+        
         while (queue.size > 0)
         {
             const tile = queue.dequeue()!;
             const kwinTile = this.tiles.inverse.get(tile)!;
+            kwinTile.managed = true;
             kwinTile.layoutDirection = tile.layoutDirection;
             
             // 1 is vertical, 2 is horizontal
@@ -128,7 +122,31 @@ export class TilingDriver
         }
         const client = new Client(kwinClient);
         this.clients.set(kwinClient, client);
-        this.engine.addClient(client);
+        
+        // tries to use active insertion if it should, but can fail and fall back
+        let failedActive: boolean = true;
+        activeChecks: if (this.engine.config.insertionPoint == InsertionPoint.Active)
+        {
+            failedActive = false;
+            const activeClient = this.manager.ctrl.workspace.activeClient;
+            if (activeClient == null || activeClient.tile == null)
+            {
+                failedActive = true;
+                break activeChecks;
+            }
+            const tile = this.tiles.get(activeClient.tile);
+            if (tile == undefined)
+            {
+                failedActive = true;
+                break activeChecks;
+            }
+            this.engine.putClientInTile(client, tile);
+        }
+        
+        if (failedActive)
+        {
+            this.engine.addClient(client);
+        }
         this.engine.buildLayout();
     }
     
@@ -141,6 +159,23 @@ export class TilingDriver
         }
         this.clients.delete(kwinClient);
         this.engine.removeClient(client);
+        this.clientsToNull.push(kwinClient);
+        this.engine.buildLayout();
+    }
+    
+    putClientInTile(kwinClient: Kwin.Client, kwinTile: Kwin.Tile, direction?: Direction)
+    {
+        const tile = this.tiles.get(kwinTile);
+        if (tile == undefined)
+        {
+            return;
+        }
+        if (!this.clients.has(kwinClient))
+        {
+            this.clients.set(kwinClient, new Client(kwinClient));
+        }
+        const client = this.clients.get(kwinClient)!;
+        this.engine.putClientInTile(client, tile, direction);
         this.engine.buildLayout();
     }
 }

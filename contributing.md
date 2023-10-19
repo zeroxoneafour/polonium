@@ -9,12 +9,10 @@ This project is open to contribution from everyone, and I will probably accept t
 
 ## style guide
 * Indent is always 4 spaces
-* All variable names are camelCase, and all class names are PascalCase
-* Never use `if (condition) <statement>` or `for (loop) <statement>` without brackets unless -
- - (For `if`) You are one-liner returning from a function
- - (For `for`) You are pushing a preexisting variable to an array or other structure
-* Use modules and not namespaces unless you are declaring an interface from JavaScript, which you shouldn't need to do unless you're modifying the KWin interface
-* Use `const` instead of `let` anywhere possible. I know I use `let` more than I should, but that doesn't mean you can too!
+* All variable, property, and method names are camelCase, and all class names are PascalCase
+* Never use `if (condition) <statement>` or `for (loop) <statement>` without brackets
+* Never use namespaces if at all possible, and it almost always is possible. Look for the idiomatic TypeScript way
+* Use `const` instead of `let` anywhere possible
 
 ## opening an issue/pr
 To open an issue about a bug, **you need a log**. If the issue is determined to be a bug and there is no log, **it will not be fixed**.

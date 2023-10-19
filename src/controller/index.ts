@@ -9,6 +9,7 @@ import Config, { init as initConfig } from "../util/config";
 import { DriverManager, Desktop } from "../driver";
 
 import * as BasicActions from "./actions/basic";
+import * as Shortcuts from "./actions/shortcuts";
 
 export class Controller
 {
@@ -43,11 +44,17 @@ export class Controller
         initConfig(this);
         initLog(this);
     }
+    
     private bindSignals(): void
     {
         this.workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
         this.workspace.clientRemoved.connect(BasicActions.clientRemoved.bind(this));
         this.workspace.currentDesktopChanged.connect(BasicActions.currentDesktopChange.bind(this));
+    }
+    
+    private bindShortcuts(): void
+    {
+        this.kwinApi.registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", Shortcuts.retileWindow.bind(this));
     }
     
     init(): void
@@ -56,5 +63,7 @@ export class Controller
         Log.debug("Globals initialized");
         this.bindSignals();
         Log.debug("Signals bound");
+        this.bindShortcuts();
+        Log.debug("Shortcuts bound");
     }
 }

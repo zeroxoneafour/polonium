@@ -1,6 +1,7 @@
 // btree.ts - Implementation of binary tree layout
 
-import { Tile, Client, TilingEngine, RootTile } from "./";
+import { Tile, Client, TilingEngine, RootTile, Direction } from "./";
+import { QSize } from "../extern/qt";
 import { InsertionPoint } from "../util/config";
 import Log from "../util/log";
 import BiMap from "mnemonist/bi-map";
@@ -12,7 +13,7 @@ class TreeNode
     sibling: TreeNode | null = null;
     children: [TreeNode, TreeNode] | null = null;
     client: Client | null = null;
-    // the ratio between the size of the children nodes relative to parent. >0.5 means first child is bigger, <0.5 means smaller
+    requestedSize: QSize | null = null;
     // splits tile
     split(): void
     {
@@ -81,13 +82,15 @@ export class BTreeEngine extends TilingEngine
         while (queue.size > 0)
         {
             const node = queue.dequeue()!;
+            const tile = this.nodeMap.get(node)!;
+            tile.requestedSize = node.requestedSize;
+            
             if (node.client != null)
             {
-                this.nodeMap.get(node)!.client = node.client;
+                tile.client = node.client;
             }
             if (node.children != null)
             {
-                const tile = this.nodeMap.get(node)!;
                 tile.split();
                 
                 this.nodeMap.set(node.children[0], tile.tiles[0]);
@@ -167,6 +170,36 @@ export class BTreeEngine extends TilingEngine
         for (const node of deleteQueue)
         {
             node.remove();
+        }
+    }
+    
+    putClientInTile(client: Client, tile: Tile, _direction?: Direction)
+    {
+        const node = this.nodeMap.inverse.get(tile);
+        if (node == undefined)
+        {
+            Log.error("Node not found for tile");
+            return;
+        }
+        if (node.client == null)
+        {
+            node.client = client;
+        }
+        else
+        {
+            node.split();
+            node.children![0].client = node.client;
+            node.children![1].client = client;
+        }
+    }
+    
+    regenerateLayout()
+    {
+        // just for checking resizing mostly
+        for (const node of this.nodeMap.keys())
+        {
+            const tile = this.nodeMap.get(node)!;
+            node.requestedSize = tile.requestedSize;
         }
     }
 }

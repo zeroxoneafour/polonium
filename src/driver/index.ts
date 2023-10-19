@@ -2,7 +2,8 @@
 
 import { TilingDriver } from "./driver";
 import { TilingEngineFactory, EngineType } from "../engines/factory";
-import { Client, RootTile } from "../extern/kwin";
+import { Direction } from "../engines";
+import { Client, Tile } from "../extern/kwin";
 
 import { Controller } from "../controller";
 import Log from "../util/log";
@@ -64,7 +65,8 @@ export class DriverManager
 {
     private drivers: Map<string, TilingDriver> = new Map;
     private engineFactory: TilingEngineFactory = new TilingEngineFactory();
-    private ctrl: Controller;
+    ctrl: Controller;
+    buildingLayout: boolean = false;
     
     constructor(c: Controller)
     {
@@ -77,7 +79,7 @@ export class DriverManager
         {
             const engineType = Config.engineType;
             const engine = this.engineFactory.newEngine(engineType);
-            const driver = new TilingDriver(engine, engineType);
+            const driver = new TilingDriver(engine, engineType, this);
             this.drivers.set(desktopString, driver);
         }
         return this.drivers.get(desktopString)!;
@@ -85,6 +87,7 @@ export class DriverManager
     
     rebuildLayout(scr?: number): void
     {
+        this.buildingLayout = true;
         let desktops: Desktop[];
         if (scr == undefined)
         {
@@ -103,7 +106,9 @@ export class DriverManager
             const driver = this.getDriver(desktop);
             driver.buildLayout(this.ctrl.workspace.tilingForScreen(desktop.screen).rootTile);
         }
+        this.buildingLayout = false;
     }
+    
     addClient(client: Client, desktops?: Desktop[]): void
     {
         if (desktops == undefined)
@@ -115,8 +120,9 @@ export class DriverManager
             const driver = this.getDriver(desktop);
             driver.addClient(client);
         }
-        client.wasTiled = true;
+        client.isTiled = true;
     }
+    
     removeClient(client: Client, desktops?: Desktop[]): void
     {
         if (desktops == undefined)
@@ -128,6 +134,19 @@ export class DriverManager
             const driver = this.getDriver(desktop);
             driver.removeClient(client);
         }
-        client.wasTiled = false;
+        client.isTiled = false;
+    }
+    
+    putClientInTile(client: Client, tile: Tile, direction?: Direction)
+    {
+        const desktop: IDesktop =
+        {
+            screen: client.screen,
+            activity: this.ctrl.workspace.currentActivity,
+            desktop: this.ctrl.workspace.currentDesktop,
+        };
+        const driver = this.getDriver(desktop);
+        driver.putClientInTile(client, tile, direction);
+        client.isTiled = true;
     }
 }

@@ -20,9 +20,11 @@ export interface Client
     desktopChanged: Qt.Signal<() => void>;
     activitiesChanged: Qt.Signal<() => void>;
     screenChanged: Qt.Signal<() => void>;
+    tileChanged: Qt.Signal<() => void>;
     
     previousDesktops: IDesktop[] | undefined;
-    wasTiled: boolean | undefined;
+    isTiled: boolean | undefined;
+    hooksRegistered: boolean | undefined;
 }
 
 /** floating = 0
@@ -45,6 +47,9 @@ export interface Tile
     
     split(direction: LayoutDirection): void;
     remove(): void;
+    
+    // whether the tile is managed by the engine or not
+    managed: boolean | undefined;
 }
 
 export interface RootTile extends Tile
