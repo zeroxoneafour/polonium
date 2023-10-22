@@ -1,7 +1,9 @@
 import * as Kwin from "../../extern/kwin";
+import { QTimer } from "../../extern/qt";
 import { Controller } from "../";
 import { Desktop } from "../../driver";
 import Log from "../../util/log";
+import Config from "../../util/config";
 
 export function attachClientHooks(this: Controller, client: Kwin.Client)
 {
@@ -50,6 +52,17 @@ function clientTileChanged(this: Controller, client: Kwin.Client)
 {
     // dont react to geometry changes while the layout is rebuilding
     if (this.manager.buildingLayout) return;
+    // have to use timers because kwin is lazy
+    const timer = this.qmlObjects.root.createTimer();
+    timer.triggeredOnStart = false;
+    timer.repeat = false;
+    timer.interval = Config.timerDelay;
+    timer.triggered.connect(clientTileChangedCallback.bind(this, client, timer));
+    timer.start();
+}
+
+function clientTileChangedCallback(this: Controller, client: Kwin.Client, timer: QTimer)
+{
     const inManagedTile = (client.tile != null) && (client.tile.managed == true);
     
     // client is moved into managed tile from outside
@@ -66,6 +79,8 @@ function clientTileChanged(this: Controller, client: Kwin.Client)
         Log.debug("Client", client.resourceClass, "was moved out of a tile");
         this.manager.removeClient(client);
         this.manager.rebuildLayout(client.screen);
-        Log.debug("b");
     }
+    
+    // clean up timer
+    timer.destroy();
 }

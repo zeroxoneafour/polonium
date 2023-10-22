@@ -190,6 +190,7 @@ export class BTreeEngine extends TilingEngine
             node.split();
             node.children![0].client = node.client;
             node.children![1].client = client;
+            node.client = null;
         }
     }
     

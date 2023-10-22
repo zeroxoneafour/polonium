@@ -39,6 +39,8 @@ export function clientRemoved(this: Controller, client: Kwin.Client)
 
 export function currentDesktopChange(this: Controller)
 {
+    // have to set this because this function temp untiles all windows
+    this.manager.buildingLayout = true;
     // set geometry for all clients manually to avoid resizing when tiles are deleted
     for (const client of Array.from(this.workspace.clientList()))
     {

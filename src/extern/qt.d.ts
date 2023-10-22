@@ -26,11 +26,16 @@ export interface QRect extends QPoint, QSize
     height: number;
 }
 
-export interface QTimer
+export interface QmlComponent
 {
+    destroy(): void;
+}
+
+export interface QTimer extends QmlComponent
+{
+    readonly running: boolean;
     interval: number;
     repeat: boolean;
-    running: boolean;
     triggeredOnStart: boolean;
     
     triggered: Signal<() => void>;
@@ -40,7 +45,8 @@ export interface QTimer
     stop(): void;
 }
 
-export interface DBusCall {
+export interface DBusCall extends QmlComponent
+{
     service: string,
     path: string,
     dbusInterface: string,

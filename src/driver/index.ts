@@ -139,12 +139,12 @@ export class DriverManager
     
     putClientInTile(client: Client, tile: Tile, direction?: Direction)
     {
-        const desktop: IDesktop =
+        const desktop = new Desktop(
         {
             screen: client.screen,
             activity: this.ctrl.workspace.currentActivity,
             desktop: this.ctrl.workspace.currentDesktop,
-        };
+        });
         const driver = this.getDriver(desktop);
         driver.putClientInTile(client, tile, direction);
         client.isTiled = true;

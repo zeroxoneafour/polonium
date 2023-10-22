@@ -168,6 +168,7 @@ export class TilingDriver
         const tile = this.tiles.get(kwinTile);
         if (tile == undefined)
         {
+            Log.error("Tile", kwinTile.absoluteGeometry, "not registered");
             return;
         }
         if (!this.clients.has(kwinClient))

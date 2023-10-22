@@ -31,11 +31,13 @@ class ConfigClass
         this.debug = rc("Debug", false);
         this.engineType = rc("EngineType", EngineType.BTree);
         this.insertionPoint = rc("InsertionPoint", InsertionPoint.Left);
+        this.timerDelay = rc("TimerDelay", 10);
     }
     
     debug: boolean = false;
     engineType: EngineType = EngineType.BTree;
     insertionPoint: InsertionPoint = InsertionPoint.Left;
+    timerDelay: number = 10;
 }
 
 let Config = new ConfigClass();
