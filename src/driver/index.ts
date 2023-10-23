@@ -3,7 +3,8 @@
 import { TilingDriver } from "./driver";
 import { TilingEngineFactory, EngineType } from "../engines/factory";
 import { Direction } from "../engines";
-import { Client, Tile } from "../extern/kwin";
+import { Client, Tile, RootTile } from "../extern/kwin";
+import { QTimer } from "../extern/qt";
 
 import { Controller } from "../controller";
 import Log from "../util/log";
@@ -65,6 +66,8 @@ export class DriverManager
 {
     private drivers: Map<string, TilingDriver> = new Map;
     private engineFactory: TilingEngineFactory = new TilingEngineFactory();
+    private rootTileCallbacks: Map<RootTile, QTimer> = new Map;
+    
     ctrl: Controller;
     buildingLayout: boolean = false;
     
@@ -72,6 +75,7 @@ export class DriverManager
     {
         this.ctrl = c;
     }
+    
     private getDriver(desktop: Desktop): TilingDriver
     {
         const desktopString = desktop.toString();
@@ -83,6 +87,53 @@ export class DriverManager
             this.drivers.set(desktopString, driver);
         }
         return this.drivers.get(desktopString)!;
+    }
+    
+    private layoutModified(tile: RootTile): void
+    {
+        if (this.buildingLayout)
+        {
+            return;
+        }
+        const timer = this.rootTileCallbacks.get(tile);
+        if (timer == undefined)
+        {
+            Log.error("Callback not registered for root tile", tile.absoluteGeometry);
+            return;
+        }
+        timer.restart();
+    }
+    
+    private layoutModifiedCallback(tile: RootTile, scr: number): void
+    {
+        Log.debug("Layout modified for tile", tile.absoluteGeometry);
+        const desktop = new Desktop(
+        {
+            screen: scr,
+            activity: this.ctrl.workspace.currentActivity,
+            desktop: this.ctrl.workspace.currentDesktop,
+        });
+        const driver = this.getDriver(desktop);
+        driver.regenerateLayout(tile);
+    }
+    
+    hookRootTiles(): void
+    {
+        for (let i = 0; i < this.ctrl.workspace.numScreens; i += 1)
+        {
+            const rootTile = this.ctrl.workspace.tilingForScreen(i).rootTile;
+            if (rootTile.managed)
+            {
+                continue;
+            }
+            rootTile.managed = true;
+            const timer = this.ctrl.qmlObjects.root.createTimer();
+            timer.interval = Config.timerDelay;
+            timer.triggered.connect(this.layoutModifiedCallback.bind(this, rootTile, i));
+            timer.repeat = false;
+            this.rootTileCallbacks.set(rootTile, timer);
+            rootTile.layoutModified.connect(this.layoutModified.bind(this, rootTile));
+        }
     }
     
     rebuildLayout(scr?: number): void

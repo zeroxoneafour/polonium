@@ -78,6 +78,7 @@ export interface Workspace
     clientAdded: Qt.Signal<(c: Client) => void>;
     clientRemoved: Qt.Signal<(c: Client) => void>;
     currentDesktopChanged: Qt.Signal<(d: number) => void>;
+    numberScreensChanged: Qt.Signal<() => void>;
     
     // things added that we need
     lastActivity: string | undefined;

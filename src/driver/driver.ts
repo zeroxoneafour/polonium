@@ -37,7 +37,7 @@ export class TilingDriver
             rootTile.tiles[0].remove();
         }
         this.tiles.clear();
-        let queue: Queue<Tile> = new Queue();
+        const queue: Queue<Tile> = new Queue();
         queue.enqueue(this.engine.rootTile);
         this.tiles.set(rootTile, this.engine.rootTile);
         
@@ -177,6 +177,29 @@ export class TilingDriver
         }
         const client = this.clients.get(kwinClient)!;
         this.engine.putClientInTile(client, tile, direction);
+        this.engine.buildLayout();
+    }
+    
+    regenerateLayout(rootTile: Kwin.RootTile)
+    {
+        const queue: Queue<Kwin.Tile> = new Queue();
+        queue.enqueue(rootTile);
+        while (queue.size > 0)
+        {
+            const kwinTile = queue.dequeue()!;
+            const tile = this.tiles.get(kwinTile);
+            if (tile == undefined)
+            {
+                Log.error("Tile", kwinTile.absoluteGeometry, "not registered");
+                continue;
+            }
+            tile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
+            for (const tile of kwinTile.tiles)
+            {
+                queue.enqueue(tile);
+            }
+        }
+        this.engine.regenerateLayout();
         this.engine.buildLayout();
     }
 }

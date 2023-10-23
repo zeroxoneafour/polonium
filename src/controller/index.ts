@@ -50,6 +50,8 @@ export class Controller
         this.workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
         this.workspace.clientRemoved.connect(BasicActions.clientRemoved.bind(this));
         this.workspace.currentDesktopChanged.connect(BasicActions.currentDesktopChange.bind(this));
+        this.manager.hookRootTiles();
+        this.workspace.numberScreensChanged.connect(this.manager.hookRootTiles);
     }
     
     private bindShortcuts(): void
