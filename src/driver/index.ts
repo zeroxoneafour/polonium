@@ -1,8 +1,8 @@
 // driver.ts - Interface from drivers/engines to the controller
 
 import { TilingDriver } from "./driver";
-import { TilingEngineFactory, EngineType } from "../engines/factory";
-import { Direction } from "../engines";
+import { TilingEngineFactory, EngineType } from "../engine/factory";
+import { Direction } from "../engine";
 import { Client, Tile, RootTile } from "../extern/kwin";
 import { QTimer } from "../extern/qt";
 

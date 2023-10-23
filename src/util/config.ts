@@ -1,6 +1,6 @@
 // config.ts - Static config class
 
-import { EngineType } from "../engines/factory";
+import { EngineType } from "../engine/factory";
 import { Controller } from "../controller";
 import { Api } from "../extern/kwin";
 

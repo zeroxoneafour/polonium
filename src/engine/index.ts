@@ -54,8 +54,8 @@ export class Tile
         this.parent.tiles.push(this);
     }
         
-    // adds a child that will split perpendicularly to the parent
-    addChild(): void
+    // adds a child that will split perpendicularly to the parent. Returns the child
+    addChild(): Tile
     {
         let splitDirection: LayoutDirection = 1;
         if (this.layoutDirection == 1)
@@ -64,13 +64,15 @@ export class Tile
         }
         const childTile = new Tile(this);
         childTile.layoutDirection = splitDirection;
+        return childTile;
     }
     
     // adds a child that will split parallel to the parent. Not really recommeneded
-    addChildParallel(): void
+    addChildParallel(): Tile
     {
         const childTile = new Tile(this);
         childTile.layoutDirection = this.layoutDirection;
+        return childTile;
     }
     
     // split a tile perpendicularly

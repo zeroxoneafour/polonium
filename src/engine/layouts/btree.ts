@@ -1,9 +1,9 @@
-// btree.ts - Implementation of binary tree layout
+// layouts/btree.ts - Implementation of binary tree layout
 
-import { Tile, Client, TilingEngine, RootTile, Direction } from "./";
-import { QSize } from "../extern/qt";
-import { InsertionPoint } from "../util/config";
-import Log from "../util/log";
+import { Tile, Client, TilingEngine, RootTile, Direction } from "../";
+import { QSize } from "../../extern/qt";
+import { InsertionPoint } from "../../util/config";
+import Log from "../../util/log";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
 
@@ -65,7 +65,7 @@ class RootNode extends TreeNode
     }
 }
 
-export class BTreeEngine extends TilingEngine
+export default class BTreeEngine extends TilingEngine
 {
     private rootNode: RootNode = new RootNode;
     private nodeMap: BiMap<TreeNode, Tile> = new BiMap;

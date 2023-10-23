@@ -1,3 +1,5 @@
+// actions/clienthook.ts - Actions performed individually on or by clients (ex. tile changes)
+
 import * as Kwin from "../../extern/kwin";
 import { QTimer } from "../../extern/qt";
 import { Controller } from "../";
