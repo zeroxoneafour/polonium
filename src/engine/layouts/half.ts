@@ -2,58 +2,98 @@
 
 import { Tile, Client, TilingEngine } from "../";
 import { InsertionPoint } from "../../util/config";
+import { QSize } from "../../extern/qt";
+
+class ClientBox
+{
+    client: Client;
+    size: QSize | null = null;
+
+    constructor(client: Client)
+    {
+        this.client = Client;
+    }
+}
 
 export default class HalfEngine extends TilingEngine
 {
+    left: ClientBox[] = [];
+    right: ClientBox[] = [];
+
     buildLayout()
     {
-        // feels good to not have to make this again...
-        return;
+        this.rootTile.removeChildren();
+        if (this.left.length == 0 && this.right.length == 0)
+        {
+            // empty root tile
+            return;
+        }
+        else if (this.left.length == 0 && this.right.length > 0)
+        {
+            for (const box of this.right)
+            {
+                const tile = this.rootTile.addChild();
+                tile.client = box.client;
+                tile.requestedSize = box.size;
+            }
+        }
+        else if (this.left.length > 0 && this.right.length == 0)
+        {
+            for (const box of this.left)
+            {
+                const tile = this.rootTile.addChild();
+                tile.client = box.client;
+                tile.requestedSize = box.size;
+            }
+        }
+        else
+        {
+            this.rootTile.split();
+            const left = this.rootTile.tiles[0];
+            const right = this.rootTile.tiles[1];
+
+            for (const box of this.left)
+            {
+                const tile = left.addChild();
+                tile.client = box.client;
+                tile.requestedSize = box.size;
+            }
+            for (const box of this.right)
+            {
+                const tile = right.addChild();
+                tile.client = box.client;
+                tile.requestedSize = box.size;
+            }
+        }
     }
     
     addClient(client: Client)
     {
-        const rt = this.rootTile;
-        if (rt.tiles.length == 0 && rt.client == null)
+        if (this.config.insertionPoint == InsertionPoint.Left)
         {
-            rt.client = client;
-            return;
-        }
-        else if (rt.tiles.length == 0)
-        {
-            rt.split();
-            const c = rt.client;
-            rt.client = null;
-            if (this.config.insertionPoint == InsertionPoint.Left)
+            if (this.right.length == 0)
             {
-                // tiles[0] should be on left
-                rt.tiles[0].client = client;
-                rt.tiles[1].client = c;
+                this.right.push(new ClientBox(client));
             }
             else
             {
-                rt.tiles[0].client = c;
-                rt.tiles[1].client = client;
+                this.left.push(new ClientBox(client));
             }
-            return;
-        }
-        // remaining condition is when there are two separate branches
-        let insertTile: Tile;
-        if (this.config.insertionPoint == InsertionPoint.Left)
-        {
-            insertTile = rt.tiles[0];
         }
         else
         {
-            insertTile = rt.tiles[1];
+            if (this.left.length == 0)
+            {
+                this.left.push(new ClientBox(client));
+            }
+            else
+            {
+                this.right.push(new ClientBox(client));
+            }
         }
-        const t = insertTile.addChild();
-        t.client = client;
-        return;
     }
     
     removeClient(client: Client)
     {
-        
     }
 }
