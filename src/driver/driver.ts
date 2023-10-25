@@ -76,7 +76,6 @@ export class TilingDriver
             // 1 is vertical, 2 is horizontal
             const horizontal = (kwinTile.layoutDirection == 1);
             const tilesLen = tile.tiles.length;
-            const preferredSize = (horizontal ? kwinTile.absoluteGeometry.width : kwinTile.absoluteGeometry.height) / tilesLen;
             if (tilesLen > 1)
             {
                 for (let i = 0; i < tilesLen; i += 1)
@@ -90,28 +89,24 @@ export class TilingDriver
                     {
                         kwinTile.tiles[i-1].split(tile.layoutDirection);
                     }
-                    
+                    if (horizontal && i > 0)
+                    {
+                        kwinTile.tiles[i-1].relativeGeometry.width = kwinTile.relativeGeometry.width / tilesLen;
+                    }
+                    else if (i > 0)
+                    {
+                        kwinTile.tiles[i-1].relativeGeometry.height = kwinTile.relativeGeometry.height / tilesLen;
+                    }
                     // evenly distribute tile sizes before doing custom resizing
-                    if (horizontal && tile.tiles[i].requestedSize == null)
-                    {
-                        tile.tiles[i].requestedSize = new GSize({width: preferredSize, height: 0});
-                    }
-                    else if (tile.tiles[i].requestedSize == null)
-                    {
-                        tile.tiles[i].requestedSize = new GSize({width: 0, height: preferredSize});
-                    }
                     this.tiles.set(kwinTile.tiles[i], tile.tiles[i]);
+                    queue.enqueue(tile.tiles[i]);
                 }
             }
             // if there is one child tile, replace this tile with the child tile
             else if (tilesLen == 1)
             {
                 this.tiles.set(kwinTile, tile.tiles[0]);
-            }
-            // queue tiles backwards because it helps with resizing
-            for (let i = tilesLen - 1; i >= 0; i -= 1)
-            {
-                queue.enqueue(tile.tiles[i]);
+                queue.enqueue(tile.tiles[0]);
             }
             // grow to preferred tile size if necessary
             const tileSize = new GSize(kwinTile.absoluteGeometry);

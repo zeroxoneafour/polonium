@@ -2,6 +2,7 @@
 
 import { Tile, Client, TilingEngine, RootTile, Direction } from "../";
 import { QSize } from "../../extern/qt";
+import { GSize } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
@@ -198,7 +199,7 @@ export default class BTreeEngine extends TilingEngine
         for (const node of this.nodeMap.keys())
         {
             const tile = this.nodeMap.get(node)!;
-            node.requestedSize = tile.requestedSize;
+            node.requestedSize = new GSize(tile.requestedSize);
         }
     }
 }

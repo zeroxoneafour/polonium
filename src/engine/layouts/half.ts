@@ -3,6 +3,7 @@
 import { Tile, RootTile, Client, TilingEngine, Direction } from "../";
 import { InsertionPoint } from "../../util/config";
 import { QSize } from "../../extern/qt";
+import { GSize } from "../../util/geometry";
 
 class ClientBox
 {
@@ -186,7 +187,11 @@ export default class HalfEngine extends TilingEngine
     {
         for (const tile of this.tileMap.keys())
         {
-            this.tileMap.get(tile)!.size = tile.requestedSize;
+            if (tile.requestedSize == null)
+            {
+                continue;
+            }
+            this.tileMap.get(tile)!.size = new GSize(tile.requestedSize);
         }
     }
 }

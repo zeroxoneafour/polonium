@@ -218,5 +218,6 @@ export class DriverManager
         {
             driver.engine.config = new EngineConfig(config);
         }
+        this.rebuildLayout(desktop.screen);
     }
 }
