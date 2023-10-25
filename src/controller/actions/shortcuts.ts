@@ -20,3 +20,9 @@ export function retileWindow(this: Controller)
         clientAdded.bind(this)(client);
     }
 }
+
+export function openSettingsDialog(this: Controller)
+{
+    this.qmlObjects.settings.setSettings(this.manager.getEngineConfig(this.currentDesktop));
+    this.qmlObjects.settings.show();
+}

@@ -345,7 +345,7 @@ Comma separated list of window titles.</string>
     </widget>
    </item>
    <item row="36" column="2">
-    <widget class="QComboBox" name="kcfg_DefaultEngine">
+    <widget class="QComboBox" name="kcfg_EngineType">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select which default layout engine to use&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>

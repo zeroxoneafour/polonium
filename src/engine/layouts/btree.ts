@@ -3,7 +3,6 @@
 import { Tile, Client, TilingEngine, RootTile, Direction } from "../";
 import { QSize } from "../../extern/qt";
 import { InsertionPoint } from "../../util/config";
-import Log from "../../util/log";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
 
@@ -178,8 +177,7 @@ export default class BTreeEngine extends TilingEngine
         const node = this.nodeMap.inverse.get(tile);
         if (node == undefined)
         {
-            Log.error("Node not found for tile");
-            return;
+            throw new Error("Node not found for tile");
         }
         if (node.client == null)
         {

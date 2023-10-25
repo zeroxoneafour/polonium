@@ -3,14 +3,17 @@
 import { QSize } from "../extern/qt";
 import Config, { InsertionPoint } from "../util/config";
 import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
+import { EngineType } from "./factory";
 
 export interface IEngineConfig
 {
+    engine: EngineType;
     insertionPoint: InsertionPoint;
 }
 
 export class EngineConfig implements IEngineConfig
 {
+    engine: EngineType = Config.engineType;
     insertionPoint = Config.insertionPoint;
     
     constructor(conf?: IEngineConfig)
@@ -20,6 +23,12 @@ export class EngineConfig implements IEngineConfig
             return;
         }
         this.insertionPoint = conf.insertionPoint;
+        this.engine = conf.engine;
+    }
+    
+    toString(): string
+    {
+        return JSON.stringify(this);
     }
 }
 
@@ -162,9 +171,9 @@ export abstract class TilingEngine
     rootTile: RootTile = new RootTile(1);
     config: EngineConfig;
     
-    constructor()
+    constructor(config?: IEngineConfig)
     {
-        this.config = new EngineConfig();
+        this.config = new EngineConfig(config);
     }
     
     // creates the root tile layout

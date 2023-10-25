@@ -27,7 +27,25 @@ export class TilingDriver
         this.manager = manager;
     }
     
-    buildLayout(rootTile: Kwin.RootTile, placeClients: boolean = true): [Kwin.Client, Kwin.Tile][]
+    switchEngine(engine: TilingEngine, engineType: EngineType)
+    {
+        this.engine = engine;
+        this.engineType = engineType;
+        try
+        {
+            for (const client of this.clients.values())
+            {
+                this.engine.addClient(client);
+            }
+            this.engine.buildLayout();
+        }
+        catch (e)
+        {
+            throw e;
+        }
+    }
+    
+    buildLayout(rootTile: Kwin.RootTile): [Kwin.Client, Kwin.Tile][]
     {
         const ret: [Kwin.Client, Kwin.Tile][] = [];
         const rootTileSize = rootTile.absoluteGeometry;
@@ -58,6 +76,7 @@ export class TilingDriver
             // 1 is vertical, 2 is horizontal
             const horizontal = (kwinTile.layoutDirection == 1);
             const tilesLen = tile.tiles.length;
+            const preferredSize = (horizontal ? kwinTile.absoluteGeometry.width : kwinTile.absoluteGeometry.height) / tilesLen;
             if (tilesLen > 1)
             {
                 for (let i = 0; i < tilesLen; i += 1)
@@ -69,21 +88,30 @@ export class TilingDriver
                     }
                     else if (i > 1)
                     {
-                        kwinTile.tiles[i].split(tile.layoutDirection);
+                        kwinTile.tiles[i-1].split(tile.layoutDirection);
                     }
                     
                     // evenly distribute tile sizes before doing custom resizing
-                    if (horizontal)
+                    if (horizontal && tile.tiles[i].requestedSize == null)
                     {
-                        kwinTile.tiles[i].relativeGeometry.width = kwinTile.relativeGeometry.width / tilesLen;
+                        tile.tiles[i].requestedSize = new GSize({width: preferredSize, height: 0});
                     }
-                    else
+                    else if (tile.tiles[i].requestedSize == null)
                     {
-                        kwinTile.tiles[i].relativeGeometry.height = kwinTile.relativeGeometry.height / tilesLen;
+                        tile.tiles[i].requestedSize = new GSize({width: 0, height: preferredSize});
                     }
                     this.tiles.set(kwinTile.tiles[i], tile.tiles[i]);
-                    queue.enqueue(tile.tiles[i]);
                 }
+            }
+            // if there is one child tile, replace this tile with the child tile
+            else if (tilesLen == 1)
+            {
+                this.tiles.set(kwinTile, tile.tiles[0]);
+            }
+            // queue tiles backwards because it helps with resizing
+            for (let i = tilesLen - 1; i >= 0; i -= 1)
+            {
+                queue.enqueue(tile.tiles[i]);
             }
             // grow to preferred tile size if necessary
             const tileSize = new GSize(kwinTile.absoluteGeometry);
@@ -101,10 +129,7 @@ export class TilingDriver
                 }
                 tileSize.fitSize(kwinClient.minSize);
                 ret.push([kwinClient, kwinTile]);
-                if (placeClients)
-                {
-                    kwinClient.tile = kwinTile;                    
-                }
+                kwinClient.tile = kwinTile;
             }
             // absolutegeometry is read only, so make sizing relative
             tileSize.height /= rootTileSize.height;
@@ -142,12 +167,18 @@ export class TilingDriver
             }
             this.engine.putClientInTile(client, tile);
         }
-        
-        if (failedActive)
+        try
         {
-            this.engine.addClient(client);
+            if (failedActive)
+            {
+                this.engine.addClient(client);
+            }
+            this.engine.buildLayout();
         }
-        this.engine.buildLayout();
+        catch (e)
+        {
+            Log.error(e);
+        }
     }
     
     removeClient(kwinClient: Kwin.Client): void
@@ -158,9 +189,16 @@ export class TilingDriver
             return;
         }
         this.clients.delete(kwinClient);
-        this.engine.removeClient(client);
         this.clientsToNull.push(kwinClient);
-        this.engine.buildLayout();
+        try
+        {
+            this.engine.removeClient(client);
+            this.engine.buildLayout();
+        }
+        catch (e)
+        {
+            Log.error(e);
+        }
     }
     
     putClientInTile(kwinClient: Kwin.Client, kwinTile: Kwin.Tile, direction?: Direction)
@@ -176,8 +214,15 @@ export class TilingDriver
             this.clients.set(kwinClient, new Client(kwinClient));
         }
         const client = this.clients.get(kwinClient)!;
-        this.engine.putClientInTile(client, tile, direction);
-        this.engine.buildLayout();
+        try
+        {
+            this.engine.putClientInTile(client, tile, direction);
+            this.engine.buildLayout();
+        }
+        catch (e)
+        {
+            Log.error(e);
+        }
     }
     
     regenerateLayout(rootTile: Kwin.RootTile)
@@ -199,7 +244,14 @@ export class TilingDriver
                 queue.enqueue(tile);
             }
         }
-        this.engine.regenerateLayout();
-        this.engine.buildLayout();
+        try
+        {
+            this.engine.regenerateLayout();
+            this.engine.buildLayout();            
+        }
+        catch (e)
+        {
+            Log.error(e);
+        }
     }
 }

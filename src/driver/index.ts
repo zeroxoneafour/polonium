@@ -2,7 +2,7 @@
 
 import { TilingDriver } from "./driver";
 import { TilingEngineFactory, EngineType } from "../engine/factory";
-import { Direction } from "../engine";
+import { Direction, IEngineConfig, EngineConfig } from "../engine";
 import { Client, Tile, RootTile } from "../extern/kwin";
 import { QTimer } from "../extern/qt";
 
@@ -199,5 +199,24 @@ export class DriverManager
         const driver = this.getDriver(desktop);
         driver.putClientInTile(client, tile, direction);
         client.isTiled = true;
+    }
+    
+    getEngineConfig(desktop: Desktop): IEngineConfig
+    {
+        return this.getDriver(desktop).engine.config;
+    }
+    
+    setEngineConfig(config: IEngineConfig, desktop: Desktop)
+    {
+        Log.debug("Setting engine config for desktop", desktop);
+        const driver = this.getDriver(desktop);
+        if (config.engine != driver.engine.config.engine)
+        {
+            driver.switchEngine(this.engineFactory.newEngine(config.engine, config), config.engine);
+        }
+        else
+        {
+            driver.engine.config = new EngineConfig(config);
+        }
     }
 }

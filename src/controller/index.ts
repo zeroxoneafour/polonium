@@ -10,6 +10,7 @@ import { DriverManager, Desktop } from "../driver";
 
 import * as BasicActions from "./actions/basic";
 import * as Shortcuts from "./actions/shortcuts";
+import * as SettingsDialog from "./actions/settingsdialog";
 
 export class Controller
 {
@@ -52,17 +53,23 @@ export class Controller
         this.workspace.currentDesktopChanged.connect(BasicActions.currentDesktopChange.bind(this));
         this.manager.hookRootTiles();
         this.workspace.numberScreensChanged.connect(this.manager.hookRootTiles);
+        
+        this.qmlObjects.settings.saveSettings.connect(SettingsDialog.saveSettings.bind(this));
+        this.qmlObjects.settings.removeSettings.connect(SettingsDialog.removeSettings.bind(this));
     }
     
     private bindShortcuts(): void
     {
-        this.kwinApi.registerShortcut("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", Shortcuts.retileWindow.bind(this));
+        const rs = this.kwinApi.registerShortcut;
+        rs("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", Shortcuts.retileWindow.bind(this));
+        rs("PoloniumOpenSettings", "Polonium: Open Settings Dialog", "Meta+|", Shortcuts.openSettingsDialog.bind(this));
     }
     
     init(): void
     {
         this.initGlobals();
         Log.debug("Globals initialized");
+        Log.debug("Config set to", JSON.stringify(Config));
         this.bindSignals();
         Log.debug("Signals bound");
         this.bindShortcuts();
