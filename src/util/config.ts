@@ -11,6 +11,14 @@ export const enum InsertionPoint
     Active
 }
 
+export const enum Borders
+{
+    NoAll,
+    NoTiled,
+    Selected,
+    All
+}
+
 class ConfigClass
 {
     private readConfigFn: Api["readConfig"] | undefined;
@@ -32,12 +40,16 @@ class ConfigClass
         this.engineType = rc("EngineType", EngineType.BTree);
         this.insertionPoint = rc("InsertionPoint", InsertionPoint.Left);
         this.timerDelay = rc("TimerDelay", 10);
+        this.keepTiledBelow = rc("KeepTiledBelow", true);
+        this.borders = rc("Borders", Borders.NoTiled);
     }
     
     debug: boolean = false;
     engineType: EngineType = EngineType.BTree;
     insertionPoint: InsertionPoint = InsertionPoint.Left;
     timerDelay: number = 10;
+    keepTiledBelow: boolean = true;
+    borders: Borders = Borders.NoTiled;
 }
 
 let Config = new ConfigClass();

@@ -16,6 +16,8 @@ export interface Client
     
     frameGeometry: Qt.QRect;
     tile: Tile | null;
+    keepBelow: boolean;
+    noBorder: boolean;
     
     desktopChanged: Qt.Signal<() => void>;
     activitiesChanged: Qt.Signal<() => void>;
@@ -77,6 +79,7 @@ export interface Workspace
     
     clientAdded: Qt.Signal<(c: Client) => void>;
     clientRemoved: Qt.Signal<(c: Client) => void>;
+    clientActivated: Qt.Signal<(c: Client) => void>;
     currentDesktopChanged: Qt.Signal<(d: number) => void>;
     numberScreensChanged: Qt.Signal<() => void>;
     

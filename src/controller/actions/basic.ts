@@ -3,6 +3,7 @@
 import * as Kwin from "../../extern/kwin";
 import { Controller } from "../";
 import Log from "../../util/log";
+import Config, { Borders } from "../../util/config";
 import { attachClientHooks } from "./clienthooks";
 
 function doTileClient(c: Kwin.Client): boolean
@@ -23,6 +24,10 @@ export function clientAdded(this: Controller, client: Kwin.Client)
     {
         Log.debug("Not tiling client", client.resourceClass);
         return;
+    }
+    if (Config.borders == Borders.NoAll)
+    {
+        client.noBorder = true;
     }
     attachClientHooks.bind(this)(client);
     Log.debug("Tiling client", client.resourceClass);
@@ -58,4 +63,17 @@ export function currentDesktopChange(this: Controller)
     this.workspace.lastActivity = this.workspace.currentActivity;
     this.workspace.lastDesktop = this.workspace.currentDesktop;
     this.manager.rebuildLayout();
+}
+
+export function clientActivated(this: Controller, client: Kwin.Client)
+{
+    if (Config.borders == Borders.Selected)
+    {
+        client.noBorder = false;
+        if (this.glob.lastActiveClient != null && this.glob.lastActiveClient.isTiled)
+        {
+            this.glob.lastActiveClient.noBorder = true;            
+        }
+    }
+    this.glob.lastActiveClient = client;
 }

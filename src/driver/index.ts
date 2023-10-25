@@ -8,7 +8,7 @@ import { QTimer } from "../extern/qt";
 
 import { Controller } from "../controller";
 import Log from "../util/log";
-import Config from "../util/config";
+import Config, { Borders } from "../util/config";
 
 export interface IDesktop
 {
@@ -136,6 +136,19 @@ export class DriverManager
         }
     }
     
+    private applyTiled(client: Client)
+    {
+        client.isTiled = true;
+        if (Config.keepTiledBelow)
+        {
+            client.keepBelow = true;
+        }
+        if (Config.borders == Borders.NoTiled || Config.borders == Borders.Selected)
+        {
+            client.noBorder = true;
+        }
+    }
+    
     rebuildLayout(scr?: number): void
     {
         this.buildingLayout = true;
@@ -171,7 +184,7 @@ export class DriverManager
             const driver = this.getDriver(desktop);
             driver.addClient(client);
         }
-        client.isTiled = true;
+        this.applyTiled(client);
     }
     
     removeClient(client: Client, desktops?: Desktop[]): void
@@ -186,6 +199,14 @@ export class DriverManager
             driver.removeClient(client);
         }
         client.isTiled = false;
+        if (Config.keepTiledBelow)
+        {
+            client.keepBelow = false;
+        }
+        if (Config.borders == Borders.NoTiled || Config.borders == Borders.Selected)
+        {
+            client.noBorder = false;
+        }
     }
     
     putClientInTile(client: Client, tile: Tile, direction?: Direction)
@@ -198,7 +219,7 @@ export class DriverManager
         });
         const driver = this.getDriver(desktop);
         driver.putClientInTile(client, tile, direction);
-        client.isTiled = true;
+        this.applyTiled(client);
     }
     
     getEngineConfig(desktop: Desktop): IEngineConfig

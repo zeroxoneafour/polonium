@@ -12,12 +12,22 @@ import * as BasicActions from "./actions/basic";
 import * as Shortcuts from "./actions/shortcuts";
 import * as SettingsDialog from "./actions/settingsdialog";
 
+class ExtraGlobals
+{
+    lastActiveClient: Kwin.Client | null;
+    constructor(c: Controller)
+    {
+        this.lastActiveClient = c.workspace.activeClient;
+    }
+}
+
 export class Controller
 {
     workspace: Kwin.Workspace;
     options: Kwin.Options;
     kwinApi: Kwin.Api;
     qmlObjects: Qml.Objects;
+    glob: ExtraGlobals;
 
     manager: DriverManager = new DriverManager(this);
     
@@ -38,6 +48,7 @@ export class Controller
         this.options = qmlApi.options;
         this.kwinApi = qmlApi.kwin;
         this.qmlObjects = qmlObjects;
+        this.glob = new ExtraGlobals(this);
     }
     
     private initGlobals(): void
@@ -53,6 +64,7 @@ export class Controller
         this.workspace.currentDesktopChanged.connect(BasicActions.currentDesktopChange.bind(this));
         this.manager.hookRootTiles();
         this.workspace.numberScreensChanged.connect(this.manager.hookRootTiles);
+        this.workspace.clientActivated.connect(BasicActions.clientActivated.bind(this));
         
         this.qmlObjects.settings.saveSettings.connect(SettingsDialog.saveSettings.bind(this));
         this.qmlObjects.settings.removeSettings.connect(SettingsDialog.removeSettings.bind(this));
