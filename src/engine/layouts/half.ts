@@ -1,6 +1,7 @@
 // half.ts - Tiling engine for the half/split layout
 
-import { Tile, RootTile, Client, TilingEngine, Direction } from "../";
+import { Tile, RootTile, Client, TilingEngine } from "../";
+import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 import { QSize } from "../../extern/qt";
 import { GSize } from "../../util/geometry";

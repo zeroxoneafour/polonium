@@ -2,6 +2,7 @@
 
 import { QSize } from "../extern/qt";
 import Config, { InsertionPoint } from "../util/config";
+import { Direction } from "../util/geometry";
 import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
 import { EngineType } from "./factory";
 
@@ -159,11 +160,6 @@ export class RootTile extends Tile
         super();
         this.layoutDirection = layoutDirection;
     }
-}
-
-export const enum Direction
-{
-    
 }
 
 export abstract class TilingEngine

@@ -1,7 +1,8 @@
 // driver/driver.ts - Mapping from engines to Kwin API
 
 import { DriverManager } from "./";
-import { TilingEngine, Tile, Client, Direction } from "../engine";
+import { TilingEngine, Tile, Client } from "../engine";
+import { Direction } from "../util/geometry";
 import { EngineType } from "../engine/factory";
 import { GSize } from "../util/geometry";
 import { InsertionPoint } from "../util/config";

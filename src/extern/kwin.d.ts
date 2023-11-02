@@ -68,6 +68,7 @@ export interface Workspace
 {
     readonly numScreens: number;
     readonly activeScreen: number;
+    readonly cursorPos: Qt.QPoint;
     
     activeClient: Client | null;
     currentDesktop: number;

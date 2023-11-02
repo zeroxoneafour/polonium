@@ -1,6 +1,7 @@
 // layouts/btree.ts - Implementation of binary tree layout
 
-import { Tile, Client, TilingEngine, RootTile, Direction } from "../";
+import { Tile, Client, TilingEngine, RootTile } from "../";
+import { Direction } from "../../util/geometry";
 import { QSize } from "../../extern/qt";
 import { GSize } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
@@ -173,7 +174,7 @@ export default class BTreeEngine extends TilingEngine
         }
     }
     
-    putClientInTile(client: Client, tile: Tile, _direction?: Direction)
+    putClientInTile(client: Client, tile: Tile, direction?: Direction)
     {
         const node = this.nodeMap.inverse.get(tile);
         if (node == undefined)
@@ -187,8 +188,35 @@ export default class BTreeEngine extends TilingEngine
         else
         {
             node.split();
-            node.children![0].client = node.client;
-            node.children![1].client = client;
+            // put new client in zeroth child, else put in first child
+            let putClientInZero = false;
+            if (direction != undefined)
+            {
+                if (tile.layoutDirection == 1) // horizontal
+                {
+                    if (!(direction & Direction.Right))
+                    {
+                        putClientInZero = true;
+                    }
+                }
+                else // vertical hopefully
+                {
+                    if (direction & Direction.Up)
+                    {
+                        putClientInZero = true;
+                    }
+                }
+            }
+            if (putClientInZero)
+            {
+                node.children![0].client = client;
+                node.children![1].client = node.client;                
+            }
+            else
+            {
+                node.children![0].client = node.client;
+                node.children![1].client = client;
+            }
             node.client = null;
         }
     }
@@ -199,7 +227,10 @@ export default class BTreeEngine extends TilingEngine
         for (const node of this.nodeMap.keys())
         {
             const tile = this.nodeMap.get(node)!;
-            node.requestedSize = new GSize(tile.requestedSize);
+            if (tile.requestedSize != null)
+            {
+                node.requestedSize = new GSize(tile.requestedSize);                
+            }
         }
     }
 }

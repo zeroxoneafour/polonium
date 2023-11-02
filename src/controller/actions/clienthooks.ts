@@ -4,6 +4,7 @@ import * as Kwin from "../../extern/kwin";
 import { QTimer } from "../../extern/qt";
 import { Controller } from "../";
 import { Desktop } from "../../driver";
+import { GRect } from "../../util/geometry";
 import Log from "../../util/log";
 import Config from "../../util/config";
 
@@ -68,11 +69,12 @@ function clientTileChangedCallback(this: Controller, client: Kwin.Client, timer:
     const inManagedTile = (client.tile != null) && (client.tile.managed == true);
     
     // client is moved into managed tile from outside
-    if (!client.isTiled && inManagedTile)
+    if (!client.isTiled && inManagedTile && client.tile != null)
     {
         Log.debug("Putting client", client.resourceClass, "in tile", client.tile!.absoluteGeometry);
         attachClientHooks.bind(this)(client);
-        this.manager.putClientInTile(client, client.tile!);
+        const direction = new GRect(client.tile.absoluteGeometry).directionFromPoint(this.workspace.cursorPos);
+        this.manager.putClientInTile(client, client.tile, direction);
         this.manager.rebuildLayout(client.screen);
     }
     // client is moved out of a managed tile and into no tile
