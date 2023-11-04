@@ -33,9 +33,9 @@ function doTileClient(c: Kwin.Client): boolean
     }
 }
 
-export function clientAdded(this: Controller, client: Kwin.Client)
+export function clientAdded(this: Controller, client: Kwin.Client, checkDoTile: boolean = true)
 {
-    if (!doTileClient(client))
+    if (checkDoTile && !doTileClient(client))
     {
         Log.debug("Not tiling client", client.resourceClass);
         return;

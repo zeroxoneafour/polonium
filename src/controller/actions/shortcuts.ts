@@ -17,7 +17,7 @@ export function retileWindow(this: Controller)
     }
     else
     {
-        clientAdded.bind(this)(client);
+        clientAdded.bind(this)(client, false);
     }
 }
 
