@@ -58,7 +58,8 @@ export default class HalfEngine extends TilingEngine
 
     buildLayout()
     {
-        this.rootTile = new RootTile(1);
+        // set original tile direction based on rotating layout or not
+        this.rootTile = new RootTile(this.config.rotateLayout ? 2 : 1);
         if (this.left.length == 0 && this.right.length == 0)
         {
             // empty root tile

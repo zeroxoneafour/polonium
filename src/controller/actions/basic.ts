@@ -8,8 +8,23 @@ import { attachClientHooks } from "./clienthooks";
 
 function doTileClient(c: Kwin.Client): boolean
 {
-    if (c.normalWindow)
+    if (c.normalWindow && !((c.popupWindow || c.transient) && !Config.tilePopups))
     {
+        // check if caption/resourceclass is substring as well
+        for (const s of Config.filterProcess)
+        {
+            if (s.length > 0 && c.resourceClass.includes(s))
+            {
+                return false;
+            }
+        }
+        for (const s of Config.filterCaption)
+        {
+            if (s.length > 0 && c.caption.includes(s))
+            {
+                return false;
+            }
+        }
         return true;
     }
     else

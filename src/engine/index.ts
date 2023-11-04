@@ -10,12 +10,14 @@ export interface IEngineConfig
 {
     engine: EngineType;
     insertionPoint: InsertionPoint;
+    rotateLayout: boolean;
 }
 
 export class EngineConfig implements IEngineConfig
 {
     engine: EngineType = Config.engineType;
     insertionPoint = Config.insertionPoint;
+    rotateLayout: boolean = Config.rotateLayout;
     
     constructor(conf?: IEngineConfig)
     {
@@ -25,6 +27,7 @@ export class EngineConfig implements IEngineConfig
         }
         this.insertionPoint = conf.insertionPoint;
         this.engine = conf.engine;
+        this.rotateLayout = conf.rotateLayout;
     }
     
     toString(): string

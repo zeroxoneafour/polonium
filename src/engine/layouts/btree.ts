@@ -73,7 +73,8 @@ export default class BTreeEngine extends TilingEngine
     
     buildLayout()
     {
-        this.rootTile = new RootTile(1);
+        // set original tile direction based on rotating layout or not
+        this.rootTile = new RootTile(this.config.rotateLayout ? 2 : 1);
         // set up
         this.nodeMap = new BiMap;
         // modify rootTile

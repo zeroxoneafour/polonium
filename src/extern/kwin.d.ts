@@ -9,10 +9,13 @@ export interface Client
 {
     readonly minSize: Qt.QSize;
     readonly resourceClass: string;
+    readonly caption: string;
     readonly desktop: number;
     readonly activities: string[];
     readonly screen: number;
     readonly normalWindow: boolean;
+    readonly popupWindow: boolean;
+    readonly transient: boolean;
     
     frameGeometry: Qt.QRect;
     tile: Tile | null;

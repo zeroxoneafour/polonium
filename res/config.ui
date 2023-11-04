@@ -319,7 +319,7 @@ Comma separated list of window titles.</string>
     </widget>
    </item>
    <item row="38" column="1">
-    <widget class="QCheckBox" name="kcfg_Rotation">
+    <widget class="QCheckBox" name="kcfg_RotateLayout">
      <property name="text">
       <string>Rotate layout</string>
      </property>

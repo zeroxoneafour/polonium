@@ -37,19 +37,32 @@ class ConfigClass
             return;
         }
         this.debug = rc("Debug", false);
-        this.engineType = rc("EngineType", EngineType.BTree);
-        this.insertionPoint = rc("InsertionPoint", InsertionPoint.Left);
+        this.tilePopups = rc("TilePopups", false);
+        this.filterProcess = rc("FilterProcess", "krunner, yakuake, kded, polkit, plasmashell").split(',').map((x: string) => x.trim());
+        this.filterCaption = rc("FilterCaption", "").split(',').map((x: string) => x.trim());
+        
         this.timerDelay = rc("TimerDelay", 10);
         this.keepTiledBelow = rc("KeepTiledBelow", true);
         this.borders = rc("Borders", Borders.NoTiled);
+        
+        this.engineType = rc("EngineType", EngineType.BTree);
+        this.insertionPoint = rc("InsertionPoint", InsertionPoint.Left);
+        this.rotateLayout = rc("RotateLayout", false);
     }
     
     debug: boolean = false;
-    engineType: EngineType = EngineType.BTree;
-    insertionPoint: InsertionPoint = InsertionPoint.Left;
+    
+    tilePopups: boolean = false;
+    filterProcess: string[] = ["krunner", "yakuake", "kded", "polkit", "plasmashell"];
+    filterCaption: string[] = [];
+    
     timerDelay: number = 10;
     keepTiledBelow: boolean = true;
     borders: Borders = Borders.NoTiled;
+
+    engineType: EngineType = EngineType.BTree;
+    insertionPoint: InsertionPoint = InsertionPoint.Left;
+    rotateLayout: boolean = true;
 }
 
 let Config = new ConfigClass();
