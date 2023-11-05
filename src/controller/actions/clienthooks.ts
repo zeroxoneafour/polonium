@@ -14,6 +14,7 @@ export function attachClientHooks(this: Controller, client: Kwin.Client)
     {
         return;
     }
+    Log.debug("Client", client.resourceClass, "hooked into script");
     client.hooksRegistered = true;
     client.previousDesktops = Desktop.fromClient(client);
     client.desktopChanged.connect(clientDesktopChanged.bind(this, client));
@@ -97,12 +98,12 @@ function clientFullscreenChanged(this: Controller, client: Kwin.Client)
         return;
     }
     Log.debug("Fullscreen on client", client.resourceClass, "set to", client.fullScreen);
-    if (client.fullScreen && client.isTiled)
+    if (client.fullScreen && client.tile != null)
     {
         this.manager.removeClient(client);
         this.manager.rebuildLayout(client.screen);
     }
-    else if (!client.fullScreen)
+    else if (!client.fullScreen && client.tile == null)
     {
         this.manager.addClient(client);
         this.manager.rebuildLayout(client.screen);

@@ -21,7 +21,14 @@ class LogClass
         for (const s of stuff)
         {
             ret += " ";
-            ret += s;
+            if (typeof s == "string")
+            {
+                ret += s;
+            }
+            else
+            {
+                ret += s.toString();
+            }
         }
         this.printFn(ret);
     }

@@ -11,7 +11,7 @@ function doTileClient(c: Kwin.Client): boolean
     if (c.normalWindow && !((c.popupWindow || c.transient) && !Config.tilePopups))
     {
         // check for things like max/min/fullscreen
-        if (c.fullscreen || c.minimized)
+        if (c.fullScreen || c.minimized)
         {
             return false;
         }
@@ -50,14 +50,12 @@ export function clientAdded(this: Controller, client: Kwin.Client, checkDoTile: 
         client.noBorder = true;
     }
     attachClientHooks.bind(this)(client);
-    Log.debug("Tiling client", client.resourceClass);
     this.manager.addClient(client);
     this.manager.rebuildLayout();
 }
 
 export function clientRemoved(this: Controller, client: Kwin.Client)
 {
-    Log.debug("Untiling client", client.resourceClass);
     this.manager.removeClient(client);
     this.manager.rebuildLayout();
 }

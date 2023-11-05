@@ -166,6 +166,7 @@ export class DriverManager
                 desktop: this.ctrl.workspace.currentDesktop, 
             })];
         }
+        Log.debug("Rebuilding layout for desktops", desktops);
         for (const desktop of desktops)
         {
             const driver = this.getDriver(desktop);
@@ -180,6 +181,7 @@ export class DriverManager
         {
             desktops = Desktop.fromClient(client);
         }
+        Log.debug("Adding client", client.resourceClass, "to desktops", desktops);
         for (const desktop of desktops)
         {
             const driver = this.getDriver(desktop);
@@ -194,6 +196,7 @@ export class DriverManager
         {
             desktops = Desktop.fromClient(client);
         }
+        Log.debug("Removing client", client.resourceClass, "from desktops", desktops);
         for (const desktop of desktops)
         {
             const driver = this.getDriver(desktop);
@@ -218,6 +221,7 @@ export class DriverManager
             activity: this.ctrl.workspace.currentActivity,
             desktop: this.ctrl.workspace.currentDesktop,
         });
+        Log.debug("Putting client", client.resourceClass, "in tile", tile.absoluteGeometry, "with direction", direction, "on desktop", desktop);
         const driver = this.getDriver(desktop);
         driver.putClientInTile(client, tile, direction);
         this.applyTiled(client);
@@ -225,6 +229,7 @@ export class DriverManager
     
     getEngineConfig(desktop: Desktop): IEngineConfig
     {
+        Log.debug("Getting engine config for desktop", desktop);
         return this.getDriver(desktop).engine.config;
     }
     
