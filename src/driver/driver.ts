@@ -10,6 +10,7 @@ import * as Kwin from "../extern/kwin";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
 import Log from "../util/log";
+import Config from "../util/config";
 
 export class TilingDriver
 {
@@ -46,9 +47,8 @@ export class TilingDriver
         }
     }
     
-    buildLayout(rootTile: Kwin.RootTile): [Kwin.Client, Kwin.Tile][]
+    buildLayout(rootTile: Kwin.RootTile): void
     {
-        const ret: [Kwin.Client, Kwin.Tile][] = [];
         const rootTileSize = rootTile.absoluteGeometry;
         // clear root tile
         while (rootTile.tiles.length > 0)
@@ -56,6 +56,19 @@ export class TilingDriver
             rootTile.tiles[0].remove();
         }
         this.tiles.clear();
+        
+        // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
+        if (this.engine.rootTile.client != null && Config.maximizeSingle)
+        {
+            const kwinClient = this.clients.inverse.get(this.engine.rootTile.client);
+            if (kwinClient == undefined)
+            {
+                return;
+            }
+            kwinClient.tile = rootTile;
+            kwinClient.setMaximize(true, true);
+            return;
+        }
         const queue: Queue<Tile> = new Queue();
         queue.enqueue(this.engine.rootTile);
         this.tiles.set(rootTile, this.engine.rootTile);
@@ -121,10 +134,13 @@ export class TilingDriver
                 if (kwinClient == undefined)
                 {
                     Log.error("Client", tile.client.name, "does not exist");
-                    return ret;
+                    return;
                 }
                 tileSize.fitSize(kwinClient.minSize);
-                ret.push([kwinClient, kwinTile]);
+                // set some properties before setting tile to make sure client shows up
+                kwinClient.minimized = false;
+                kwinClient.fullScreen = false;
+                kwinClient.setMaximize(false, false);
                 kwinClient.tile = kwinTile;
             }
             // absolutegeometry is read only, so make sizing relative
@@ -132,7 +148,6 @@ export class TilingDriver
             tileSize.width /= rootTileSize.width;
             tileSize.write(kwinTile.relativeGeometry);
         }
-        return ret;
     }
     
     addClient(kwinClient: Kwin.Client): void

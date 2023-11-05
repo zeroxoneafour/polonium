@@ -10,6 +10,11 @@ function doTileClient(c: Kwin.Client): boolean
 {
     if (c.normalWindow && !((c.popupWindow || c.transient) && !Config.tilePopups))
     {
+        // check for things like max/min/fullscreen
+        if (c.fullscreen || c.minimized)
+        {
+            return false;
+        }
         // check if caption/resourceclass is substring as well
         for (const s of Config.filterProcess)
         {

@@ -20,6 +20,7 @@ export function attachClientHooks(this: Controller, client: Kwin.Client)
     client.activitiesChanged.connect(clientDesktopChanged.bind(this, client));
     client.screenChanged.connect(clientDesktopChanged.bind(this, client));
     client.tileChanged.connect(clientTileChanged.bind(this, client));
+    client.fullScreenChanged.connect(clientFullscreenChanged.bind(this, client));
 }
 
 function clientDesktopChanged(this: Controller, client: Kwin.Client)
@@ -87,4 +88,23 @@ function clientTileChangedCallback(this: Controller, client: Kwin.Client, timer:
     
     // clean up timer
     timer.destroy();
+}
+
+function clientFullscreenChanged(this: Controller, client: Kwin.Client)
+{
+    if (this.manager.buildingLayout)
+    {
+        return;
+    }
+    Log.debug("Fullscreen on client", client.resourceClass, "set to", client.fullScreen);
+    if (client.fullScreen && client.isTiled)
+    {
+        this.manager.removeClient(client);
+        this.manager.rebuildLayout(client.screen);
+    }
+    else if (!client.fullScreen)
+    {
+        this.manager.addClient(client);
+        this.manager.rebuildLayout(client.screen);
+    }
 }

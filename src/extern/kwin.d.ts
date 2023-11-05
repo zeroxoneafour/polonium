@@ -21,11 +21,18 @@ export interface Client
     tile: Tile | null;
     keepBelow: boolean;
     noBorder: boolean;
+    fullScreen: boolean;
+    minimized: boolean;
+    
+    setMaximize(v: boolean, h: boolean): void;
     
     desktopChanged: Qt.Signal<() => void>;
     activitiesChanged: Qt.Signal<() => void>;
     screenChanged: Qt.Signal<() => void>;
     tileChanged: Qt.Signal<() => void>;
+    fullScreenChanged: Qt.Signal<() => void>;
+    minimizedChanged: Qt.Signal<() => void>;
+    clientMaximizedStateChanged: Qt.Signal<(c: Client, h: boolean, v: boolean) => void>;
     
     previousDesktops: IDesktop[] | undefined;
     isTiled: boolean | undefined;
