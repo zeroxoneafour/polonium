@@ -25,6 +25,15 @@ export class GPoint implements QPoint
         this.x = p.x;
         this.y = p.y;
     }
+    
+    static centerOfRect(r: QRect): GPoint
+    {
+        return new GPoint(
+        {
+            x: r.x + (r.width / 2),
+            y: r.y + (r.height / 2),
+        });
+    }
 }
 
 export class GRect implements QRect
@@ -160,5 +169,10 @@ export class GSize implements QSize
         {
             s.height = this.height;            
         }
+    }
+
+    get area(): number
+    {
+        return this.width * this.height;
     }
 }

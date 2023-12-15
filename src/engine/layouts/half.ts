@@ -1,6 +1,6 @@
 // half.ts - Tiling engine for the half/split layout
 
-import { Tile, RootTile, Client, TilingEngine } from "../";
+import { Tile, RootTile, Client, TilingEngine, EngineCapability } from "../";
 import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 import { QSize } from "../../extern/qt";
@@ -52,6 +52,7 @@ class BoxIndex
 
 export default class HalfEngine extends TilingEngine
 {
+    engineCapability = EngineCapability.canRotate;
     tileMap: Map<Tile, ClientBox> = new Map();
     left: ClientBox[] = [];
     right: ClientBox[] = [];

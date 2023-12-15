@@ -13,6 +13,11 @@ export interface IEngineConfig
     rotateLayout: boolean;
 }
 
+export const enum EngineCapability
+{
+    canRotate = 0,
+}
+
 export class EngineConfig implements IEngineConfig
 {
     engine: EngineType = Config.engineType;
@@ -169,6 +174,7 @@ export abstract class TilingEngine
 {
     rootTile: RootTile = new RootTile(1);
     config: EngineConfig;
+    abstract readonly engineCapability: EngineCapability;
     
     constructor(config?: IEngineConfig)
     {

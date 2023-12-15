@@ -22,6 +22,8 @@ export function attachClientHooks(this: Controller, client: Kwin.Client)
     client.screenChanged.connect(clientDesktopChanged.bind(this, client));
     client.tileChanged.connect(clientTileChanged.bind(this, client));
     client.fullScreenChanged.connect(clientFullscreenChanged.bind(this, client));
+    client.minimizedChanged.connect(clientMinimizedChanged.bind(this, client));
+    client.clientMaximizedStateChanged.connect(clientMaximizedChanged.bind(this));
 }
 
 function clientDesktopChanged(this: Controller, client: Kwin.Client)
@@ -57,6 +59,8 @@ function clientTileChanged(this: Controller, client: Kwin.Client)
 {
     // dont react to geometry changes while the layout is rebuilding
     if (this.manager.buildingLayout) return;
+    // dont interfere with single window maximizing
+    if (client.isSingleMaximized) return;
     // have to use timers because kwin is lazy
     const timer = this.qmlObjects.root.createTimer();
     timer.triggeredOnStart = false;
@@ -98,14 +102,94 @@ function clientFullscreenChanged(this: Controller, client: Kwin.Client)
         return;
     }
     Log.debug("Fullscreen on client", client.resourceClass, "set to", client.fullScreen);
-    if (client.fullScreen && client.tile != null)
+    if (client.fullScreen && client.isTiled)
     {
         this.manager.removeClient(client);
         this.manager.rebuildLayout(client.screen);
     }
-    else if (!client.fullScreen && client.tile == null)
+    else if (!client.fullScreen && !client.isTiled)
     {
-        this.manager.addClient(client);
+        if (client.lastTiledLocation != null)
+        {
+            // fancy and illegally long code to place tile in a similar position from when it was untiled
+            let tile = this.workspace.tilingForScreen(client.screen).bestTileForPosition(client.lastTiledLocation.x, client.lastTiledLocation.y);
+            // if its null then its root tile (usually)
+            if (tile == null)
+            {
+                tile = this.workspace.tilingForScreen(client.screen).rootTile;
+            }
+            this.manager.putClientInTile(client, tile, new GRect(tile.absoluteGeometry).directionFromPoint(client.lastTiledLocation));
+        }
+        else
+        {
+            this.manager.addClient(client);
+        }
         this.manager.rebuildLayout(client.screen);
     }
+}
+
+function clientMinimizedChanged(this: Controller, client: Kwin.Client)
+{
+    // ah yes boilerplate
+    Log.debug("Minimized on client", client.resourceClass, "set to", client.minimized);
+    if (client.minimized && client.isTiled)
+    {
+        this.manager.removeClient(client);
+        this.manager.rebuildLayout(client.screen);
+    }
+    else if (!client.minimized && !client.isTiled)
+    {
+        if (client.lastTiledLocation != null)
+        {
+            // fancy and illegally long code to place tile in a similar position from when it was untiled
+            let tile = this.workspace.tilingForScreen(client.screen).bestTileForPosition(client.lastTiledLocation.x, client.lastTiledLocation.y);
+            // if its null then its root tile (usually)
+            if (tile == null)
+            {
+                tile = this.workspace.tilingForScreen(client.screen).rootTile;
+            }
+            this.manager.putClientInTile(client, tile, new GRect(tile.absoluteGeometry).directionFromPoint(client.lastTiledLocation));
+        }
+        else
+        {
+            this.manager.addClient(client);
+        }
+        this.manager.rebuildLayout(client.screen);
+    }
+}
+
+function clientMaximizedChanged(this: Controller, client: Kwin.Client, h: boolean, v: boolean)
+{
+    let maximized = h && v;
+    client.maximized = maximized;
+    Log.debug("Maximized on client", client.resourceClass, "set to", maximized);
+    // root tile applies with "maximize single windows" and should be completely discarded
+    if (client.isSingleMaximized)
+    {
+        client.tile = null;
+        return;
+    }
+    if (maximized && client.isTiled)
+    {
+        this.manager.removeClient(client);
+    }
+    else if (!maximized && !client.isTiled)
+    {
+        if (client.lastTiledLocation != null)
+        {
+            // fancy and illegally long code to place tile in a similar position from when it was untiled
+            let tile = this.workspace.tilingForScreen(client.screen).bestTileForPosition(client.lastTiledLocation.x, client.lastTiledLocation.y);
+            // if its null then its root tile (usually)
+            if (tile == null)
+            {
+                tile = this.workspace.tilingForScreen(client.screen).rootTile;
+            }
+            this.manager.putClientInTile(client, tile, new GRect(tile.absoluteGeometry).directionFromPoint(client.lastTiledLocation));
+        }
+        else
+        {
+            this.manager.addClient(client);
+        }
+    }
+    this.manager.rebuildLayout(client.screen);
 }

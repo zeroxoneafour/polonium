@@ -4,7 +4,7 @@ import { DriverManager } from "./";
 import { TilingEngine, Tile, Client } from "../engine";
 import { Direction } from "../util/geometry";
 import { EngineType } from "../engine/factory";
-import { GSize } from "../util/geometry";
+import { GSize, GPoint } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
 import * as Kwin from "../extern/kwin";
 import BiMap from "mnemonist/bi-map";
@@ -57,6 +57,13 @@ export class TilingDriver
         }
         this.tiles.clear();
         
+        // set clients marked for untiling to null tiles
+        for (const client of this.clientsToNull)
+        {
+            client.tile = null;
+        }
+        this.clientsToNull = [];
+        
         // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
         if (this.engine.rootTile.client != null && Config.maximizeSingle)
         {
@@ -65,21 +72,15 @@ export class TilingDriver
             {
                 return;
             }
-            kwinClient.tile = rootTile;
+            kwinClient.tile = null;
+            kwinClient.isSingleMaximized = true;
             kwinClient.setMaximize(true, true);
             return;
         }
         const queue: Queue<Tile> = new Queue();
         queue.enqueue(this.engine.rootTile);
         this.tiles.set(rootTile, this.engine.rootTile);
-        
-        // set clients marked for untiling to null tiles
-        for (const client of this.clientsToNull)
-        {
-            client.tile = null;
-        }
-        this.clientsToNull = [];
-        
+
         while (queue.size > 0)
         {
             const tile = queue.dequeue()!;
@@ -140,13 +141,20 @@ export class TilingDriver
                 // set some properties before setting tile to make sure client shows up
                 kwinClient.minimized = false;
                 kwinClient.fullScreen = false;
-                kwinClient.setMaximize(false, false);
+                if (kwinClient.maximized)
+                {
+                    kwinClient.setMaximize(false, false);
+                }
                 kwinClient.tile = kwinTile;
+                kwinClient.lastTiledLocation = GPoint.centerOfRect(kwinTile.absoluteGeometry);
             }
             // absolutegeometry is read only, so make sizing relative
             tileSize.height /= rootTileSize.height;
             tileSize.width /= rootTileSize.width;
-            tileSize.write(kwinTile.relativeGeometry);
+            if (tileSize.area != 0)
+            {
+                tileSize.write(kwinTile.relativeGeometry);
+            }
         }
     }
     

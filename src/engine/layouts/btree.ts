@@ -1,6 +1,6 @@
 // layouts/btree.ts - Implementation of binary tree layout
 
-import { Tile, Client, TilingEngine, RootTile } from "../";
+import { Tile, Client, TilingEngine, RootTile, EngineCapability } from "../";
 import { Direction } from "../../util/geometry";
 import { QSize } from "../../extern/qt";
 import { GSize } from "../../util/geometry";
@@ -68,6 +68,7 @@ class RootNode extends TreeNode
 
 export default class BTreeEngine extends TilingEngine
 {
+    engineCapability = EngineCapability.canRotate;
     private rootNode: RootNode = new RootNode;
     private nodeMap: BiMap<TreeNode, Tile> = new BiMap;
     

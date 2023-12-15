@@ -5,7 +5,7 @@ import * as Qt from "./qt";
 import { IDesktop } from "../driver";
 
 // AbstractClient
-export interface Client
+interface BaseClient
 {
     readonly minSize: Qt.QSize;
     readonly resourceClass: string;
@@ -33,9 +33,17 @@ export interface Client
     fullScreenChanged: Qt.Signal<() => void>;
     minimizedChanged: Qt.Signal<() => void>;
     clientMaximizedStateChanged: Qt.Signal<(c: Client, h: boolean, v: boolean) => void>;
-    
+}
+
+// extensions on AbstractClient that make code easier to work with
+export interface Client extends BaseClient
+{
+    // only store state of full maximization (who maximizes only directionally?)
+    maximized: boolean | undefined;
+    isSingleMaximized: boolean | undefined;
     previousDesktops: IDesktop[] | undefined;
     isTiled: boolean | undefined;
+    lastTiledLocation: Qt.QPoint | null | undefined;
     hooksRegistered: boolean | undefined;
 }
 
@@ -45,7 +53,7 @@ export interface Client
 */
 export type LayoutDirection = 0 | 1 | 2;
 
-export interface Tile
+interface BaseTile
 {
     tiles: Tile[];
     windows: Client[];
@@ -59,8 +67,10 @@ export interface Tile
     
     split(direction: LayoutDirection): void;
     remove(): void;
-    
-    // whether the tile is managed by the engine or not
+}
+
+export interface Tile extends BaseTile
+{
     managed: boolean | undefined;
 }
 
@@ -72,9 +82,11 @@ export interface RootTile extends Tile
 export interface TileManager
 {
     rootTile: RootTile;
+    
+    bestTileForPosition(x: number, y: number): Tile;
 }
 
-export interface Workspace
+interface BaseWorkspace
 {
     readonly numScreens: number;
     readonly activeScreen: number;
@@ -93,7 +105,10 @@ export interface Workspace
     clientActivated: Qt.Signal<(c: Client) => void>;
     currentDesktopChanged: Qt.Signal<(d: number) => void>;
     numberScreensChanged: Qt.Signal<() => void>;
-    
+}
+
+export interface Workspace extends BaseWorkspace
+{
     // things added that we need
     lastActivity: string | undefined;
     lastDesktop: number | undefined;
