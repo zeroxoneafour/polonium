@@ -15,7 +15,9 @@ export interface IEngineConfig
 
 export const enum EngineCapability
 {
-    canRotate = 0,
+    None = 0,
+    // whether the driver should translate the rotation for the engine when inserting clients
+    TranslateRotation = 1,
 }
 
 export class EngineConfig implements IEngineConfig

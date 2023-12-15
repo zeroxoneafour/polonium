@@ -11,6 +11,84 @@ export const enum Direction
     Vertical = 1 << 2,
 }
 
+export class DirectionTools
+{
+    private d: Direction;
+
+    constructor(d: Direction)
+    {
+        this.d = d;
+    }
+
+    // rotate clockwise 90 deg
+    rotateCw(): Direction
+    {
+        // it will always have the vertical component inverted
+        let ret = (this.d & Direction.Vertical) == Direction.Vertical ? Direction.None : Direction.Vertical;
+        if ((this.d & Direction.Up) == Direction.Up)
+        {
+            if ((this.d & Direction.Right) == Direction.Right)
+            {
+                // top right
+                ret |= Direction.Right;
+            }
+            else
+            {
+                // top left
+                ret |= Direction.Right | Direction.Up;
+            }
+        }
+        else
+        {
+            if ((this.d & Direction.Right) == Direction.Right)
+            {
+                // bottom right (becomes bottom left or none)
+                ret |= Direction.None;
+            }
+            else
+            {
+                // bottom left
+                ret |= Direction.Up;
+            }
+        }
+        return ret;
+    }
+    
+    // rotate counterclockwise 90 deg
+    rotateCcw(): Direction
+    {
+        // it will always have the vertical component inverted
+        let ret = (this.d & Direction.Vertical) == Direction.Vertical ? Direction.None : Direction.Vertical;
+        if ((this.d & Direction.Up) == Direction.Up)
+        {
+            if ((this.d & Direction.Right) == Direction.Right)
+            {
+                // top right
+                ret |= Direction.Up;
+            }
+            else
+            {
+                // top left (becomes bottom left or none)
+                ret |= Direction.None;
+            }
+        }
+        else
+        {
+            if ((this.d & Direction.Right) == Direction.Right)
+            {
+                // bottom right (becomes bottom left or none)
+                ret |= Direction.Up | Direction.Right;
+            }
+            else
+            {
+                // bottom left
+                ret |= Direction.Right;
+            }
+        }
+        return ret;
+    }
+}
+
 export class GPoint implements QPoint
 {
     x: number = 0;

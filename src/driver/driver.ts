@@ -1,10 +1,10 @@
 // driver/driver.ts - Mapping from engines to Kwin API
 
 import { DriverManager } from "./";
-import { TilingEngine, Tile, Client } from "../engine";
+import { TilingEngine, Tile, Client, EngineCapability } from "../engine";
 import { Direction } from "../util/geometry";
 import { EngineType } from "../engine/factory";
-import { GSize, GPoint } from "../util/geometry";
+import { GSize, GPoint, DirectionTools } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
 import * as Kwin from "../extern/kwin";
 import BiMap from "mnemonist/bi-map";
@@ -64,10 +64,16 @@ export class TilingDriver
         }
         this.clientsToNull = [];
         
-        // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
-        if (this.engine.rootTile.client != null && Config.maximizeSingle)
+        // for maximizing single, sometimes engines can create overlapping root tiles so find the real root
+        let realRootTile: Tile = this.engine.rootTile;
+        while (realRootTile.tiles.length == 1 && realRootTile.client == null)
         {
-            const kwinClient = this.clients.inverse.get(this.engine.rootTile.client);
+            realRootTile = realRootTile.tiles[0];
+        }
+        // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
+        if (realRootTile.client != null && Config.maximizeSingle)
+        {
+            const kwinClient = this.clients.inverse.get(realRootTile.client);
             if (kwinClient == undefined)
             {
                 return;
@@ -78,8 +84,8 @@ export class TilingDriver
             return;
         }
         const queue: Queue<Tile> = new Queue();
-        queue.enqueue(this.engine.rootTile);
-        this.tiles.set(rootTile, this.engine.rootTile);
+        queue.enqueue(realRootTile);
+        this.tiles.set(rootTile, realRootTile);
 
         while (queue.size > 0)
         {
@@ -156,8 +162,46 @@ export class TilingDriver
                 tileSize.write(kwinTile.relativeGeometry);
             }
         }
+
+        // bubble up tile size fixing (didn't want to overbloat this function)
+        //this.fixSizing(rootTile);
     }
-    
+
+    /*private fixSizing(rootTile: Kwin.RootTile): void
+    {
+        // works by first doing a breadth first search to establish depth layers of windows
+        // next, bubbles up each depth layer, adding the sizes from the previous depth layer and establishing ratios
+        // should be satisfactory for most use cases as window size conflicts are somewhat rare
+        let layers: Queue<Kwin.Tile[]> = new Queue();
+        let stack: Kwin.Tile[] = [rootTile];
+        let stackNext: Kwin.Tile[] = [];
+        while (stack.length != 0)
+        {
+            for (const tile of stack)
+            {
+                for (const child of tile.tiles)
+                {
+                    stackNext.push(child);
+                }
+            }
+            layers.enqueue(stack);
+            stack = stackNext;
+        }
+        let sizeMap: Map<Kwin.Tile, GSize> = new Map();
+        while (layers.size > 0)
+        {
+            let layer = layers.dequeue()!;
+            for (const tile of layer)
+            {
+                if (tile.win)
+            }
+        }
+        for (const tile of sizeMap.keys())
+        {
+            sizeMap.get(tile)!.write(tile.absoluteGeometry);
+        }
+    }*/
+
     addClient(kwinClient: Kwin.Client): void
     {
         if (this.clients.has(kwinClient))
@@ -235,7 +279,15 @@ export class TilingDriver
         const client = this.clients.get(kwinClient)!;
         try
         {
-            this.engine.putClientInTile(client, tile, direction);
+            let rotatedDirection = direction;
+            if (rotatedDirection != null
+                && this.engine.config.rotateLayout
+                && this.engine.engineCapability & EngineCapability.TranslateRotation)
+            {
+                rotatedDirection = new DirectionTools(rotatedDirection).rotateCw();
+                Log.debug("Insertion direction rotated to", rotatedDirection);
+            }
+            this.engine.putClientInTile(client, tile, rotatedDirection);
             this.engine.buildLayout();
         }
         catch (e)

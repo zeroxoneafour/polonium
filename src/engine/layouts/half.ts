@@ -52,7 +52,7 @@ class BoxIndex
 
 export default class HalfEngine extends TilingEngine
 {
-    engineCapability = EngineCapability.canRotate;
+    engineCapability = EngineCapability.TranslateRotation;
     tileMap: Map<Tile, ClientBox> = new Map();
     left: ClientBox[] = [];
     right: ClientBox[] = [];
@@ -149,7 +149,7 @@ export default class HalfEngine extends TilingEngine
         if (box.right)
         {
             this.right.splice(box.index, 1);
-            if (this.right.length == 0 && this.left.length != 0)
+            if (this.right.length == 0 && this.left.length > 1)
             {
                 this.right.push(this.left.splice(0, 1)[0]);
             }
@@ -157,14 +157,14 @@ export default class HalfEngine extends TilingEngine
         else
         {
             this.left.splice(box.index, 1);
-            if (this.left.length == 0 && this.right.length != 0)
+            if (this.left.length == 0 && this.right.length > 1)
             {
                 this.left.push(this.right.splice(0, 1)[0]);
             }
         }
     }
     
-    putClientInTile(client: Client, tile: Tile, _direction?: Direction)
+    putClientInTile(client: Client, tile: Tile, direction?: Direction)
     {
         const clientBox = new ClientBox(client);
         let targetBox: BoxIndex;
@@ -183,7 +183,14 @@ export default class HalfEngine extends TilingEngine
         }
 
         const targetArr = targetBox.left ? this.left : this.right;
-        targetArr.splice(targetBox.index, 0, clientBox);
+        if (direction == null || direction & Direction.Up)
+        {
+            targetArr.splice(targetBox.index, 0, clientBox);
+        }
+        else
+        {
+            targetArr.splice(targetBox.index + 1, 0, clientBox);
+        }
     }
     
     regenerateLayout()

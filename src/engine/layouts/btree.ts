@@ -68,7 +68,7 @@ class RootNode extends TreeNode
 
 export default class BTreeEngine extends TilingEngine
 {
-    engineCapability = EngineCapability.canRotate;
+    engineCapability = EngineCapability.None;
     private rootNode: RootNode = new RootNode;
     private nodeMap: BiMap<TreeNode, Tile> = new BiMap;
     
