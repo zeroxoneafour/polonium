@@ -197,6 +197,16 @@ export class GRect implements QRect
             }
         }
     }
+
+    get center(): GPoint
+    {
+        return new GPoint(
+            {
+                x: this.x + this.width / 2,
+                y: this.y + this.height / 2,
+            }
+        );
+    }
 }
 
 export class GSize implements QSize

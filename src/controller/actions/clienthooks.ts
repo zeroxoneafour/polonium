@@ -81,16 +81,32 @@ function clientTileChangedCallback(this: Controller, client: Kwin.Client, timer:
         attachClientHooks.bind(this)(client);
         const direction = new GRect(client.tile.absoluteGeometry).directionFromPoint(this.workspace.cursorPos);
         this.manager.putClientInTile(client, client.tile, direction);
-        this.manager.rebuildLayout(client.screen);
+    }
+    // client is in a non-managed tile (move it to a managed one)
+    else if (!inManagedTile && client.tile != null)
+    {
+        const center = new GRect(client.frameGeometry).center;
+        let tile = this.workspace.tilingForScreen(client.screen).bestTileForPosition(center.x, center.y);
+        // if its null then its root tile (usually)
+        if (tile == null)
+        {
+            tile = this.workspace.tilingForScreen(client.screen).rootTile;
+        }
+        if (client.isTiled)
+        {
+            this.manager.removeClient(client);
+        }
+        this.manager.putClientInTile(client, tile, new GRect(tile.absoluteGeometry).directionFromPoint(center));
     }
     // client is moved out of a managed tile and into no tile
     else if (client.isTiled && !inManagedTile && client.tile == null)
     {
         Log.debug("Client", client.resourceClass, "was moved out of a tile");
         this.manager.removeClient(client);
-        this.manager.rebuildLayout(client.screen);
     }
     
+    this.manager.rebuildLayout(client.screen);
+
     // clean up timer
     timer.destroy();
 }
