@@ -79,9 +79,7 @@ PlasmaCore.Dialog
     {
         this.removeSettingsInternal(this.desktop);
     }
-    
-    Keys.onEscapePressed: this.hide();
-    
+        
     mainItem: ColumnLayout
     {
         id: main;

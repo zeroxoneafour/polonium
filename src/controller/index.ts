@@ -8,6 +8,7 @@ import Config, { init as initConfig } from "../util/config";
 
 import { DriverManager, Desktop } from "../driver";
 
+import { DBusController } from "./dbuscontroller";
 import * as BasicActions from "./actions/basic";
 import * as Shortcuts from "./actions/shortcuts";
 import * as SettingsDialog from "./actions/settingsdialog";
@@ -28,7 +29,8 @@ export class Controller
     kwinApi: Kwin.Api;
     qmlObjects: Qml.Objects;
     glob: ExtraGlobals;
-
+    dbusController: DBusController;
+    
     manager: DriverManager = new DriverManager(this);
     
     get currentDesktop(): Desktop
@@ -49,6 +51,7 @@ export class Controller
         this.kwinApi = qmlApi.kwin;
         this.qmlObjects = qmlObjects;
         this.glob = new ExtraGlobals(this);
+        this.dbusController = new DBusController(this);
     }
     
     private initGlobals(): void
@@ -76,7 +79,7 @@ export class Controller
         rs("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", Shortcuts.retileWindow.bind(this));
         rs("PoloniumOpenSettings", "Polonium: Open Settings Dialog", "Meta+|", Shortcuts.openSettingsDialog.bind(this));
     }
-    
+
     init(): void
     {
         this.initGlobals();

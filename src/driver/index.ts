@@ -82,10 +82,12 @@ export class DriverManager
         const desktopString = desktop.toString();
         if (!this.drivers.has(desktopString))
         {
-            const engineType = Config.engineType;
+            Log.debug("Creating new engine for desktop", desktopString);
+            let engineType = Config.engineType;
             const engine = this.engineFactory.newEngine(engineType);
             const driver = new TilingDriver(engine, engineType, this);
             this.drivers.set(desktopString, driver);
+            this.ctrl.dbusController.getSettings(desktopString, this.setEngineConfig.bind(this, desktop));
         }
         return this.drivers.get(desktopString)!;
     }
@@ -230,10 +232,11 @@ export class DriverManager
     getEngineConfig(desktop: Desktop): IEngineConfig
     {
         Log.debug("Getting engine config for desktop", desktop);
+        const config = this.getDriver(desktop).engine.config
         return this.getDriver(desktop).engine.config;
     }
     
-    setEngineConfig(config: IEngineConfig, desktop: Desktop)
+    setEngineConfig(desktop: Desktop, config: IEngineConfig)
     {
         Log.debug("Setting engine config for desktop", desktop);
         const driver = this.getDriver(desktop);
@@ -245,6 +248,7 @@ export class DriverManager
         {
             driver.engine.config = new EngineConfig(config);
         }
+        this.ctrl.dbusController.setSettings(desktop.toString(), config);
         this.rebuildLayout(desktop.screen);
     }
 }

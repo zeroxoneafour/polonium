@@ -164,17 +164,17 @@ export class TilingDriver
         }
 
         // bubble up tile size fixing (didn't want to overbloat this function)
-        //this.fixSizing(rootTile);
+        //this.fixSizing(realRootTile, rootTile);
     }
 
-    /*private fixSizing(rootTile: Kwin.RootTile): void
+    /*private fixSizing(rootTile: Tile, kwinRootTile: Kwin.RootTile): void
     {
         // works by first doing a breadth first search to establish depth layers of windows
         // next, bubbles up each depth layer, adding the sizes from the previous depth layer and establishing ratios
         // should be satisfactory for most use cases as window size conflicts are somewhat rare
-        let layers: Queue<Kwin.Tile[]> = new Queue();
-        let stack: Kwin.Tile[] = [rootTile];
-        let stackNext: Kwin.Tile[] = [];
+        let layers: Queue<Tile[]> = new Queue();
+        let stack: Tile[] = [rootTile];
+        let stackNext: Tile[] = [];
         while (stack.length != 0)
         {
             for (const tile of stack)
@@ -187,13 +187,16 @@ export class TilingDriver
             layers.enqueue(stack);
             stack = stackNext;
         }
-        let sizeMap: Map<Kwin.Tile, GSize> = new Map();
+        let sizeMap: Map<Tile, GSize> = new Map();
         while (layers.size > 0)
         {
             let layer = layers.dequeue()!;
             for (const tile of layer)
             {
-                if (tile.win)
+                if (tile.client != null)
+                {
+                    const kwinClient = this.clients.inverse.get(tile.client)!.minSize;
+                }
             }
         }
         for (const tile of sizeMap.keys())
