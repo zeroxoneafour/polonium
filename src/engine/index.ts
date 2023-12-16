@@ -18,6 +18,8 @@ export const enum EngineCapability
     None = 0,
     // whether the driver should translate the rotation for the engine when inserting clients
     TranslateRotation = 1,
+    // whether the amount of tiles can be changed
+    TilesMutable = 2,
 }
 
 export class EngineConfig implements IEngineConfig

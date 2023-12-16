@@ -313,9 +313,31 @@ export class TilingDriver
                 continue;
             }
             tile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
-            for (const tile of kwinTile.tiles)
+            // if the layout is mutable (tiles can be created/destroyed) then change it. really only for kwin layout
+            if (this.engine.engineCapability & EngineCapability.TilesMutable)
             {
-                queue.enqueue(tile);
+                // destroy ones that dont exist anymore
+                for (const child of tile.tiles)
+                {
+                    if (this.tiles.inverse.get(child) == null)
+                    {
+                        this.tiles.inverse.delete(child);
+                        child.remove();
+                    }
+                }
+                // create ones that do (and arent registered)
+                for (const child of kwinTile.tiles)
+                {
+                    if (!this.tiles.has(child))
+                    {
+                        const newTile = tile.addChild();
+                        this.tiles.set(child, newTile);
+                    }
+                }
+            }
+            for (const child of kwinTile.tiles)
+            {
+                queue.enqueue(child);
             }
         }
         try

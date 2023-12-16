@@ -354,12 +354,22 @@ Comma separated list of window titles.</string>
      </property>
      <item>
       <property name="text">
-       <string>BTree</string>
+       <string>Binary Tree</string>
       </property>
      </item>
      <item>
       <property name="text">
        <string>Half</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Three Column</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>KWin</string>
       </property>
      </item>
     </widget>

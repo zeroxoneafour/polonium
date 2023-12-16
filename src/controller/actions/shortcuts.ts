@@ -23,6 +23,14 @@ export function retileWindow(this: Controller)
 
 export function openSettingsDialog(this: Controller)
 {
-    this.qmlObjects.settings.setSettings(this.manager.getEngineConfig(this.currentDesktop));
-    this.qmlObjects.settings.show();
+    const settings = this.qmlObjects.settings;
+    if (settings.isVisible())
+    {
+        settings.hide();
+    }
+    else
+    {
+        settings.setSettings(this.manager.getEngineConfig(this.currentDesktop));
+        settings.show();    
+    }
 }
