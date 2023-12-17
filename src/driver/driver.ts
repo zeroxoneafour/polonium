@@ -9,6 +9,7 @@ import { InsertionPoint } from "../util/config";
 import * as Kwin from "../extern/kwin";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
+import Stack from "mnemonist/stack";
 import Log from "../util/log";
 import Config from "../util/config";
 
@@ -49,7 +50,6 @@ export class TilingDriver
     
     buildLayout(rootTile: Kwin.RootTile): void
     {
-        const rootTileSize = rootTile.absoluteGeometry;
         // clear root tile
         while (rootTile.tiles.length > 0)
         {
@@ -129,12 +129,6 @@ export class TilingDriver
                 this.tiles.set(kwinTile, tile.tiles[0]);
                 queue.enqueue(tile.tiles[0]);
             }
-            // grow to preferred tile size if necessary
-            const tileSize = new GSize(kwinTile.absoluteGeometry);
-            if (tile.requestedSize != null)
-            {
-                tileSize.fitSize(tile.requestedSize);
-            }
             if (tile.client != null)
             {
                 const kwinClient = this.clients.inverse.get(tile.client);
@@ -143,7 +137,6 @@ export class TilingDriver
                     Log.error("Client", tile.client.name, "does not exist");
                     return;
                 }
-                tileSize.fitSize(kwinClient.minSize);
                 // set some properties before setting tile to make sure client shows up
                 kwinClient.minimized = false;
                 kwinClient.fullScreen = false;
@@ -154,28 +147,22 @@ export class TilingDriver
                 kwinClient.tile = kwinTile;
                 kwinClient.lastTiledLocation = GPoint.centerOfRect(kwinTile.absoluteGeometry);
             }
-            // absolutegeometry is read only, so make sizing relative
-            tileSize.height /= rootTileSize.height;
-            tileSize.width /= rootTileSize.width;
-            if (tileSize.area != 0)
-            {
-                tileSize.write(kwinTile.relativeGeometry);
-            }
+
         }
 
         // bubble up tile size fixing (didn't want to overbloat this function)
-        //this.fixSizing(realRootTile, rootTile);
+        this.fixSizing(realRootTile, rootTile);
     }
 
-    /*private fixSizing(rootTile: Tile, kwinRootTile: Kwin.RootTile): void
+    private fixSizing(rootTile: Tile, kwinRootTile: Kwin.RootTile): void
     {
         // works by first doing a breadth first search to establish depth layers of windows
         // next, bubbles up each depth layer, adding the sizes from the previous depth layer and establishing ratios
         // should be satisfactory for most use cases as window size conflicts are somewhat rare
-        let layers: Queue<Tile[]> = new Queue();
+        let layers: Stack<Tile[]> = new Stack();
         let stack: Tile[] = [rootTile];
         let stackNext: Tile[] = [];
-        while (stack.length != 0)
+        while (stack.length > 0)
         {
             for (const tile of stack)
             {
@@ -184,26 +171,127 @@ export class TilingDriver
                     stackNext.push(child);
                 }
             }
-            layers.enqueue(stack);
+            layers.push(stack);
             stack = stackNext;
+            stackNext = [];
         }
         let sizeMap: Map<Tile, GSize> = new Map();
         while (layers.size > 0)
         {
-            let layer = layers.dequeue()!;
+            let layer = layers.pop()!;
             for (const tile of layer)
             {
+                const targetSize = new GSize(tile.requestedSize ?? this.tiles.inverse.get(tile)!.absoluteGeometry);
                 if (tile.client != null)
                 {
-                    const kwinClient = this.clients.inverse.get(tile.client)!.minSize;
+                    const kwinClient = this.clients.inverse.get(tile.client);
+                    if (kwinClient != null)
+                    {
+                        targetSize.fitSize(kwinClient.minSize);
+                    }
+                }
+                else
+                {
+                    const horizontal = tile.layoutDirection == 1; // else vertical (hopefully)
+                    let width = 0;
+                    let height = 0;
+                    // first pass - get all minimum sizes
+                    for (const child of tile.tiles)
+                    {
+                        const size = sizeMap.get(child)!;
+                        if (horizontal)
+                        {
+                            width += size.width;
+                            if (size.height > height)
+                            {
+                                height = size.height;
+                            }
+                        }
+                        else
+                        {
+                            height += size.height;
+                            if (size.width > width)
+                            {
+                                width = size.width;
+                            }
+                        }
+                    }
+                    targetSize.fitSize(
+                        {
+                            width: width,
+                            height: height,
+                        }
+                    );
+                    let largerTiles: Tile[];
+                    let smallerTiles: Tile[];
+                    let averageSize: number;
+                    if (horizontal)
+                    {
+                        averageSize = targetSize.width / tile.tiles.length;
+                        // hopefully filter isnt mutable
+                        largerTiles = tile.tiles.filter((t) => sizeMap.get(t)!.width > averageSize);
+                        smallerTiles = tile.tiles.filter((t) => sizeMap.get(t)!.width < averageSize);
+                    }
+                    else
+                    {
+                        averageSize = targetSize.height / tile.tiles.length;
+                        largerTiles = tile.tiles.filter((t) => sizeMap.get(t)!.height > averageSize);
+                        smallerTiles = tile.tiles.filter((t) => sizeMap.get(t)!.height < averageSize);
+                    }
+                    // all extra space occupied by larger tiles
+                    let largerTileSpace = 0;
+                    for (const largerTile of largerTiles)
+                    {
+                        const size = new GSize(targetSize);
+                        const minSize = sizeMap.get(largerTile)!;
+                        if (horizontal)
+                        {
+                            largerTileSpace += (minSize.width - averageSize);
+                            size.width = minSize.width;
+                        }
+                        else
+                        {
+                            largerTileSpace += (minSize.height - averageSize);
+                            size.height = minSize.height;
+                        }
+                        sizeMap.set(largerTile, size);
+                    }
+                    for (const smallerTile of smallerTiles)
+                    {
+                        const size = new GSize(targetSize);
+                        Log.debug(size);
+                        if (horizontal)
+                        {
+                            size.width = averageSize - (largerTileSpace / smallerTiles.length);
+                        }
+                        else
+                        {
+                            size.height = averageSize - (largerTileSpace / smallerTiles.length);
+                        }
+                        sizeMap.set(smallerTile, size);
+                    }
+                }
+                sizeMap.set(tile, targetSize);
+            }
+        }
+        // set all tile sizes
+        const rootTileSize = kwinRootTile.absoluteGeometry;
+        for (const tile of sizeMap.keys())
+        {
+            const size = sizeMap.get(tile);
+            const kwinTile = this.tiles.inverse.get(tile);
+            if (size != null && kwinTile != null)
+            {
+                // has to be relative
+                size.height /= rootTileSize.height;
+                size.width /= rootTileSize.width;
+                if (size.area != 0)
+                {
+                    size.write(kwinTile.relativeGeometry);
                 }
             }
         }
-        for (const tile of sizeMap.keys())
-        {
-            sizeMap.get(tile)!.write(tile.absoluteGeometry);
-        }
-    }*/
+    }
 
     addClient(kwinClient: Kwin.Client): void
     {

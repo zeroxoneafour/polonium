@@ -177,6 +177,7 @@ export class RootTile extends Tile
 export abstract class TilingEngine
 {
     rootTile: RootTile = new RootTile(1);
+    untiledClients: Client[] = [];
     config: EngineConfig;
     abstract readonly engineCapability: EngineCapability;
     

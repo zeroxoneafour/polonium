@@ -233,6 +233,11 @@ export class GSize implements QSize
             }
         )
     }
+
+    isEqual(s: QSize): boolean
+    {
+        return s.width == this.width && s.height == this.height;
+    }
     
     // compare two sizes and grow the caller if it is too small
     fitSize(s: QSize)
