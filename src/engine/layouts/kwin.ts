@@ -17,12 +17,15 @@ export default class KwinEngine extends TilingEngine
     
     addClient(client: Client)
     {
-        return;
+        this.untiledClients.push(client);
     }
     
     removeClient(client: Client)
     {
-        return;
+        if (this.untiledClients.includes(client))
+        {
+            this.untiledClients.splice(this.untiledClients.indexOf(client), 1);
+        }
     }
     
     putClientInTile(client: Client, tile: Tile, _direction?: Direction)

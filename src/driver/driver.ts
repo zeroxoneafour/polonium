@@ -20,7 +20,10 @@ export class TilingDriver
     
     tiles: BiMap<Kwin.Tile, Tile> = new BiMap();
     clients: BiMap<Kwin.Client, Client> = new BiMap();
+    // untitledclients are clients that are queued for formal deletion and then become clientstonull
+    // clientstonull just have their tile set to null
     clientsToNull: Kwin.Client[] = [];
+    untiledClients: Kwin.Client[] = [];
     
     constructor(engine: TilingEngine, engineType: EngineType, manager: DriverManager)
     {
@@ -55,14 +58,22 @@ export class TilingDriver
             rootTile.tiles[0].remove();
         }
         this.tiles.clear();
-        
-        // set clients marked for untiling to null tiles
+        this.untiledClients = [];
+        for (const client of this.engine.untiledClients)
+        {
+            const kwinClient = this.clients.inverse.get(client);
+            if (kwinClient != null)
+            {
+                this.untiledClients.push(kwinClient);
+            }
+        }
         for (const client of this.clientsToNull)
         {
             client.tile = null;
         }
         this.clientsToNull = [];
-        
+        // set clients marked for untiling to null tiles
+
         // for maximizing single, sometimes engines can create overlapping root tiles so find the real root
         let realRootTile: Tile = this.engine.rootTile;
         while (realRootTile.tiles.length == 1 && realRootTile.client == null)
@@ -367,7 +378,7 @@ export class TilingDriver
             let rotatedDirection = direction;
             if (rotatedDirection != null
                 && this.engine.config.rotateLayout
-                && this.engine.engineCapability & EngineCapability.TranslateRotation)
+                && (this.engine.engineCapability & EngineCapability.TranslateRotation) == EngineCapability.TranslateRotation)
             {
                 rotatedDirection = new DirectionTools(rotatedDirection).rotateCw();
                 Log.debug("Insertion direction rotated to", rotatedDirection);
@@ -396,7 +407,7 @@ export class TilingDriver
             }
             tile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
             // if the layout is mutable (tiles can be created/destroyed) then change it. really only for kwin layout
-            if (this.engine.engineCapability & EngineCapability.TilesMutable)
+            if ((this.engine.engineCapability & EngineCapability.TilesMutable) == EngineCapability.TilesMutable)
             {
                 // destroy ones that dont exist anymore
                 for (const child of tile.tiles)

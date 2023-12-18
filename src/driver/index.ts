@@ -173,6 +173,11 @@ export class DriverManager
         {
             const driver = this.getDriver(desktop);
             driver.buildLayout(this.ctrl.workspace.tilingForScreen(desktop.screen).rootTile);
+            // untile clients that the driver wants untiled
+            for (const client of driver.untiledClients)
+            {
+                this.removeClient(client);
+            }
         }
         this.buildingLayout = false;
     }
