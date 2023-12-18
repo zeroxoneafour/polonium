@@ -224,14 +224,19 @@ export class TilingDriver
             const kwinTile = this.tiles.inverse.get(tile);
             let parent = tile.parent;
             // have to put this here becomes sometimes tiles are collapsed
-            while (parent != null && parent.tiles.length == 1)
+            while (parent != null && !this.tiles.inverse.has(parent))
             {
                 parent = parent.parent;
             }
-            if (size == null || kwinTile == null || parent == null)
+            if (size == null || kwinTile == null)
             {
                 // highly improbable this would happen
                 Log.debug("Null found in fixTiling() somehow");
+                continue;
+            }
+            if (parent == null)
+            {
+                // tile is root tile
                 continue;
             }
             const relativeSize = new GSize(size);
@@ -273,8 +278,14 @@ export class TilingDriver
                 }
             }
             // set sizes on siblings as well if necessary
-            for (const sibling of parent.tiles)
+            for (const topSibling of parent.tiles)
             {
+                // have to filter down because of tile collapsing
+                let sibling = topSibling;
+                while (sibling.tiles.length == 1)
+                {
+                    sibling = sibling.tiles[0];
+                }
                 if (sibling == tile)
                 {
                     continue;
