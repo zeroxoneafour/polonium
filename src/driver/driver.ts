@@ -211,7 +211,12 @@ export class TilingDriver
             const tile = tilesToUpdate.dequeue()!;
             const size = sizeMap.get(tile);
             const kwinTile = this.tiles.inverse.get(tile);
-            const parent = tile.parent;
+            let parent = tile.parent;
+            // have to put this here becomes sometimes tiles are collapsed
+            while (parent != null && parent.tiles.length == 1)
+            {
+                parent = parent.parent;
+            }
             if (size == null || kwinTile == null || parent == null)
             {
                 // highly improbable this would happen
