@@ -156,6 +156,7 @@ export class TilingDriver
     // kwin couldnt do this themselves?
     private fixSizing(rootTile: Tile, kwinRootTile: Kwin.RootTile): void
     {
+        const padding = kwinRootTile.padding;
         // just finds tiles that need special size constraints and sets them
         // main difference is that this one can do a bit of pushing
         const sizeMap: Map<Tile, GSize> = new Map();
@@ -188,6 +189,9 @@ export class TilingDriver
                         size.fitSize(minSize);
                         if (!size.isEqual(oldSize))
                         {
+                            // tile padding
+                            size.width += padding * 2;
+                            size.height += padding * 2;
                             sizeMap.set(tile, size);
                         }
                     }
