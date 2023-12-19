@@ -78,6 +78,18 @@ export class Controller
         const rs = this.kwinApi.registerShortcut;
         rs("PoloniumRetileWindow", "Polonium: Untile/Retile Window", "Meta+Shift+Space", Shortcuts.retileWindow.bind(this));
         rs("PoloniumOpenSettings", "Polonium: Open Settings Dialog", "Meta+|", Shortcuts.openSettingsDialog.bind(this));
+
+        rs("PoloniumFocusLeft", "Polonium: Focus Left", "Meta+H", Shortcuts.focus.bind(this, Shortcuts.Direction.Left));
+        rs("PoloniumInsertLeft", "Polonium: Insert Left", "Meta+Shift+H", Shortcuts.insert.bind(this, Shortcuts.Direction.Left));
+
+        rs("PoloniumFocusAbove", "Polonium: Focus Above", "Meta+K", Shortcuts.focus.bind(this, Shortcuts.Direction.Above));
+        rs("PoloniumInsertAbove", "Polonium: Insert Above", "Meta+Shift+K", Shortcuts.insert.bind(this, Shortcuts.Direction.Above));
+
+        rs("PoloniumFocusBelow", "Polonium: Focus Below", "Meta+J", Shortcuts.focus.bind(this, Shortcuts.Direction.Below));
+        rs("PoloniumInsertBelow", "Polonium: Insert Below", "Meta+Shift+J", Shortcuts.insert.bind(this, Shortcuts.Direction.Below));
+
+        rs("PoloniumFocusRight", "Polonium: Focus Right", "Meta+L", Shortcuts.focus.bind(this, Shortcuts.Direction.Right));
+        rs("PoloniumInsertRight", "Polonium: Insert Right", "Meta+Shift+L", Shortcuts.insert.bind(this, Shortcuts.Direction.Right));
     }
 
     init(): void

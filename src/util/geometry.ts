@@ -1,4 +1,4 @@
-// geometry.ts - Useful geometry functions
+// geometry.ts - Useful geometry functions (gtools)
 
 import { QPoint, QRect, QSize } from "../extern/qt";
 

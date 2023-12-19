@@ -83,7 +83,7 @@ export interface TileManager
 {
     rootTile: RootTile;
     
-    bestTileForPosition(x: number, y: number): Tile;
+    bestTileForPosition(x: number, y: number): Tile | null;
 }
 
 interface BaseWorkspace
