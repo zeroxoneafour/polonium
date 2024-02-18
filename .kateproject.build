@@ -1,0 +1,16 @@
+{
+    "Auto_generated": "This file is auto-generated. Any extra tags or formatting will be lost",
+    "target_sets": [
+        {
+            "directory": "",
+            "name": "Target Set",
+            "targets": [
+                {
+                    "build_cmd": "make",
+                    "name": "build",
+                    "runCmd": "make"
+                }
+            ]
+        }
+    ]
+}
