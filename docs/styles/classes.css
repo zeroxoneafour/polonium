@@ -1,66 +1,66 @@
 .d-none {
-    display: none !important;
+  display: none !important;
 }
 
 .content {
-    animation: fadeEffect 1s;
-    border: none;
-    padding: 2rem;
-    background-color: var(--page-bg);
-    transition: inherit;
-    max-width: 1010px;
-    margin: auto;
+  animation: fadeEffect 1s;
+  border: none;
+  padding: 2rem;
+  background-color: var(--page-bg);
+  transition: inherit;
+  max-width: 1010px;
+  margin: auto;
 }
 
 .change-theme {
-    width: 2.5rem;
-    height: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .change-theme:hover,
 .material-symbols-rounded:hover {
-    font-variation-settings: 'FILL' 1;
+  font-variation-settings: "FILL" 1;
 }
 
 .dropdown {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .dropbutton {
-    background-color: var(--navgroup-bg);
+  background-color: var(--navgroup-bg);
 }
 
 .dropdown-content {
-    background-color: #00000000;
-    margin: 0rem;
-    padding: 0rem;
-    display: none;
-    position: absolute;
-    z-index: 1;
+  background-color: #00000000;
+  margin: 0rem;
+  padding: 0rem;
+  display: none;
+  position: absolute;
+  z-index: 1;
 }
 
 .dropdown-bg {
-    display: grid;
-    background-color: var(--navgroup-bg);
-    margin-top: 0.25rem;
-    padding: 0.2rem;
-    border-radius: 0.2rem;
+  display: grid;
+  background-color: var(--navgroup-bg);
+  margin-top: 0.25rem;
+  padding: 0.2rem;
+  border-radius: 0.2rem;
 }
 
 .dropdown .dropdown-content .dropdown-bg .dropitem {
-    margin: 0.2rem;
+  margin: 0.2rem;
 }
 
 .dropdown:hover .dropbutton {
-    background-color: var(--hover-navgroup);
-    text-shadow: 0px 0px 10px #2f80ed;
-    font-variation-settings: 'FILL' 1;
+  background-color: var(--hover-navgroup);
+  text-shadow: 0px 0px 10px #2f80ed;
+  font-variation-settings: "FILL" 1;
 }
 
 .dropdown:hover .dropdown-content {
-    display: block;
-    top: 3rem;
+  display: block;
+  top: 3rem;
 }
 
 .md h1,
@@ -72,56 +72,56 @@
 .md p,
 .md ul,
 .md ol {
-    margin: 0rem;
-    padding-bottom: 0.25rem;
+  margin: 0rem;
+  padding-bottom: 0.25rem;
 }
 
 .md h1 {
-    padding-top: 3rem;
+  padding-top: 3rem;
 }
 
 .md h2 {
-    padding-top: 2rem;
+  padding-top: 2rem;
 }
 
 .md h3 {
-    padding-top: 1rem;
+  padding-top: 1rem;
 }
 
 .md h4 {
-    padding-top: 0.75rem;
+  padding-top: 0.75rem;
 }
 
 .md h5 {
-    padding-top: 0.5rem;
+  padding-top: 0.5rem;
 }
 
 .md h6 {
-    padding-top: 0.25rem;
+  padding-top: 0.25rem;
 }
 
 .md p,
 .md ul,
 .md ol {
-    padding-top: 0rem;
+  padding-top: 0rem;
 }
 
 .pre-container {
-    background-color: var(--navgroup-bg);
-    padding: 1rem;
-    margin: 1rem 0rem;
-    border-radius: 0.2rem;
-    position: relative;
+  background-color: var(--navgroup-bg);
+  padding: 1rem;
+  margin: 1rem 0rem;
+  border-radius: 0.2rem;
+  position: relative;
 }
 
 .pre-container .pre-copy-button {
-    position: absolute;
-    top: 0rem;
-    right: 0rem;
-    margin: 1rem;
-    opacity: 0;
+  position: absolute;
+  top: 0rem;
+  right: 0rem;
+  margin: 1rem;
+  opacity: 0;
 }
 
 .pre-container:hover .pre-copy-button {
-    opacity: 1;
+  opacity: 1;
 }

@@ -29,7 +29,7 @@
 }
 
 .navbar .navbutton {
-  font-family: 'Lexend Zetta', sans-serif;
+  font-family: "Lexend Zetta", sans-serif;
   padding: 0.5rem;
   font-size: 1rem;
   margin: 0.22rem 0.22rem;
@@ -54,12 +54,12 @@
 .navbar .navitem:not(.active):not(.activenav) .navbutton:hover {
   background-color: var(--hover-navgroup);
   text-shadow: 0px 0px 10px #2f80ed;
-  font-variation-settings: 'FILL' 1;
+  font-variation-settings: "FILL" 1;
 }
 
 .navbar .navitem.active .navbutton,
 .navbar .activenav .navbutton {
-  font-variation-settings: 'FILL' 1;
+  font-variation-settings: "FILL" 1;
 }
 
 .navbar .navitem.active .navbutton:hover span,
@@ -113,7 +113,7 @@
     float: unset;
     display: flex;
   }
-  
+
   .navbar .navmenu {
     float: left;
     display: block;

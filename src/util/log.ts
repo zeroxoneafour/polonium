@@ -1,58 +1,44 @@
 // log.ts - Logging support
 
-import Config from "./config";
+import { Config } from "./config";
 import { Root } from "../extern/qml";
 import { Controller } from "../controller";
 
-class LogClass
-{
-    private printFn: Root["printQml"] | undefined;
-    init(c: Controller)
-    {
-        this.printFn = c.qmlObjects.root.printQml;
+export class Log {
+    private readonly printFn: Root["printQml"] | undefined;
+    private readonly debugEnabled: boolean;
+
+    constructor(config: Config, root: Root) {
+        this.printFn = root.printQml;
+        this.debugEnabled = config.debug;
     }
-    private print(opener: string, stuff: any[])
-    {
-        if (this.printFn == undefined)
-        {
+
+    private print(opener: string, stuff: any[]): void {
+        if (this.printFn == undefined) {
             return;
         }
         let ret = opener;
-        for (const s of stuff)
-        {
+        for (const s of stuff) {
             ret += " ";
-            if (typeof s == "string")
-            {
+            if (typeof s == "string") {
                 ret += s;
-            }
-            else
-            {
+            } else {
                 ret += s.toString();
             }
         }
         this.printFn(ret);
     }
-    debug(...stuff: any[])
-    {
-        if (!Config.debug) return;
+
+    debug(...stuff: any[]): void {
+        if (!this.debugEnabled) return;
         this.print("Polonium DBG:", stuff);
     }
-    
-    info(...stuff: any[])
-    {
+
+    info(...stuff: any[]) {
         this.print("Polonium INF:", stuff);
     }
-    
-    error(...stuff: any[])
-    {
+
+    error(...stuff: any[]) {
         this.print("Polonium ERR:", stuff);
     }
-}
-
-let Log = new LogClass();
-export default Log;
-
-export function init(c: Controller)
-{
-    Log.init(c);
 }

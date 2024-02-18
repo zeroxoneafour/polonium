@@ -1,15 +1,13 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import org.kde.kwin 2.0
-import org.kde.plasma.components 3.0 as PC3
-import org.kde.plasma.core 2.0 as PlasmaCore
+import QtQuick;
+import QtQuick.Layouts;
+import org.kde.kwin;
+import org.kde.plasma.components 3.0 as PC3;
+import org.kde.plasma.core 2.0 as PlasmaCore;
 
-PlasmaCore.Dialog
-{
+PlasmaCore.Dialog {
     id: settingsDialog;
     
-    property var settings:
-    ({
+    property var settings: ({
         // see engine enum
         engine: 0,
         // 0 - left side, 1 - right side, 2 - active
@@ -17,8 +15,7 @@ PlasmaCore.Dialog
         rotateLayout: false,
     })
     
-    property var desktop:
-    ({
+    property var desktop: ({
         screen: 0,
         activity: "",
         desktop: 1,
@@ -33,15 +30,13 @@ PlasmaCore.Dialog
     location: PlasmaCore.Types.Floating;
     hideOnWindowDeactivate: true;
 
-    function setSettings(s)
-    {
+    function setSettings(s) {
         this.settings.engine = s.engine;
         this.settings.insertionPoint = s.insertionPoint;
         this.settings.rotateLayout = s.rotateLayout;
     }
     
-    function show()
-    {
+    function show() {
         // update desktop
         this.desktop.screen = workspace.activeScreen;
         this.desktop.activity = workspace.currentActivity;
@@ -59,96 +54,80 @@ PlasmaCore.Dialog
         this.visible = true;
     }
     
-    function hide()
-    {
+    function hide() {
         this.visible = false;
     }
     
     signal saveSettingsInternal(settings: var, desktop: var);
     signal removeSettingsInternal(desktop: var);
     
-    function saveSettings()
-    {
+    function saveSettings() {
         this.settings.engine = engine.currentIndex;
         this.settings.insertionPoint = insertionPoint.currentIndex;
         this.settings.rotateLayout = (rotateLayout.checkState == Qt.Checked);
         this.saveSettingsInternal(this.settings, this.desktop);
     }
     
-    function removeSettings()
-    {
+    function removeSettings() {
         this.removeSettingsInternal(this.desktop);
     }
         
-    mainItem: ColumnLayout
-    {
+    mainItem: ColumnLayout {
         id: main;
         Layout.alignment: Qt.AlignHCenter;
         spacing: 10;
         
-        RowLayout
-        {
+        RowLayout {
             Layout.fillWidth: true;
             Layout.alignment: Qt.AlignHCenter;
             spacing: 10;
             
-            PC3.Label
-            {
+            PC3.Label {
                 text: "Engine:";
             }
-            PC3.ComboBox
-            {
+            PC3.ComboBox {
                 id: engine;
                 model: ["Binary Tree", "Half", "Three Column", "KWin"];
             }
         }
         
-        RowLayout
-        {
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter;
             Layout.fillWidth: true;
             spacing: 10;
             
-            PC3.Label
-            {
+            PC3.Label {
                 text: "Insertion Point:";
             }
-            PC3.ComboBox
-            {
+            PC3.ComboBox {
                 id: insertionPoint;
                 model: ["Left", "Right", "Selected"];
             }
         }
         
-        RowLayout
-        {
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter;
             Layout.fillWidth: true;
             spacing:10;
             
-            PC3.CheckBox
-            {
+            PC3.CheckBox {
                 id: rotateLayout;
                 text: "Rotate Layout"
             }
         }
         
-        RowLayout
-        {
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter;
             Layout.fillWidth: true;
             
-            PC3.Button 
-            {
+            PC3.Button  {
                 text: "Save and close";
-                onClicked: 
-                {
+                onClicked:  {
                     settingsDialog.saveSettings();
                     settingsDialog.hide();
                 }
             }
-            PC3.Button
-            {
+            PC3.Button {
                 text: "Close without saving";
                 onClicked: {
                     settingsDialog.hide();
@@ -156,17 +135,14 @@ PlasmaCore.Dialog
             }
         }
         
-        RowLayout
-        {
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter;
             Layout.fillWidth: true;
             spacing: 10;
             
-            PC3.Button
-            {
+            PC3.Button {
                 text: "Remove custom settings and close";
-                onClicked:
-                {
+                onClicked: {
                     settingsDialog.removeSettings();
                     settingsDialog.hide();
                 }

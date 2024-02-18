@@ -1,39 +1,31 @@
 // main.qml - Entry point into script
 
-import "./main.mjs" as Polonium;
-import QtQuick 2.15;
-import org.kde.kwin 2.0;
+import "../code/main.mjs" as Polonium;
+import QtQuick;
+import org.kde.kwin;
 
-Item
-{
+Item {
     id: root;
 
-    function printQml(string)
-    {
+    function printQml(string) {
         print(string);
     }
 
-    function createTimer()
-    {
-        return Qt.createQmlObject("import QtQuick 2.15; Timer {}", root);
+    function createTimer() {
+        return Qt.createQmlObject("import QtQuick; Timer {}", root);
     }
     
-    function createDBusCall() {
-        return Qt.createQmlObject("import QtQuick 2.15; import org.kde.kwin 2.0; DBusCall {}", root);
-    }
-    
-    Component.onCompleted:
-    {
-        const api =
-        {
-            "workspace": workspace,
-            "options": options,
+    Component.onCompleted: {
+        const api = {
+            "workspace": Workspace,
+            "options": Options,
             "kwin": KWin,
         };
-        const qmlObjects =
-        {
+        const qmlObjects = {
             "root": root,
             "settings": settings,
+            "shortcuts": shortcuts,
+            "dbus": dbus
         };
         Polonium.main(api, qmlObjects);
     }
@@ -41,28 +33,23 @@ Item
     Loader {
         id: settings;
         
-        function isVisible()
-        {
+        function isVisible() {
             return settings.item.visible;
         }
         
-        function setSettings(c)
-        {
+        function setSettings(c) {
             settings.item.setSettings(c);
         }
         
-        function show()
-        {
+        function show() {
             settings.item.show();
         }
         
-        function hide()
-        {
+        function hide() {
             settings.item.hide();
         }
         
-        function saveAndHide()
-        {
+        function saveAndHide() {
             settings.item.saveSettings();
             settings.item.hide();
         }
@@ -73,8 +60,7 @@ Item
         source: "settings.qml";
     }
     
-    Connections
-    {
+    Connections {
         target: settings.item;
         function onSaveSettingsInternal(a, b) {
             settings.saveSettings(a, b);
@@ -82,5 +68,20 @@ Item
         function onRemoveSettingsInternal(a) {
             settings.removeSettings(a);
         }
+    }
+    
+    Loader {
+        id: dbus;
+        
+        getSettings: dbus.getSettings;
+        
+        setSettings: dbus.setSettings;
+        
+        removeSettings: dbus.removeSettings;
+        
+        source: "dbus.qml";
+    }
+    
+    Loader {
     }
 }

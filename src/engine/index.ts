@@ -6,15 +6,13 @@ import { Direction } from "../util/geometry";
 import { LayoutDirection, Client as KwinClient } from "../extern/kwin";
 import { EngineType } from "./factory";
 
-export interface IEngineConfig
-{
+export interface IEngineConfig {
     engine: EngineType;
     insertionPoint: InsertionPoint;
     rotateLayout: boolean;
 }
 
-export const enum EngineCapability
-{
+export const enum EngineCapability {
     None = 0,
     // whether the driver should translate the rotation for the engine when inserting clients
     TranslateRotation = 1,
@@ -22,113 +20,93 @@ export const enum EngineCapability
     TilesMutable = 2,
 }
 
-export class EngineConfig implements IEngineConfig
-{
+export class EngineConfig implements IEngineConfig {
     engine: EngineType = Config.engineType;
     insertionPoint = Config.insertionPoint;
     rotateLayout: boolean = Config.rotateLayout;
-    
-    constructor(conf?: IEngineConfig)
-    {
-        if (conf == undefined)
-        {
+
+    constructor(conf?: IEngineConfig) {
+        if (conf == undefined) {
             return;
         }
         this.insertionPoint = conf.insertionPoint;
         this.engine = conf.engine;
         this.rotateLayout = conf.rotateLayout;
     }
-    
-    toString(): string
-    {
+
+    toString(): string {
         return JSON.stringify(this);
     }
 }
 
-export class Client
-{
+export class Client {
     name: string;
     minSize: QSize;
-    
-    constructor(client: KwinClient)
-    {
+
+    constructor(client: KwinClient) {
         this.name = client.resourceClass;
         this.minSize = client.minSize;
     }
 }
 
-export class Tile
-{
+export class Tile {
     parent: Tile | null;
     tiles: Tile[] = [];
     layoutDirection: LayoutDirection = 1;
     // requested size in pixels, may not be honored
     requestedSize: QSize | null = null;
     client: Client | null = null;
-    
-    constructor(parent?: Tile)
-    {
+
+    constructor(parent?: Tile) {
         this.parent = parent ?? null;
-        if (!this.parent) 
-        {
+        if (!this.parent) {
             return;
         }
         this.parent.tiles.push(this);
     }
-        
+
     // adds a child that will split perpendicularly to the parent. Returns the child
-    addChild(): Tile
-    {
+    addChild(): Tile {
         let splitDirection: LayoutDirection = 1;
-        if (this.layoutDirection == 1)
-        {
+        if (this.layoutDirection == 1) {
             splitDirection = 2;
         }
         const childTile = new Tile(this);
         childTile.layoutDirection = splitDirection;
         return childTile;
     }
-    
+
     // adds a child that will split parallel to the parent. Not really recommeneded
-    addChildParallel(): Tile
-    {
+    addChildParallel(): Tile {
         const childTile = new Tile(this);
         childTile.layoutDirection = this.layoutDirection;
         return childTile;
     }
-    
+
     // split a tile perpendicularly
-    split(): void
-    {
+    split(): void {
         this.addChild();
         this.addChild();
     }
-    
+
     // have a tile replace its parent, destroying its siblings
-    secede(): void
-    {
+    secede(): void {
         const parent = this.parent;
         // cant secede as root
-        if (parent == null)
-        {
+        if (parent == null) {
             return;
         }
         this.parent = parent.parent;
-        if (this.parent != null)
-        {
+        if (this.parent != null) {
             this.parent.tiles[this.parent.tiles.indexOf(parent)] = this;
-            for (const tile of parent.tiles)
-            {
-                if (tile != this)
-                {
+            for (const tile of parent.tiles) {
+                if (tile != this) {
                     tile.remove(true);
                 }
             }
             parent.tiles = [];
             parent.client = null;
-        }
-        else
-        {
+        } else {
             // special case for roottile because it cant be destroyed
             parent.client = this.client;
             parent.tiles = this.tiles;
@@ -136,56 +114,47 @@ export class Tile
             this.client = null;
         }
     }
-    
+
     // removes a tile and all its children
-    remove(batchRemove: boolean = false): void
-    {
+    remove(batchRemove: boolean = false): void {
         const parent = this.parent;
-        if (parent == null)
-        {
+        if (parent == null) {
             return;
         }
-        if (!batchRemove)
-        {
+        if (!batchRemove) {
             parent.tiles.splice(parent.tiles.indexOf(this), 1);
         }
         this.tiles = [];
         this.client = null;
     }
-    
+
     // remove child tiles
-    removeChildren(): void
-    {
-        for (const tile of this.tiles)
-        {
+    removeChildren(): void {
+        for (const tile of this.tiles) {
             tile.remove(true);
         }
         this.tiles = [];
     }
 }
 
-export class RootTile extends Tile
-{
+export class RootTile extends Tile {
     parent: null = null;
-    constructor(layoutDirection: LayoutDirection)
-    {
+    constructor(layoutDirection: LayoutDirection) {
         super();
         this.layoutDirection = layoutDirection;
     }
 }
 
-export abstract class TilingEngine
-{
+export abstract class TilingEngine {
     rootTile: RootTile = new RootTile(1);
     untiledClients: Client[] = [];
     config: EngineConfig;
     abstract readonly engineCapability: EngineCapability;
-    
-    constructor(config?: IEngineConfig)
-    {
+
+    constructor(config?: IEngineConfig) {
         this.config = new EngineConfig(config);
     }
-    
+
     // creates the root tile layout
     abstract buildLayout(): void;
     // adds a new client to the engine

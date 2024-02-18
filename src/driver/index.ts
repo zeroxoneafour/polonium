@@ -11,107 +11,101 @@ import { Controller } from "../controller";
 import Log from "../util/log";
 import Config, { Borders } from "../util/config";
 
-export interface IDesktop
-{
-    screen: number;
-    activity: string;
-    desktop: number;
-}
-
-export class Desktop implements IDesktop
-{
-    screen: number;
-    activity: string;
-    desktop: number;
-    toString(): string
-    {
-        return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
+export interface Desktop {
+    toString(): string {
+        
     }
-    constructor(d: IDesktop)
-    {
+}
+export class Desktop implements IDesktop {
+    screen: number;
+    activity: string;
+    desktop: number;
+    toString(): string {
+        return (
+            "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")"
+        );
+    }
+    constructor(d: IDesktop) {
         this.screen = d.screen;
         this.activity = d.activity;
         this.desktop = d.desktop;
     }
-    
-    static fromClient(client: Client): Desktop[]
-    {
+
+    static fromClient(client: Client): Desktop[] {
         let ret = [];
-        for (const activity of client.activities)
-        {
-            ret.push(new Desktop({
-                screen: client.screen,
-                activity: activity,
-                desktop: client.desktop,
-            }));
+        for (const activity of client.activities) {
+            ret.push(
+                new Desktop({
+                    screen: client.screen,
+                    activity: activity,
+                    desktop: client.desktop,
+                }),
+            );
         }
         return ret;
     }
-    
-    static currentScreens(c: Controller): Desktop[]
-    {
+
+    static currentScreens(c: Controller): Desktop[] {
         let ret = [];
-        for (let i = 0; i < c.workspace.numScreens; i += 1)
-        {
-            ret.push(new Desktop({
-                screen: i,
-                activity: c.workspace.currentActivity,
-                desktop: c.workspace.currentDesktop,
-            }));
+        for (let i = 0; i < c.workspace.numScreens; i += 1) {
+            ret.push(
+                new Desktop({
+                    screen: i,
+                    activity: c.workspace.currentActivity,
+                    desktop: c.workspace.currentDesktop,
+                }),
+            );
         }
         return ret;
     }
 }
 
-export class DriverManager
-{
-    private drivers: Map<string, TilingDriver> = new Map;
+export class DriverManager {
+    private drivers: Map<string, TilingDriver> = new Map();
     private engineFactory: TilingEngineFactory = new TilingEngineFactory();
-    private rootTileCallbacks: Map<RootTile, QTimer> = new Map;
-    
+    private rootTileCallbacks: Map<RootTile, QTimer> = new Map();
+
     ctrl: Controller;
     buildingLayout: boolean = false;
-    
-    constructor(c: Controller)
-    {
+
+    constructor(c: Controller) {
         this.ctrl = c;
     }
-    
-    private getDriver(desktop: Desktop): TilingDriver
-    {
+
+    private getDriver(desktop: Desktop): TilingDriver {
         const desktopString = desktop.toString();
-        if (!this.drivers.has(desktopString))
-        {
+        if (!this.drivers.has(desktopString)) {
             Log.debug("Creating new engine for desktop", desktopString);
             let engineType = Config.engineType;
             const engine = this.engineFactory.newEngine(engineType);
             const driver = new TilingDriver(engine, engineType, this);
             this.drivers.set(desktopString, driver);
-            this.ctrl.dbusController.getSettings(desktopString, this.setEngineConfig.bind(this, desktop));
+            this.ctrl.dbusController.getSettings(
+                desktopString,
+                this.setEngineConfig.bind(this, desktop),
+            );
         }
         return this.drivers.get(desktopString)!;
     }
-    
-    private layoutModified(tile: RootTile): void
-    {
-        if (this.buildingLayout)
-        {
+
+    private layoutModified(tile: RootTile): void {
+        if (this.buildingLayout) {
             return;
         }
         const timer = this.rootTileCallbacks.get(tile);
-        if (timer == undefined)
-        {
-            Log.error("Callback not registered for root tile", tile.absoluteGeometry);
+        if (timer == undefined) {
+            Log.error(
+                "Callback not registered for root tile",
+                tile.absoluteGeometry,
+            );
             return;
         }
         timer.restart();
     }
-    
-    private layoutModifiedCallback(tile: RootTile, scr: number): void
-    {
+
+    private layoutModifiedCallback(tile: RootTile, scr: number): void {
         Log.debug("Layout modified for tile", tile.absoluteGeometry);
-        const desktop = new Desktop(
-        {
+        const desktop = new Desktop({
             screen: scr,
             activity: this.ctrl.workspace.currentActivity,
             desktop: this.ctrl.workspace.currentDesktop,
@@ -119,138 +113,147 @@ export class DriverManager
         const driver = this.getDriver(desktop);
         driver.regenerateLayout(tile);
     }
-    
-    hookRootTiles(): void
-    {
-        for (let i = 0; i < this.ctrl.workspace.numScreens; i += 1)
-        {
+
+    hookRootTiles(): void {
+        for (let i = 0; i < this.ctrl.workspace.numScreens; i += 1) {
             const rootTile = this.ctrl.workspace.tilingForScreen(i).rootTile;
-            if (rootTile.managed)
-            {
+            if (rootTile.managed) {
                 continue;
             }
             rootTile.managed = true;
             const timer = this.ctrl.qmlObjects.root.createTimer();
             timer.interval = Config.timerDelay;
-            timer.triggered.connect(this.layoutModifiedCallback.bind(this, rootTile, i));
+            timer.triggered.connect(
+                this.layoutModifiedCallback.bind(this, rootTile, i),
+            );
             timer.repeat = false;
             this.rootTileCallbacks.set(rootTile, timer);
-            rootTile.layoutModified.connect(this.layoutModified.bind(this, rootTile));
+            rootTile.layoutModified.connect(
+                this.layoutModified.bind(this, rootTile),
+            );
         }
     }
-    
-    private applyTiled(client: Client)
-    {
+
+    private applyTiled(client: Client) {
         client.isTiled = true;
-        if (Config.keepTiledBelow)
-        {
+        if (Config.keepTiledBelow) {
             client.keepBelow = true;
         }
-        if (Config.borders == Borders.NoTiled || Config.borders == Borders.Selected)
-        {
+        if (
+            Config.borders == Borders.NoTiled ||
+            Config.borders == Borders.Selected
+        ) {
             client.noBorder = true;
         }
     }
-    
-    rebuildLayout(scr?: number): void
-    {
+
+    rebuildLayout(scr?: number): void {
         this.buildingLayout = true;
         let desktops: Desktop[];
-        if (scr == undefined)
-        {
+        if (scr == undefined) {
             desktops = Desktop.currentScreens(this.ctrl);
-        }
-        else
-        {
-            desktops = [new Desktop({
-                screen: scr, 
-                activity: this.ctrl.workspace.currentActivity, 
-                desktop: this.ctrl.workspace.currentDesktop, 
-            })];
+        } else {
+            desktops = [
+                new Desktop({
+                    screen: scr,
+                    activity: this.ctrl.workspace.currentActivity,
+                    desktop: this.ctrl.workspace.currentDesktop,
+                }),
+            ];
         }
         Log.debug("Rebuilding layout for desktops", desktops);
-        for (const desktop of desktops)
-        {
+        for (const desktop of desktops) {
             const driver = this.getDriver(desktop);
-            driver.buildLayout(this.ctrl.workspace.tilingForScreen(desktop.screen).rootTile);
+            driver.buildLayout(
+                this.ctrl.workspace.tilingForScreen(desktop.screen).rootTile,
+            );
             // untile clients that the driver wants untiled
-            for (const client of driver.untiledClients)
-            {
+            for (const client of driver.untiledClients) {
                 this.removeClient(client);
             }
         }
         this.buildingLayout = false;
     }
-    
-    addClient(client: Client, desktops?: Desktop[]): void
-    {
-        if (desktops == undefined)
-        {
+
+    addClient(client: Client, desktops?: Desktop[]): void {
+        if (desktops == undefined) {
             desktops = Desktop.fromClient(client);
         }
-        Log.debug("Adding client", client.resourceClass, "to desktops", desktops);
-        for (const desktop of desktops)
-        {
+        Log.debug(
+            "Adding client",
+            client.resourceClass,
+            "to desktops",
+            desktops,
+        );
+        for (const desktop of desktops) {
             const driver = this.getDriver(desktop);
             driver.addClient(client);
         }
         this.applyTiled(client);
     }
-    
-    removeClient(client: Client, desktops?: Desktop[]): void
-    {
-        if (desktops == undefined)
-        {
+
+    removeClient(client: Client, desktops?: Desktop[]): void {
+        if (desktops == undefined) {
             desktops = Desktop.fromClient(client);
         }
-        Log.debug("Removing client", client.resourceClass, "from desktops", desktops);
-        for (const desktop of desktops)
-        {
+        Log.debug(
+            "Removing client",
+            client.resourceClass,
+            "from desktops",
+            desktops,
+        );
+        for (const desktop of desktops) {
             const driver = this.getDriver(desktop);
             driver.removeClient(client);
         }
         client.isTiled = false;
-        if (Config.keepTiledBelow)
-        {
+        if (Config.keepTiledBelow) {
             client.keepBelow = false;
         }
-        if (Config.borders == Borders.NoTiled || Config.borders == Borders.Selected)
-        {
+        if (
+            Config.borders == Borders.NoTiled ||
+            Config.borders == Borders.Selected
+        ) {
             client.noBorder = false;
         }
     }
-    
-    putClientInTile(client: Client, tile: Tile, direction?: Direction)
-    {
-        const desktop = new Desktop(
-        {
+
+    putClientInTile(client: Client, tile: Tile, direction?: Direction) {
+        const desktop = new Desktop({
             screen: client.screen,
             activity: this.ctrl.workspace.currentActivity,
             desktop: this.ctrl.workspace.currentDesktop,
         });
-        Log.debug("Putting client", client.resourceClass, "in tile", tile.absoluteGeometry, "with direction", direction, "on desktop", desktop);
+        Log.debug(
+            "Putting client",
+            client.resourceClass,
+            "in tile",
+            tile.absoluteGeometry,
+            "with direction",
+            direction,
+            "on desktop",
+            desktop,
+        );
         const driver = this.getDriver(desktop);
         driver.putClientInTile(client, tile, direction);
         this.applyTiled(client);
     }
-    
-    getEngineConfig(desktop: Desktop): IEngineConfig
-    {
+
+    getEngineConfig(desktop: Desktop): IEngineConfig {
         Log.debug("Getting engine config for desktop", desktop);
-        const config = this.getDriver(desktop).engine.config
+        const config = this.getDriver(desktop).engine.config;
         return this.getDriver(desktop).engine.config;
     }
-    
-    setEngineConfig(desktop: Desktop, config: IEngineConfig)
-    {
+
+    setEngineConfig(desktop: Desktop, config: IEngineConfig) {
         Log.debug("Setting engine config for desktop", desktop);
         const driver = this.getDriver(desktop);
-        if (config.engine != driver.engine.config.engine)
-        {
-            driver.switchEngine(this.engineFactory.newEngine(config.engine, config), config.engine);
-        }
-        else
-        {
+        if (config.engine != driver.engine.config.engine) {
+            driver.switchEngine(
+                this.engineFactory.newEngine(config.engine, config),
+                config.engine,
+            );
+        } else {
             driver.engine.config = new EngineConfig(config);
         }
         this.ctrl.dbusController.setSettings(desktop.toString(), config);

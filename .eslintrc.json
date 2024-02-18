@@ -8,10 +8,5 @@
     "parserOptions": {
         "project": "tsconfig.json",
         "sourceType": "module"
-    },
-    "rules": {
-        "brace-style": ["error", "allman"],
-        "indent": ["error", 4],
-        "quotes": ["error", "double"]
     }
 }

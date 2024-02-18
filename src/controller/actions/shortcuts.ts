@@ -9,18 +9,15 @@ import { Controller } from "../";
 
 // redefinition of direction enum because we need cardinal direction instead of gtools direction
 // this shouldnt really be shared outside of here anyway except to controller
-export const enum Direction
-{
+export const enum Direction {
     Above,
     Below,
     Left,
     Right,
 }
 
-function invertDirection(direction: Direction): Direction
-{
-    switch (direction)
-    {
+function invertDirection(direction: Direction): Direction {
+    switch (direction) {
         case Direction.Above:
             return Direction.Below;
         case Direction.Below:
@@ -32,82 +29,67 @@ function invertDirection(direction: Direction): Direction
     }
 }
 
-function pointAbove(client: Kwin.Client): GPoint | null
-{
-    if (client.tile == null)
-    {
+function pointAbove(client: Kwin.Client): GPoint | null {
+    if (client.tile == null) {
         return null;
     }
     const geometry = client.frameGeometry;
     const coordOffset = 1 + client.tile.padding;
     const x = geometry.x + 1;
     const y = geometry.y - coordOffset;
-    return new GPoint(
-        {
-            x: x,
-            y: y,
-        }
-    );
+    return new GPoint({
+        x: x,
+        y: y,
+    });
 }
 
-function pointBelow(client: Kwin.Client): GPoint | null
-{
-    if (client.tile == null)
-    {
+function pointBelow(client: Kwin.Client): GPoint | null {
+    if (client.tile == null) {
         return null;
     }
     const geometry = client.frameGeometry;
     const coordOffset = 1 + geometry.height + client.tile.padding;
     const x = geometry.x + 1;
     const y = geometry.y + coordOffset;
-    return new GPoint(
-        {
-            x: x,
-            y: y,
-        }
-    );
+    return new GPoint({
+        x: x,
+        y: y,
+    });
 }
 
-function pointLeft(client: Kwin.Client): GPoint | null
-{
-    if (client.tile == null)
-    {
+function pointLeft(client: Kwin.Client): GPoint | null {
+    if (client.tile == null) {
         return null;
     }
     const geometry = client.frameGeometry;
     let coordOffset = 1 + client.tile.padding;
     let x = geometry.x - coordOffset;
     let y = geometry.y + 1;
-    return new GPoint(
-        {
-            x: x,
-            y: y,
-        }
-    );
+    return new GPoint({
+        x: x,
+        y: y,
+    });
 }
 
-function pointRight(client: Kwin.Client): GPoint | null
-{
-    if (client.tile == null)
-    {
+function pointRight(client: Kwin.Client): GPoint | null {
+    if (client.tile == null) {
         return null;
     }
     const geometry = client.frameGeometry;
     let coordOffset = 1 + geometry.width + client.tile.padding;
     let x = geometry.x + coordOffset;
     let y = geometry.y + 1;
-    return new GPoint(
-        {
-            x: x,
-            y: y,
-        }
-    );
+    return new GPoint({
+        x: x,
+        y: y,
+    });
 }
 
-function pointInDirection(client: Kwin.Client, direction: Direction): GPoint | null
-{
-    switch (direction)
-    {
+function pointInDirection(
+    client: Kwin.Client,
+    direction: Direction,
+): GPoint | null {
+    switch (direction) {
         case Direction.Above:
             return pointAbove(client);
         case Direction.Below:
@@ -121,25 +103,29 @@ function pointInDirection(client: Kwin.Client, direction: Direction): GPoint | n
     }
 }
 
-function tileInDirection(this: Controller, client: Kwin.Client, point: Qt.QPoint | null): Kwin.Tile | null
-{
-    if (point == null)
-    {
+function tileInDirection(
+    this: Controller,
+    client: Kwin.Client,
+    point: Qt.QPoint | null,
+): Kwin.Tile | null {
+    if (point == null) {
         return null;
     }
-    return this.workspace.tilingForScreen(client.screen).bestTileForPosition(point.x, point.y);
+    return this.workspace
+        .tilingForScreen(client.screen)
+        .bestTileForPosition(point.x, point.y);
 }
 
-export function focus(this: Controller, direction: Direction): void
-{
+export function focus(this: Controller, direction: Direction): void {
     const client = this.workspace.activeClient;
-    if (client == null)
-    {
+    if (client == null) {
         return;
     }
-    const tile = tileInDirection.bind(this)(client, pointInDirection(client, direction));
-    if (tile == null || tile.windows.length == 0)
-    {
+    const tile = tileInDirection.bind(this)(
+        client,
+        pointInDirection(client, direction),
+    );
+    if (tile == null || tile.windows.length == 0) {
         return;
     }
     let newClient = tile.windows[0];
@@ -172,59 +158,50 @@ export function swapActiveClient(this: Controller, direction: Direction) {
 
 export function insert(this: Controller, direction: Direction) {
     const client = this.workspace.activeClient;
-    if (client == null)
-    {
+    if (client == null) {
         return;
     }
     const point = pointInDirection(client, direction);
-    if (point == null)
-    {
+    if (point == null) {
         return;
     }
     Log.debug("Moving", client.resourceClass);
     this.manager.removeClient(client);
     this.manager.rebuildLayout(client.screen);
     let tile = tileInDirection.bind(this)(client, point);
-    if (tile == null)
-    {
+    if (tile == null) {
         // usually this works
         tile = this.workspace.tilingForScreen(client.screen).rootTile;
-        while (tile.tiles.length == 1)
-        {
+        while (tile.tiles.length == 1) {
             tile = tile.tiles[0];
         }
     }
-    this.manager.putClientInTile(client, tile, new GRect(tile.absoluteGeometry).directionFromPoint(point));
+    this.manager.putClientInTile(
+        client,
+        tile,
+        new GRect(tile.absoluteGeometry).directionFromPoint(point),
+    );
     this.manager.rebuildLayout(client.screen);
 }
 
-export function retileWindow(this: Controller)
-{
+export function retileWindow(this: Controller) {
     const client = this.workspace.activeClient;
-    if (client == null)
-    {
+    if (client == null) {
         return;
     }
-    if (client.isTiled)
-    {
+    if (client.isTiled) {
         clientRemoved.bind(this)(client);
-    }
-    else
-    {
+    } else {
         clientAdded.bind(this)(client, false);
     }
 }
 
-export function openSettingsDialog(this: Controller)
-{
+export function openSettingsDialog(this: Controller) {
     const settings = this.qmlObjects.settings;
-    if (settings.isVisible())
-    {
+    if (settings.isVisible()) {
         settings.hide();
-    }
-    else
-    {
+    } else {
         settings.setSettings(this.manager.getEngineConfig(this.currentDesktop));
-        settings.show();    
+        settings.show();
     }
 }

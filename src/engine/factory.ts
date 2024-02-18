@@ -5,10 +5,9 @@ import BTreeEngine from "./layouts/btree";
 import HalfEngine from "./layouts/half";
 import ThreeColumnEngine from "./layouts/threecolumn";
 import KwinEngine from "./layouts/kwin";
-import Log from "../util/log";
+import { Log } from "../util/log";
 
-export const enum EngineType
-{
+export const enum EngineType {
     BTree = 0,
     Half,
     ThreeColumn,
@@ -16,13 +15,16 @@ export const enum EngineType
     _loop,
 }
 
-export class TilingEngineFactory
-{
-    newEngine(t: EngineType, config?: IEngineConfig): TilingEngine
-    {
+export class TilingEngineFactory {
+    logger: Log;
+    
+    constructor(logger: Log) {
+        this.logger = logger;
+    }
+    
+    newEngine(t: EngineType, config?: IEngineConfig): TilingEngine {
         t %= EngineType._loop;
-        switch (t)
-        {
+        switch (t) {
             case EngineType.BTree:
                 return new BTreeEngine(config);
             case EngineType.Half:
@@ -32,7 +34,7 @@ export class TilingEngineFactory
             case EngineType.Kwin:
                 return new KwinEngine(config);
             default:
-                Log.error("Engine not found for engine type", t);
+                this.logger.error("Engine not found for engine type", t);
                 return new BTreeEngine(config);
         }
     }
