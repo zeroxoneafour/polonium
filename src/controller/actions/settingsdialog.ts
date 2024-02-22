@@ -1,19 +1,24 @@
 // actions/settingsdialog.ts - Actions related to signals coming from the settings dialog
 
 import { Controller } from "../";
-import { EngineConfig, IEngineConfig } from "../../engine";
-import { Desktop, IDesktop } from "../../driver";
+import { EngineConfig } from "../../engine";
+import { Desktop, StringDesktop } from "../desktop";
 
-export function saveSettings(
-    this: Controller,
-    settings: IEngineConfig,
-    desktop: IDesktop,
-) {
-    this.manager.setEngineConfig(new Desktop(desktop), settings);
-}
+export class SettingsDialogManager {
+    private ctrl: Controller;
+    constructor(ctrl: Controller) {
+        this.ctrl = ctrl;
+    }
+    saveSettings(
+        settings: EngineConfig,
+        desktop: StringDesktop,
+    ): void {
+        this.ctrl.manager.setEngineConfig(this.ctrl.desktopFactory.createDesktopFromStrings(desktop), settings);
+    }
 
-export function removeSettings(this: Controller, desktop: IDesktop) {
-    const desktopObj = new Desktop(desktop);
-    this.manager.setEngineConfig(desktopObj, new EngineConfig());
-    this.dbusController.removeSettings(desktopObj.toString());
+    removeSettings(desktop: StringDesktop): void {
+        const desktopObj = new Desktop(desktop);
+        this.manager.setEngineConfig(desktopObj, new EngineConfig());
+        this.dbusController.removeSettings(desktopObj.toString());
+    }
 }

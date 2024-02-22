@@ -1,7 +1,7 @@
 // kwin.ts - Layout engine that mimics kwin default tiling
 // quite a bit smaller this time!
 
-import { TilingEngine, EngineCapability, Client, Tile } from "../";
+import { TilingEngine, EngineCapability, Client, Tile } from "../engine";
 import { Direction } from "../../util/geometry";
 
 export default class KwinEngine extends TilingEngine {

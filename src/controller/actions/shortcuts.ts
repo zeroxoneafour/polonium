@@ -1,12 +1,40 @@
 // actions/shortcuts.ts - Shortcuts invoked directly by the user
 
-import * as Kwin from "../../extern/kwin";
-import * as Qt from "../../extern/qt";
-import { GRect, GPoint, Direction as GDirection } from "../../util/geometry";
-import Log from "../../util/log";
+// ill do this later
+
 import { clientAdded, clientRemoved } from "./basic";
 import { Controller } from "../";
 
+export class ShortcutManager {
+    private ctrl: Controller;
+    constructor(ctrl: Controller) {
+        this.ctrl = ctrl;
+    }
+    retileWindow(): void {
+        const window = this.ctrl.workspace.activeWindow;
+        if (client == null || !this.ctrl.windowExtensions.has(client)) {
+            return;
+        }
+        window
+        if (this.ctrl) {
+            clientRemoved.bind(this)(client);
+        } else {
+            clientAdded.bind(this)(client, false);
+        }
+    }
+
+    openSettingsDialog(): void {
+        const settings = this.ctrl.qmlObjects.settings;
+        if (settings.isVisible()) {
+            settings.hide();
+        } else {
+            settings.setSettings(this.ctrl.manager.getEngineConfig(this.ctrl.desktopFactory.));
+            settings.show();
+        }
+    }
+}
+
+/*
 // redefinition of direction enum because we need cardinal direction instead of gtools direction
 // this shouldnt really be shared outside of here anyway except to controller
 export const enum Direction {
@@ -154,7 +182,7 @@ export function swapActiveClient(this: Controller, direction: Direction) {
     this.manager.putClientInTile(otherClient, oldTile);
     this.manager.rebuildLayout(client.screen);
 }
-*/
+*
 
 export function insert(this: Controller, direction: Direction) {
     const client = this.workspace.activeClient;
@@ -183,25 +211,4 @@ export function insert(this: Controller, direction: Direction) {
     );
     this.manager.rebuildLayout(client.screen);
 }
-
-export function retileWindow(this: Controller) {
-    const client = this.workspace.activeClient;
-    if (client == null) {
-        return;
-    }
-    if (client.isTiled) {
-        clientRemoved.bind(this)(client);
-    } else {
-        clientAdded.bind(this)(client, false);
-    }
-}
-
-export function openSettingsDialog(this: Controller) {
-    const settings = this.qmlObjects.settings;
-    if (settings.isVisible()) {
-        settings.hide();
-    } else {
-        settings.setSettings(this.manager.getEngineConfig(this.currentDesktop));
-        settings.show();
-    }
-}
+*/

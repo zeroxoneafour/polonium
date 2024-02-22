@@ -1,40 +1,43 @@
 // driver/driver.ts - Mapping from engines to Kwin API
 
 import { DriverManager } from "./";
-import { TilingEngine, Tile, Client, EngineCapability } from "../engine";
+import { TilingEngine, Tile, Client, EngineCapability, EngineType } from "../engine";
 import { Direction } from "../util/geometry";
-import { EngineType } from "../engine/factory";
 import { GSize, GPoint, DirectionTools } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
-import * as Kwin from "../extern/kwin";
+import * as Kwin from "kwin-api";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
-import Log from "../util/log";
-import Config from "../util/config";
+import { Log } from "../util/log";
+import { Config } from "../util/config";
+import { Controller } from "../controller";
 
 export class TilingDriver {
     engine: TilingEngine;
     engineType: EngineType;
-    manager: DriverManager;
+    
+=   private logger: Log;
+    private config: Config;
+    private ctrl: Controller;
 
     tiles: BiMap<Kwin.Tile, Tile> = new BiMap();
-    clients: BiMap<Kwin.Client, Client> = new BiMap();
-    // untitledclients are clients that are queued for formal deletion and then become clientstonull
-    // clientstonull just have their tile set to null
-    clientsToNull: Kwin.Client[] = [];
-    untiledClients: Kwin.Client[] = [];
+    clients: BiMap<Kwin.Window, Client> = new BiMap();
+    // clients that have no associated tile but are still in an engine go here
+    untiledClients: Kwin.Window[] = [];
 
     constructor(
         engine: TilingEngine,
         engineType: EngineType,
-        manager: DriverManager,
+        ctrl: Controller,
     ) {
         this.engine = engine;
         this.engineType = engineType;
-        this.manager = manager;
+        this.ctrl = ctrl;
+        this.logger = ctrl.logger;
+        this.config = ctrl.config;
     }
 
-    switchEngine(engine: TilingEngine, engineType: EngineType) {
+    switchEngine(engine: TilingEngine, engineType: EngineType): void {
         this.engine = engine;
         this.engineType = engineType;
         try {
@@ -47,7 +50,7 @@ export class TilingDriver {
         }
     }
 
-    buildLayout(rootTile: Kwin.RootTile): void {
+    buildLayout(rootTile: Kwin.Tile): void {
         // clear root tile
         while (rootTile.tiles.length > 0) {
             rootTile.tiles[0].remove();
@@ -55,16 +58,11 @@ export class TilingDriver {
         this.tiles.clear();
         this.untiledClients = [];
         for (const client of this.engine.untiledClients) {
-            const kwinClient = this.clients.inverse.get(client);
-            if (kwinClient != null) {
-                this.untiledClients.push(kwinClient);
+            const window = this.clients.inverse.get(client);
+            if (window != null) {
+                this.untiledClients.push(window);
             }
         }
-        for (const client of this.clientsToNull) {
-            client.tile = null;
-        }
-        this.clientsToNull = [];
-        // set clients marked for untiling to null tiles
 
         // for maximizing single, sometimes engines can create overlapping root tiles so find the real root
         let realRootTile: Tile = this.engine.rootTile;
@@ -72,14 +70,13 @@ export class TilingDriver {
             realRootTile = realRootTile.tiles[0];
         }
         // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
-        if (realRootTile.client != null && Config.maximizeSingle) {
-            const kwinClient = this.clients.inverse.get(realRootTile.client);
-            if (kwinClient == undefined) {
+        if (realRootTile.client != null && this.config.maximizeSingle) {
+            const window = this.clients.inverse.get(realRootTile.client);
+            if (window == undefined) {
                 return;
             }
-            kwinClient.tile = null;
-            kwinClient.isSingleMaximized = true;
-            kwinClient.setMaximize(true, true);
+            window.tile = null;
+            window.setMaximize(true, true);
             return;
         }
         const queue: Queue<Tile> = new Queue();
@@ -89,7 +86,7 @@ export class TilingDriver {
         while (queue.size > 0) {
             const tile = queue.dequeue()!;
             const kwinTile = this.tiles.inverse.get(tile)!;
-            kwinTile.managed = true;
+            this.ctrl; //TODO - add tile to managed tiles list
             kwinTile.layoutDirection = tile.layoutDirection;
 
             // 1 is vertical, 2 is horizontal
@@ -144,7 +141,7 @@ export class TilingDriver {
     }
 
     // kwin couldnt do this themselves?
-    private fixSizing(rootTile: Tile, kwinRootTile: Kwin.RootTile): void {
+    private fixSizing(rootTile: Tile, kwinRootTile: Kwin.Tile): void {
         const padding = kwinRootTile.padding;
         // just finds tiles that need special size constraints and sets them
         // main difference is that this one can do a bit of pushing
@@ -267,12 +264,12 @@ export class TilingDriver {
         }
     }
 
-    addClient(kwinClient: Kwin.Client): void {
-        if (this.clients.has(kwinClient)) {
+    addClient(window: Kwin.Window): void {
+        if (this.clients.has(window)) {
             return;
         }
-        const client = new Client(kwinClient);
-        this.clients.set(kwinClient, client);
+        const client = new Client(window);
+        this.clients.set(window, client);
 
         // tries to use active insertion if it should, but can fail and fall back
         let failedActive: boolean = true;
@@ -280,12 +277,12 @@ export class TilingDriver {
             this.engine.config.insertionPoint == InsertionPoint.Active
         ) {
             failedActive = false;
-            const activeClient = this.manager.ctrl.workspace.activeClient;
-            if (activeClient == null || activeClient.tile == null) {
+            const activeWindow = this.workspace.activeWindow;
+            if (activeWindow == null || activeWindow.tile == null) {
                 failedActive = true;
                 break activeChecks;
             }
-            const tile = this.tiles.get(activeClient.tile);
+            const tile = this.tiles.get(activeWindow.tile);
             if (tile == undefined) {
                 failedActive = true;
                 break activeChecks;
@@ -302,18 +299,18 @@ export class TilingDriver {
         }
     }
 
-    removeClient(kwinClient: Kwin.Client): void {
-        const client = this.clients.get(kwinClient);
+    removeClient(window: Kwin.Window): void {
+        const client = this.clients.get(window);
         if (client == undefined) {
             return;
         }
-        this.clients.delete(kwinClient);
-        this.clientsToNull.push(kwinClient);
+        this.clients.delete(window);
+        this.clientsToNull.push(window);
         try {
             this.engine.removeClient(client);
             this.engine.buildLayout();
         } catch (e) {
-            Log.error(e);
+            this.log.error(e);
         }
     }
 

@@ -2,15 +2,14 @@
 
 // half.ts - Tiling engine for the half/split layout
 
-import { Tile, RootTile, Client, TilingEngine, EngineCapability } from "../";
+import { Tile, Client, TilingEngine, EngineCapability } from "../engine";
 import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
-import { QSize } from "../../extern/qt";
 import { GSize } from "../../util/geometry";
 
 class ClientBox {
     client: Client;
-    size: QSize | null = null;
+    size: GSize | null = null;
 
     constructor(client: Client) {
         this.client = client;
@@ -45,7 +44,8 @@ export default class ThreeColumnEngine extends TilingEngine {
 
     buildLayout() {
         // set original tile direction based on rotating layout or not
-        this.rootTile = new RootTile(this.config.rotateLayout ? 2 : 1);
+        this.rootTile = new Tile();
+        this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
         for (const row of this.rows) {
             if (row.length == 0) {
                 continue;

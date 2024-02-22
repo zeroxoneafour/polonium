@@ -1,82 +1,34 @@
 // driver.ts - Interface from drivers/engines to the controller
 
 import { TilingDriver } from "./driver";
-import { TilingEngineFactory } from "../engine/factory";
-import { IEngineConfig, EngineConfig } from "../engine";
-import { Client, Tile, RootTile } from "../extern/kwin";
-import { QTimer } from "../extern/qt";
+import { EngineConfig, TilingEngineFactory } from "../engine";
+import { Window, Tile, QTimer } from "kwin-api";
 import { Direction } from "../util/geometry";
 
 import { Controller } from "../controller";
-import Log from "../util/log";
-import Config, { Borders } from "../util/config";
-
-export interface Desktop {
-    toString(): string {
-        
-    }
-}
-export class Desktop implements IDesktop {
-    screen: number;
-    activity: string;
-    desktop: number;
-    toString(): string {
-        return (
-            "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")"
-        );
-    }
-    constructor(d: IDesktop) {
-        this.screen = d.screen;
-        this.activity = d.activity;
-        this.desktop = d.desktop;
-    }
-
-    static fromClient(client: Client): Desktop[] {
-        let ret = [];
-        for (const activity of client.activities) {
-            ret.push(
-                new Desktop({
-                    screen: client.screen,
-                    activity: activity,
-                    desktop: client.desktop,
-                }),
-            );
-        }
-        return ret;
-    }
-
-    static currentScreens(c: Controller): Desktop[] {
-        let ret = [];
-        for (let i = 0; i < c.workspace.numScreens; i += 1) {
-            ret.push(
-                new Desktop({
-                    screen: i,
-                    activity: c.workspace.currentActivity,
-                    desktop: c.workspace.currentDesktop,
-                }),
-            );
-        }
-        return ret;
-    }
-}
+import { Log } from "../util/log";
+import { Config, Borders } from "../util/config";
+import { Desktop } from "../controller/desktop";
 
 export class DriverManager {
     private drivers: Map<string, TilingDriver> = new Map();
-    private engineFactory: TilingEngineFactory = new TilingEngineFactory();
-    private rootTileCallbacks: Map<RootTile, QTimer> = new Map();
-
-    ctrl: Controller;
+    private engineFactory: TilingEngineFactory;
+    private rootTileCallbacks: Map<Tile, QTimer> = new Map();
+    private logger: Log;
+    private config: Config;
+    
     buildingLayout: boolean = false;
 
     constructor(c: Controller) {
         this.ctrl = c;
+        this.engineFactory = new TilingEngineFactory(this.ctrl.config);
     }
 
     private getDriver(desktop: Desktop): TilingDriver {
         const desktopString = desktop.toString();
         if (!this.drivers.has(desktopString)) {
-            Log.debug("Creating new engine for desktop", desktopString);
-            let engineType = Config.engineType;
+            this.ctrl.logger.debug("Creating new engine for desktop", desktopString);
+            let engineType = this.config.engineType;
             const engine = this.engineFactory.newEngine(engineType);
             const driver = new TilingDriver(engine, engineType, this);
             this.drivers.set(desktopString, driver);

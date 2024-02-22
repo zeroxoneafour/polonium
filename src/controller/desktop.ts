@@ -30,7 +30,7 @@ export class Desktop {
             output: this.output.name,
         };
     }
-    
+
     public toString(): string {
         return JSON.stringify(this.toRawDesktop());
     }
@@ -70,6 +70,14 @@ export class DesktopFactory {
         output: Output,
     ): Desktop {
         return new Desktop(desktop, activity, output);
+    }
+
+    public createDefaultDesktop(): Desktop {
+        return new Desktop(
+            this.workspace.currentDesktop,
+            this.workspace.currentActivity,
+            this.workspace.activeScreen,
+        );
     }
 
     public createDesktopFromStrings(desktop: StringDesktop): Desktop {

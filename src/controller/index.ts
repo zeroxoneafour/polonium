@@ -13,6 +13,7 @@ import * as BasicActions from "./actions/basic";
 import * as Shortcuts from "./actions/shortcuts";
 import * as SettingsDialog from "./actions/settingsdialog";
 import { DesktopFactory } from "./desktop";
+import { WindowExtensions, WorkspaceExtensions } from "./extensions";
 
 export class Controller {
     workspace: Kwin.QmlWorkspace;
@@ -23,6 +24,12 @@ export class Controller {
     desktopFactory: DesktopFactory;
 
     manager: DriverManager;
+    
+    logger: Log;
+    config: Config;
+    
+    workspaceExtensions: WorkspaceExtensions;
+    windowExtensions: Map<Kwin.Window, WindowExtensions> = new Map();
 
     get currentDesktop(): Desktop {
         return new Desktop({
@@ -37,17 +44,18 @@ export class Controller {
         this.options = qmlApi.options;
         this.kwinApi = qmlApi.kwin;
         this.qmlObjects = qmlObjects;
-        
-        this.desktopFactory = new ExtraGlobals(this);
-    }
 
-    private initGlobals(): void {
-        initConfig(this);
-        initLog(this);
+        this.desktopFactory = new DesktopFactory(this.workspace);
+
+        this.config = new Config(this.kwinApi);
+        this.logger = new Log(this.config, this.qmlObjects.root);
+        
+        this.workspaceExtensions = new WorkspaceExtensions(this.workspace);
     }
 
     private bindSignals(): void {
-        this.workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
+        this.workspace.c        this.workspace.clientAdded.connect(BasicActions.clientAdded.bind(this));
+lientAdded.connect(BasicActions.clientAdded.bind(this));
         this.workspace.clientRemoved.connect(
             BasicActions.clientRemoved.bind(this),
         );

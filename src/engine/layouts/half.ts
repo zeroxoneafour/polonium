@@ -1,6 +1,6 @@
 // half.ts - Tiling engine for the half/split layout
 
-import { Tile, RootTile, Client, TilingEngine, EngineCapability } from "../";
+import { Tile, Client, TilingEngine, EngineCapability } from "../engine";
 import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 import { GSize } from "../../util/geometry";
@@ -49,7 +49,8 @@ export default class HalfEngine extends TilingEngine {
 
     buildLayout() {
         // set original tile direction based on rotating layout or not
-        this.rootTile = new RootTile(this.config.rotateLayout ? 2 : 1);
+        this.rootTile = new Tile();
+        this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
         if (this.left.length == 0 && this.right.length == 0) {
             // empty root tile
             return;

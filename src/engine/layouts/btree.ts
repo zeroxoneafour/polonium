@@ -1,8 +1,7 @@
 // layouts/btree.ts - Implementation of binary tree layout
 
-import { Tile, Client, TilingEngine, RootTile, EngineCapability } from "../";
+import { Tile, Client, TilingEngine, EngineCapability } from "../engine";
 import { Direction } from "../../util/geometry";
-import { QSize } from "../../extern/qt";
 import { GSize } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 import BiMap from "mnemonist/bi-map";
@@ -13,7 +12,7 @@ class TreeNode {
     sibling: TreeNode | null = null;
     children: [TreeNode, TreeNode] | null = null;
     client: Client | null = null;
-    requestedSize: QSize | null = null;
+    requestedSize: GSize | null = null;
     // splits tile
     split(): void {
         // cannot already have children
@@ -70,7 +69,8 @@ export default class BTreeEngine extends TilingEngine {
 
     buildLayout() {
         // set original tile direction based on rotating layout or not
-        this.rootTile = new RootTile(this.config.rotateLayout ? 2 : 1);
+        this.rootTile = new Tile();
+        this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
         // set up
         this.nodeMap = new BiMap();
         // modify rootTile

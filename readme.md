@@ -6,7 +6,7 @@ An (unofficial) successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth)
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
-![hot icon](https://raw.githubusercontent.com/zeroxoneafour/polonium/master/docs/logo.svg)
+![hot icon](docs/logo.svg)
 
 [![wayland: supported](https://img.shields.io/badge/Wayland-Ready-blue?logo=kde)](https://community.kde.org/KWin/Wayland)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
@@ -16,7 +16,7 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ## features
 
--   Works in Wayland Plasma 5.27 and up
+-   Works in Wayland Plasma 6.0 and up
 -   Actual tiling backend using binary trees and decent enough code where you can mod in your own
 -   Edit tile sizes with the integrated KWin GUI
 -   Move and tile windows with your mouse and keyboard
@@ -28,7 +28,7 @@ X11 has been briefly tested but is not officially supported. If you encounter an
 
 ## building
 
-Requires `npm` and `kpackagetool5`
+Requires `npm` and `kpackagetool6`
 
 Commands -
 
