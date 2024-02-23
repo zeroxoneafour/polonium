@@ -1,6 +1,6 @@
 // desktop.ts - Classes and interfaces relating to the desktop class
 
-import { Output, QmlWorkspace, VirtualDesktop } from "kwin-api";
+import { Output, QmlWorkspace, VirtualDesktop, Window } from "kwin-api";
 
 export interface StringDesktop {
     desktop: string; // VirtualDesktop.id
@@ -21,6 +21,16 @@ export class Desktop {
         this.desktop = desktop;
         this.activity = activity;
         this.output = output;
+    }
+
+    public static fromWindow(window: Window): Desktop[] {
+        const ret = [];
+        for (const desktop of window.desktops) {
+            for (const activity of window.activities) {
+                ret.push(new Desktop(desktop, activity, window.output));
+            }
+        }
+        return ret;
     }
 
     public toRawDesktop(): StringDesktop {
@@ -91,5 +101,31 @@ export class DesktopFactory {
             throw new Error("Tried to create a desktop that does not exist!");
         }
         return new Desktop(virtualDesktop, desktop.activity, output);
+    }
+
+    public createAllDesktops(): Desktop[] {
+        const ret: Desktop[] = [];
+        for (const output of this.workspace.screens) {
+            for (const activity of this.workspace.activities) {
+                for (const desktop of this.workspace.desktops) {
+                    ret.push(new Desktop(desktop, activity, output));
+                }
+            }
+        }
+        return ret;
+    }
+
+    public createVisibleDesktops(): Desktop[] {
+        const ret: Desktop[] = [];
+        for (const output of this.workspace.screens) {
+            ret.push(
+                new Desktop(
+                    this.workspace.currentDesktop,
+                    this.workspace.currentActivity,
+                    output,
+                ),
+            );
+        }
+        return ret;
     }
 }

@@ -1,7 +1,6 @@
 // actions/clienthook.ts - Actions performed individually on or by clients (ex. tile changes)
 
-import * as Kwin from "../../extern/kwin";
-import { QTimer } from "../../extern/qt";
+import * as Kwin from "kwin-api";
 import { Controller } from "../";
 import { Desktop } from "../../driver";
 import { GRect } from "../../util/geometry";
@@ -9,33 +8,42 @@ import { Log } from "../../util/log";
 
 export class ClientHookManager {
     private ctrl: Controller;
-    private logger: Log = this.ctrl.log;
+    private logger: Log;
     
     constructor(ctrl: Controller) {
         this.ctrl = ctrl;
+        this.logger = this.ctrl.logger;
     }
     
-    attachClientHooks(client: Kwin.Client) {
+    attachClientHooks(client: Kwin.Window) {
         if (client.hooksRegistered) {
             return;
         }
-        Log.debug("Client", client.resourceClass, "hooked into script");
+        this.logger.debug("Client", client.resourceClass, "hooked into script");
         client.hooksRegistered = true;
         client.previousDesktops = Desktop.fromClient(client);
-        client.desktopChanged.connect(clientDesktopChanged.bind(this, client));
-        client.activitiesChanged.connect(clientDesktopChanged.bind(this, client));
-        client.screenChanged.connect(clientDesktopChanged.bind(this, client));
-        client.tileChanged.connect(clientTileChanged.bind(this, client));
-        client.fullScreenChanged.connect(
-            clientFullscreenChanged.bind(this, client),
+        client.desktopChanged.connect(
+            this.clientDesktopChanged.bind(this, client),
         );
-        client.minimizedChanged.connect(clientMinimizedChanged.bind(this, client));
+        client.activitiesChanged.connect(
+            this.clientDesktopChanged.bind(this, client),
+        );
+        client.screenChanged.connect(
+            this.clientDesktopChanged.bind(this, client),
+        );
+        client.tileChanged.connect(this.clientTileChanged.bind(this, client));
+        client.fullScreenChanged.connect(
+            this.clientFullscreenChanged.bind(this, client),
+        );
+        client.minimizedChanged.connect(
+            this.clientMinimizedChanged.bind(this, client),
+        );
         client.clientMaximizedStateChanged.connect(
-            clientMaximizedChanged.bind(this),
+            this.clientMaximizedChanged.bind(this),
         );
     }
 
-    clientDesktopChanged(this: Controller, client: Kwin.Client) {
+    clientDesktopChanged(client: Kwin.Client) {
         if (client.previousDesktops == undefined || !client.isTiled) {
             return;
         }
@@ -58,7 +66,7 @@ export class ClientHookManager {
         this.manager.rebuildLayout();
     }
 
-    clientTileChanged(this: Controller, client: Kwin.Client) {
+    clientTileChanged(client: Kwin.Client) {
         // dont react to geometry changes while the layout is rebuilding
         if (this.manager.buildingLayout) return;
         // dont interfere with single window maximizing
@@ -93,7 +101,7 @@ export class ClientHookManager {
             const direction = new GRect(
                 client.tile.absoluteGeometry,
             ).directionFromPoint(this.workspace.cursorPos);
-            this.manager.putClientInTile(client, client.tile, direction);
+            this.driverManager.putClientInTile(client, client.tile, direction);
         }
         // client is in a non-managed tile (move it to a managed one)
         else if (!inManagedTile && client.tile != null) {
@@ -106,9 +114,9 @@ export class ClientHookManager {
                 tile = this.workspace.tilingForScreen(client.screen).rootTile;
             }
             if (client.isTiled) {
-                this.manager.removeClient(client);
+                this.driverManager.removeClient(client);
             }
-            this.manager.putClientInTile(
+            this.driverManager.putClientInTile(
                 client,
                 tile,
                 new GRect(tile.absoluteGeometry).directionFromPoint(center),
@@ -117,17 +125,17 @@ export class ClientHookManager {
         // client is moved out of a managed tile and into no tile
         else if (client.isTiled && !inManagedTile && client.tile == null) {
             Log.debug("Client", client.resourceClass, "was moved out of a tile");
-            this.manager.removeClient(client);
+            this.driverManager.removeClient(client);
         }
 
-        this.manager.rebuildLayout(client.screen);
+        this.driverManager.rebuildLayout(client.screen);
 
         // clean up timer
         timer.destroy();
     }
 
     clientFullscreenChanged(this: Controller, client: Kwin.Client) {
-        if (this.manager.buildingLayout) {
+        if (this.driverManager.buildingLayout) {
             return;
         }
         Log.debug(
@@ -137,8 +145,8 @@ export class ClientHookManager {
             client.fullScreen,
         );
         if (client.fullScreen && client.isTiled) {
-            this.manager.removeClient(client);
-            this.manager.rebuildLayout(client.screen);
+            this.driverManager.removeClient(client);
+            this.driverManager.rebuildLayout(client.screen);
         } else if (!client.fullScreen && !client.isTiled) {
             if (client.lastTiledLocation != null) {
                 // fancy and illegally long code to place tile in a similar position from when it was untiled
@@ -152,7 +160,7 @@ export class ClientHookManager {
                 if (tile == null) {
                     tile = this.workspace.tilingForScreen(client.screen).rootTile;
                 }
-                this.manager.putClientInTile(
+                this.driverManager.putClientInTile(
                     client,
                     tile,
                     new GRect(tile.absoluteGeometry).directionFromPoint(
@@ -160,9 +168,9 @@ export class ClientHookManager {
                     ),
                 );
             } else {
-                this.manager.addClient(client);
+                this.driverManager.addClient(client);
             }
-            this.manager.rebuildLayout(client.screen);
+            this.driverManager.rebuildLayout(client.screen);
         }
     }
 
@@ -175,8 +183,8 @@ export class ClientHookManager {
             client.minimized,
         );
         if (client.minimized && client.isTiled) {
-            this.manager.removeClient(client);
-            this.manager.rebuildLayout(client.screen);
+            this.driverManager.removeClient(client);
+            this.driverManager.rebuildLayout(client.screen);
         } else if (!client.minimized && !client.isTiled) {
             if (client.lastTiledLocation != null) {
                 // fancy and illegally long code to place tile in a similar position from when it was untiled
@@ -190,7 +198,7 @@ export class ClientHookManager {
                 if (tile == null) {
                     tile = this.workspace.tilingForScreen(client.screen).rootTile;
                 }
-                this.manager.putClientInTile(
+                this.driverManager.putClientInTile(
                     client,
                     tile,
                     new GRect(tile.absoluteGeometry).directionFromPoint(
@@ -198,9 +206,9 @@ export class ClientHookManager {
                     ),
                 );
             } else {
-                this.manager.addClient(client);
+                this.driverManager.addClient(client);
             }
-            this.manager.rebuildLayout(client.screen);
+            this.driverManager.rebuildLayout(client.screen);
         }
     }
 
@@ -219,7 +227,7 @@ export class ClientHookManager {
             return;
         }
         if (maximized && client.isTiled) {
-            this.manager.removeClient(client);
+            this.driverManager.removeClient(client);
         } else if (!maximized && !client.isTiled) {
             if (client.lastTiledLocation != null) {
                 // fancy and illegally long code to place tile in a similar position from when it was untiled
@@ -233,7 +241,7 @@ export class ClientHookManager {
                 if (tile == null) {
                     tile = this.workspace.tilingForScreen(client.screen).rootTile;
                 }
-                this.manager.putClientInTile(
+                this.driverManager.putClientInTile(
                     client,
                     tile,
                     new GRect(tile.absoluteGeometry).directionFromPoint(
@@ -241,9 +249,9 @@ export class ClientHookManager {
                     ),
                 );
             } else {
-                this.manager.addClient(client);
+                this.driverManager.addClient(client);
             }
         }
-        this.manager.rebuildLayout(client.screen);
+        this.driverManager.rebuildLayout(client.screen);
     }
 }

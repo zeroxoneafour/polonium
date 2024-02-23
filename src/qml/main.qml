@@ -81,7 +81,4 @@ Item {
         
         source: "dbus.qml";
     }
-    
-    Loader {
-    }
 }

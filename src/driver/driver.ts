@@ -1,7 +1,6 @@
 // driver/driver.ts - Mapping from engines to Kwin API
 
-import { DriverManager } from "./";
-import { TilingEngine, Tile, Client, EngineCapability, EngineType } from "../engine";
+import { TilingEngine, Tile, Client, EngineCapability, EngineType, EngineConfig } from "../engine";
 import { Direction } from "../util/geometry";
 import { GSize, GPoint, DirectionTools } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
@@ -16,14 +15,22 @@ export class TilingDriver {
     engine: TilingEngine;
     engineType: EngineType;
     
-=   private logger: Log;
+    private logger: Log;
     private config: Config;
     private ctrl: Controller;
 
     tiles: BiMap<Kwin.Tile, Tile> = new BiMap();
     clients: BiMap<Kwin.Window, Client> = new BiMap();
-    // clients that have no associated tile but are still in an engine go here
-    untiledClients: Kwin.Window[] = [];
+    // windows that have no associated tile but are still in an engine go here
+    untiledWindows: Kwin.Window[] = [];
+    
+    get engineConfig(): EngineConfig {
+        return {
+            engineType: this.engineType,
+            insertionPoint: this.engine.config.insertionPoint,
+            rotateLayout: this.engine.config.rotateLayout
+        };
+    }
 
     constructor(
         engine: TilingEngine,
@@ -56,11 +63,11 @@ export class TilingDriver {
             rootTile.tiles[0].remove();
         }
         this.tiles.clear();
-        this.untiledClients = [];
+        this.untiledWindows = [];
         for (const client of this.engine.untiledClients) {
             const window = this.clients.inverse.get(client);
             if (window != null) {
-                this.untiledClients.push(window);
+                this.untiledWindows.push(window);
             }
         }
 
@@ -86,9 +93,8 @@ export class TilingDriver {
         while (queue.size > 0) {
             const tile = queue.dequeue()!;
             const kwinTile = this.tiles.inverse.get(tile)!;
-            this.ctrl; //TODO - add tile to managed tiles list
+            this.ctrl.managedTiles.add(kwinTile);
             kwinTile.layoutDirection = tile.layoutDirection;
-
             // 1 is vertical, 2 is horizontal
             const horizontal = kwinTile.layoutDirection == 1;
             const tilesLen = tile.tiles.length;
@@ -264,7 +270,7 @@ export class TilingDriver {
         }
     }
 
-    addClient(window: Kwin.Window): void {
+    addWindow(window: Kwin.Window): void {
         if (this.clients.has(window)) {
             return;
         }
@@ -299,7 +305,7 @@ export class TilingDriver {
         }
     }
 
-    removeClient(window: Kwin.Window): void {
+    removeWindow(window: Kwin.Window): void {
         const client = this.clients.get(window);
         if (client == undefined) {
             return;
@@ -314,7 +320,7 @@ export class TilingDriver {
         }
     }
 
-    putClientInTile(
+    putWindowInTile(
         kwinClient: Kwin.Client,
         kwinTile: Kwin.Tile,
         direction?: Direction,

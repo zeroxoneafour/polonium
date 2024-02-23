@@ -2,7 +2,6 @@
 
 // ill do this later
 
-import { clientAdded, clientRemoved } from "./basic";
 import { Controller } from "../";
 
 export class ShortcutManager {
@@ -12,14 +11,13 @@ export class ShortcutManager {
     }
     retileWindow(): void {
         const window = this.ctrl.workspace.activeWindow;
-        if (client == null || !this.ctrl.windowExtensions.has(client)) {
+        if (window == null || !this.ctrl.windowExtensions.has(window)) {
             return;
         }
-        window
-        if (this.ctrl) {
-            clientRemoved.bind(this)(client);
+        if (this.ctrl.windowExtensions.get(window)!.isTiled) {
+            this.ctrl.driverManager.removeClient(window);
         } else {
-            clientAdded.bind(this)(client, false);
+            this.ctrl.driverManager.addClient(window);
         }
     }
 
@@ -28,7 +26,11 @@ export class ShortcutManager {
         if (settings.isVisible()) {
             settings.hide();
         } else {
-            settings.setSettings(this.ctrl.manager.getEngineConfig(this.ctrl.desktopFactory.));
+            settings.setSettings(
+                this.ctrl.driverManager.getEngineConfig(
+                    this.ctrl.desktopFactory.createDefaultDesktop(),
+                ),
+            );
             settings.show();
         }
     }

@@ -8,7 +8,8 @@ import {
     DBusCall,
     Signal,
 } from "kwin-api";
-import { IEngineConfig } from "../engine";
+import { EngineConfig } from "../engine";
+import { StringDesktop } from "../controller/desktop";
 
 export interface Api {
     workspace: Workspace;
@@ -33,9 +34,9 @@ export interface Settings {
     show(): void;
     hide(): void;
     saveAndHide(): void;
-    setSettings(s: IEngineConfig): void;
-    saveSettings: Signal<(settings: IEngineConfig, desktop: IDesktop) => void>;
-    removeSettings: Signal<(desktop: IDesktop) => void>;
+    setSettings(s: EngineConfig): void;
+    saveSettings: Signal<(settings: EngineConfig, desktop: StringDesktop) => void>;
+    removeSettings: Signal<(desktop: StringDesktop) => void>;
 }
 
 export interface Shortcuts {
@@ -46,4 +47,5 @@ export interface DBus {
     getSettings: DBusCall;
     setSettings: DBusCall;
     removeSettings: DBusCall;
+    exists: DBusCall;
 }

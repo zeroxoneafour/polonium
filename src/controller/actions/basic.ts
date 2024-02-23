@@ -1,12 +1,12 @@
 // actions/basic.ts - Basic actions performed by the window manager, such as adding or deleting clients
 
-import * as Kwin from "../../extern/kwin";
+import * as Kwin from "kwin-api";
 import { Controller } from "../";
 import Log from "../../util/log";
 import Config, { Borders } from "../../util/config";
 import { attachClientHooks } from "./clienthooks";
 
-function doTileClient(c: Kwin.Client): boolean {
+function doTileWindow(c: Kwin.Window): boolean {
     if (
         c.normalWindow &&
         !((c.popupWindow || c.transient) && !Config.tilePopups)
@@ -34,10 +34,9 @@ function doTileClient(c: Kwin.Client): boolean {
 
 export function clientAdded(
     this: Controller,
-    client: Kwin.Client,
-    checkDoTile: boolean = true,
+    client: Kwin.Window,
 ) {
-    if (checkDoTile && !doTileClient(client)) {
+    if (!doTileClient(client)) {
         Log.debug("Not tiling client", client.resourceClass);
         return;
     }
@@ -45,18 +44,18 @@ export function clientAdded(
         client.noBorder = true;
     }
     attachClientHooks.bind(this)(client);
-    this.manager.addClient(client);
-    this.manager.rebuildLayout();
+    this.driverManager.addClient(client);
+    this.driverManager.rebuildLayout();
 }
 
-export function clientRemoved(this: Controller, client: Kwin.Client) {
-    this.manager.removeClient(client);
-    this.manager.rebuildLayout();
+export function windowRemoved(this: Controller, window: Kwin.Window) {
+    this.driverManager.removeClient(window);
+    this.driverManager.rebuildLayout();
 }
 
 export function currentDesktopChange(this: Controller) {
     // have to set this because this function temp untiles all windows
-    this.manager.buildingLayout = true;
+    this.driverManager.buildingLayout = true;
     // set geometry for all clients manually to avoid resizing when tiles are deleted
     for (const client of Array.from(this.workspace.clientList())) {
         if (
@@ -75,7 +74,7 @@ export function currentDesktopChange(this: Controller) {
     }
     this.workspace.lastActivity = this.workspace.currentActivity;
     this.workspace.lastDesktop = this.workspace.currentDesktop;
-    this.manager.rebuildLayout();
+    this.driverManager.rebuildLayout();
 }
 
 export function clientActivated(this: Controller, client: Kwin.Client) {
