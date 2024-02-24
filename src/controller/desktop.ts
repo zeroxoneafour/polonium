@@ -1,6 +1,7 @@
 // desktop.ts - Classes and interfaces relating to the desktop class
 
-import { Output, QmlWorkspace, VirtualDesktop, Window } from "kwin-api";
+import { Output, VirtualDesktop, Window } from "kwin-api";
+import { Workspace } from "kwin-api/qml";
 
 export interface StringDesktop {
     desktop: string; // VirtualDesktop.id
@@ -47,11 +48,11 @@ export class Desktop {
 }
 
 export class DesktopFactory {
-    private workspace: QmlWorkspace;
+    private workspace: Workspace;
     private desktopMap: Map<string, VirtualDesktop> = new Map();
     private outputMap: Map<string, Output> = new Map();
 
-    public constructor(workspace: QmlWorkspace) {
+    public constructor(workspace: Workspace) {
         this.workspace = workspace;
         this.desktopsChanged();
         this.screensChanged();

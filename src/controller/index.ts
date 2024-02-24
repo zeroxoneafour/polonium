@@ -1,7 +1,8 @@
 // controller.ts - Main controller object of the script
 
-import * as Kwin from "kwin-api";
-import * as Qml from "kwin-api";
+import { Options, Tile, Window } from "kwin-api";
+import { Workspace, KWin } from "kwin-api/qml";
+import * as Qml from "../extern/qml";
 
 import { Log } from "../util/log";
 import { Config } from "../util/config";
@@ -16,9 +17,9 @@ import { WindowHookManager } from "./actions/windowhooks";
 import { SettingsDialogManager } from "./actions/settingsdialog";
 
 export class Controller {
-    workspace: Kwin.QmlWorkspace;
-    options: Kwin.Options;
-    kwinApi: Kwin.QmlKWin;
+    workspace: Workspace;
+    options: Options;
+    kwinApi: KWin;
     qmlObjects: Qml.Objects;
     
     desktopFactory: DesktopFactory;
@@ -33,8 +34,8 @@ export class Controller {
     config: Config;
     
     workspaceExtensions: WorkspaceExtensions;
-    windowExtensions: Map<Kwin.Window, WindowExtensions> = new Map();
-    managedTiles: Set<Kwin.Tile> = new Set();
+    windowExtensions: Map<Window, WindowExtensions> = new Map();
+    managedTiles: Set<Tile> = new Set();
 
     constructor(qmlApi: Qml.Api, qmlObjects: Qml.Objects) {
         this.workspace = qmlApi.workspace;

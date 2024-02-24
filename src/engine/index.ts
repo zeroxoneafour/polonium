@@ -2,7 +2,8 @@
 
 import { Config } from "../util/config";
 import { Direction } from "../util/geometry";
-import { LayoutDirection, QSize, Window } from "kwin-api";
+import { LayoutDirection, Window } from "kwin-api";
+import { QSize } from "kwin-api/qt";
 import {
     EngineCapability,
     EngineConfig as InternalEngineConfig,

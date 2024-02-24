@@ -49,7 +49,12 @@ export class DriverManager {
                     desktopString,
                 );
                 let engineType = this.config.engineType;
-                const engine = this.engineFactory.newEngine(engineType);
+                const config: EngineConfig = {
+                    engineType: engineType,
+                    insertionPoint: this.config.insertionPoint,
+                    rotateLayout: this.config.rotateLayout
+                }
+                const engine = this.engineFactory.newEngine(config);
                 const driver = new TilingDriver(engine, engineType, this.ctrl);
                 this.drivers.set(desktopString, driver);
                 this.ctrl.dbusManager.getSettings(
@@ -75,7 +80,8 @@ export class DriverManager {
                     break;
                 }
             }
-            if (remove && this.rootTileCallbacks.get(tile)) {
+            if (remove && this.rootTileCallbacks.has(tile)) {
+                this.rootTileCallbacks.get(tile)!.destroy();
                 this.rootTileCallbacks.delete(tile);
             }
         }

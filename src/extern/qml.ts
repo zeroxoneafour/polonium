@@ -1,20 +1,15 @@
 // qml.d.ts - Declarations for external QML methods
 
-import {
-    QmlWorkspace as Workspace,
-    Options,
-    QmlKWin as KwinApi,
-    DBusCall,
-    Signal, ShortcutHandler
-} from "kwin-api";
-import { QTimer } from "kwin-api";
+import { Options } from "kwin-api";
+import { Signal, QTimer } from "kwin-api/qt";
+import { Workspace, KWin, DBusCall, ShortcutHandler } from "kwin-api/qml";
 import { EngineConfig } from "../engine";
 import { StringDesktop } from "../controller/desktop";
 
 export interface Api {
     workspace: Workspace;
     options: Options;
-    kwin: KwinApi;
+    kwin: KWin;
 }
 
 export interface Objects {
@@ -35,7 +30,9 @@ export interface Settings {
     hide(): void;
     saveAndHide(): void;
     setSettings(s: EngineConfig): void;
-    saveSettings: Signal<(settings: EngineConfig, desktop: StringDesktop) => void>;
+    saveSettings: Signal<
+        (settings: EngineConfig, desktop: StringDesktop) => void
+    >;
     removeSettings: Signal<(desktop: StringDesktop) => void>;
 }
 

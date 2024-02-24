@@ -148,7 +148,7 @@ export class WindowHooks {
 
         this.ctrl.driverManager.rebuildLayout(this.window.output);
 
-        // TODO - Add cleanup for timer (timer.destroy())
+        timer.destroy();
     }
 
     putWindowInBestTile(): void {

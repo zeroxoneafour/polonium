@@ -2,7 +2,8 @@
 
 import { Direction } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
-import { LayoutDirection, QSize, Window } from "kwin-api";
+import { LayoutDirection } from "kwin-api";
+import { QSize } from "kwin-api/qt";
 import { Client as IClient, Tile as ITile, TilingEngine as ITilingEngine } from "./index";
 
 export interface EngineConfig {
