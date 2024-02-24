@@ -1,7 +1,6 @@
 // config.ts - Static config class
 
-import { EngineType } from "../engine/factory";
-import { Controller } from "../controller";
+import { EngineType } from "../engine";
 import { QmlKWin } from "kwin-api";
 
 export const enum InsertionPoint {

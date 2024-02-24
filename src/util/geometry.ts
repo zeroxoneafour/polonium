@@ -1,6 +1,6 @@
 // geometry.ts - Useful geometry functions (gtools)
 
-import { QPoint, QRect, QSize } from "kwin-api";
+import { QPoint, QRect, QSize } from "kwin-api/qt";
 
 // direction uses up/right for quadrant of direction and vertical for whether the point is leaning vertically or horizontally along the y = +-x split
 export const enum Direction {

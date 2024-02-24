@@ -53,7 +53,7 @@ export class TilingDriver {
             }
             this.engine.buildLayout();
         } catch (e) {
-            throw e;
+            this.logger.error(e);
         }
     }
 
@@ -124,19 +124,20 @@ export class TilingDriver {
                 queue.enqueue(tile.tiles[0]);
             }
             if (tile.client != null) {
-                const kwinClient = this.clients.inverse.get(tile.client);
-                if (kwinClient == undefined) {
-                    Log.error("Client", tile.client.name, "does not exist");
+                const window = this.clients.inverse.get(tile.client);
+                if (window == undefined) {
+                    this.logger.error("Client", tile.client.name, "does not exist");
                     return;
                 }
+                const extensions = this.ctrl.windowExtensions.get(window)!;
                 // set some properties before setting tile to make sure client shows up
-                kwinClient.minimized = false;
-                kwinClient.fullScreen = false;
-                if (kwinClient.maximized) {
-                    kwinClient.setMaximize(false, false);
+                window.minimized = false;
+                window.fullScreen = false;
+                if (extensions.maximized) {
+                    window.setMaximize(false, false);
                 }
-                kwinClient.tile = kwinTile;
-                kwinClient.lastTiledLocation = GPoint.centerOfRect(
+                window.tile = kwinTile;
+                extensions.lastTiledLocation = GPoint.centerOfRect(
                     kwinTile.absoluteGeometry,
                 );
             }
@@ -148,126 +149,7 @@ export class TilingDriver {
 
     // kwin couldnt do this themselves?
     private fixSizing(rootTile: Tile, kwinRootTile: Kwin.Tile): void {
-        const padding = kwinRootTile.padding;
-        // just finds tiles that need special size constraints and sets them
-        // main difference is that this one can do a bit of pushing
-        const sizeMap: Map<Tile, GSize> = new Map();
-        const queue: Queue<Tile> = new Queue();
-        queue.enqueue(rootTile);
-        while (queue.size > 0) {
-            const parent = queue.dequeue()!;
-            for (const tile of parent.tiles) {
-                const requestedSize = tile.requestedSize;
-                if (requestedSize != null) {
-                    sizeMap.set(tile, new GSize(requestedSize));
-                } else {
-                    const client = tile.client;
-                    if (client != null) {
-                        const minSize = client.minSize;
-                        const kwinTile = this.tiles.inverse.get(tile);
-                        if (kwinTile == null) {
-                            Log.error("Tile does not exist in fixSizing()");
-                            continue;
-                        }
-                        const oldSize = new GSize(kwinTile.absoluteGeometry);
-                        const size = new GSize(oldSize);
-                        size.fitSize(minSize);
-                        if (!size.isEqual(oldSize)) {
-                            // tile padding
-                            size.width += padding * 2;
-                            size.height += padding * 2;
-                            sizeMap.set(tile, size);
-                        }
-                    }
-                }
-                queue.enqueue(tile);
-            }
-        }
-        // set all tile sizes
-        const rootTileSize = kwinRootTile.absoluteGeometry;
-        const tilesToUpdate: Queue<Tile> = new Queue();
-        for (const tile of sizeMap.keys()) {
-            tilesToUpdate.enqueue(tile);
-        }
-        while (tilesToUpdate.size > 0) {
-            const tile = tilesToUpdate.dequeue()!;
-            const size = sizeMap.get(tile);
-            const kwinTile = this.tiles.inverse.get(tile);
-            let parent = tile.parent;
-            // have to put this here becomes sometimes tiles are collapsed
-            while (parent != null && !this.tiles.inverse.has(parent)) {
-                parent = parent.parent;
-            }
-            if (size == null || kwinTile == null) {
-                // highly improbable this would happen
-                Log.debug("Null found in fixTiling() somehow");
-                continue;
-            }
-            if (parent == null) {
-                // tile is root tile
-                continue;
-            }
-            const relativeSize = new GSize(size);
-            // has to be relative
-            relativeSize.height /= rootTileSize.height;
-            relativeSize.width /= rootTileSize.width;
-            relativeSize.write(kwinTile.relativeGeometry);
-            // make sure parent can fit the tile constraints as well
-            let parentSize = sizeMap.get(parent);
-            if (parentSize == null) {
-                const kwinParent = this.tiles.inverse.get(parent);
-                if (kwinParent == null) {
-                    Log.debug("Parent tile not found");
-                    continue;
-                } else {
-                    parentSize = new GSize(kwinParent.absoluteGeometry);
-                }
-            }
-            if (!sizeMap.has(parent)) {
-                const newParentSize = new GSize(parentSize);
-                if (
-                    parent.layoutDirection == 1 &&
-                    parentSize.height < size.height
-                ) {
-                    // laid out horiz so make sure parent fits children vertically
-                    newParentSize.height = size.height;
-                } else if (parentSize.width < size.width) {
-                    newParentSize.width = size.width;
-                }
-                if (!newParentSize.isEqual(parentSize)) {
-                    parentSize = newParentSize;
-                    sizeMap.set(parent, newParentSize);
-                    tilesToUpdate.enqueue(parent);
-                }
-            }
-            // set sizes on siblings as well if necessary
-            for (const topSibling of parent.tiles) {
-                // have to filter down because of tile collapsing
-                let sibling = topSibling;
-                while (sibling.tiles.length == 1) {
-                    sibling = sibling.tiles[0];
-                }
-                if (sibling == tile) {
-                    continue;
-                }
-                // make sure were not interfering with other tiles sizing as well
-                if (!sizeMap.has(sibling)) {
-                    const siblingSize = new GSize(parentSize);
-                    if (parent.layoutDirection == 1) {
-                        // horiz
-                        siblingSize.width =
-                            (parentSize.width - size.width) /
-                            (parent.tiles.length - 1);
-                    } else {
-                        siblingSize.height =
-                            (parentSize.height - size.height) /
-                            (parent.tiles.length - 1);
-                    }
-                    sizeMap.set(sibling, siblingSize);
-                    tilesToUpdate.enqueue(sibling);
-                }
-            }
-        }
+        // TODO - fixSizing
     }
 
     addWindow(window: Kwin.Window): void {
@@ -283,7 +165,7 @@ export class TilingDriver {
             this.engine.config.insertionPoint == InsertionPoint.Active
         ) {
             failedActive = false;
-            const activeWindow = this.workspace.activeWindow;
+            const activeWindow = this.ctrl.workspace.activeWindow;
             if (activeWindow == null || activeWindow.tile == null) {
                 failedActive = true;
                 break activeChecks;
@@ -301,7 +183,7 @@ export class TilingDriver {
             }
             this.engine.buildLayout();
         } catch (e) {
-            Log.error(e);
+            this.logger.error(e);
         }
     }
 
@@ -311,29 +193,29 @@ export class TilingDriver {
             return;
         }
         this.clients.delete(window);
-        this.clientsToNull.push(window);
+        this.untiledWindows.push(window);
         try {
             this.engine.removeClient(client);
             this.engine.buildLayout();
         } catch (e) {
-            this.log.error(e);
+            this.logger.error(e);
         }
     }
 
     putWindowInTile(
-        kwinClient: Kwin.Client,
+        window: Kwin.Window,
         kwinTile: Kwin.Tile,
         direction?: Direction,
     ) {
         const tile = this.tiles.get(kwinTile);
         if (tile == undefined) {
-            Log.error("Tile", kwinTile.absoluteGeometry, "not registered");
+            this.logger.error("Tile", kwinTile.absoluteGeometry, "not registered");
             return;
         }
-        if (!this.clients.has(kwinClient)) {
-            this.clients.set(kwinClient, new Client(kwinClient));
+        if (!this.clients.has(window)) {
+            this.clients.set(window, new Client(window));
         }
-        const client = this.clients.get(kwinClient)!;
+        const client = this.clients.get(window)!;
         try {
             let rotatedDirection = direction;
             if (
@@ -346,23 +228,23 @@ export class TilingDriver {
                 rotatedDirection = new DirectionTools(
                     rotatedDirection,
                 ).rotateCw();
-                Log.debug("Insertion direction rotated to", rotatedDirection);
+                this.logger.debug("Insertion direction rotated to", rotatedDirection);
             }
             this.engine.putClientInTile(client, tile, rotatedDirection);
             this.engine.buildLayout();
         } catch (e) {
-            Log.error(e);
+            this.logger.error(e);
         }
     }
 
-    regenerateLayout(rootTile: Kwin.RootTile) {
+    regenerateLayout(rootTile: Kwin.Tile) {
         const queue: Queue<Kwin.Tile> = new Queue();
         queue.enqueue(rootTile);
         while (queue.size > 0) {
             const kwinTile = queue.dequeue()!;
             const tile = this.tiles.get(kwinTile);
             if (tile == undefined) {
-                Log.error("Tile", kwinTile.absoluteGeometry, "not registered");
+                this.logger.error("Tile", kwinTile.absoluteGeometry, "not registered");
                 continue;
             }
             tile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
@@ -395,7 +277,7 @@ export class TilingDriver {
             this.engine.regenerateLayout();
             this.engine.buildLayout();
         } catch (e) {
-            Log.error(e);
+            this.logger.error(e);
         }
     }
 }

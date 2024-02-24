@@ -6,10 +6,10 @@ import { StringDesktop } from "../desktop";
 
 export class SettingsDialogManager {
     private ctrl: Controller;
+    
     constructor(ctrl: Controller) {
         this.ctrl = ctrl;
     }
-    
     
     saveSettings(
         settings: EngineConfig,

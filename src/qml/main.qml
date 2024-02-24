@@ -81,4 +81,14 @@ Item {
         
         source: "dbus.qml";
     }
+    
+    Loader {
+        id: shortcuts;
+        
+        retileWindow: shortcuts.retileWindow;
+        
+        openSettings: shortcuts.openSettings;
+        
+        source: "shortcuts.qml";
+    }
 }

@@ -4,10 +4,10 @@ import {
     QmlWorkspace as Workspace,
     Options,
     QmlKWin as KwinApi,
-    QTimer,
     DBusCall,
-    Signal,
+    Signal, ShortcutHandler
 } from "kwin-api";
+import { QTimer } from "kwin-api";
 import { EngineConfig } from "../engine";
 import { StringDesktop } from "../controller/desktop";
 
@@ -40,7 +40,8 @@ export interface Settings {
 }
 
 export interface Shortcuts {
-    
+    retileWindow: ShortcutHandler;
+    openSettings: ShortcutHandler;
 }
 
 export interface DBus {

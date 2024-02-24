@@ -2,7 +2,8 @@
 
 import { TilingDriver } from "./driver";
 import { EngineConfig, TilingEngineFactory } from "../engine";
-import { Window, Tile, QTimer, Output } from "kwin-api";
+import { Window, Tile, Output } from "kwin-api";
+import { QTimer } from "kwin-api/qt";
 import { Direction } from "../util/geometry";
 import { Controller } from "../controller";
 import { Log } from "../util/log";
@@ -25,6 +26,10 @@ export class DriverManager {
         this.engineFactory = new TilingEngineFactory(this.ctrl.config);
         this.logger = c.logger;
         this.config = c.config;
+        
+        c.workspace.screensChanged.connect(this.generateDrivers);
+        c.workspace.desktopsChanged.connect(this.generateDrivers);
+        c.workspace.activitiesChanged.connect(this.generateDrivers);
     }
 
     private generateDrivers(): void {
@@ -122,7 +127,6 @@ export class DriverManager {
     }
 
     private applyTiled(window: Window): void {
-        this.ctrl.clientHookManager.attachClientHooks(window);
         if (this.config.keepTiledBelow) {
             window.keepBelow = true;
         }

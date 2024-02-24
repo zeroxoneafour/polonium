@@ -1,7 +1,7 @@
 // controller.ts - Main controller object of the script
 
 import * as Kwin from "kwin-api";
-import * as Qml from "../extern/qml";
+import * as Qml from "kwin-api";
 
 import { Log } from "../util/log";
 import { Config } from "../util/config";
@@ -12,7 +12,7 @@ import { DBusManager } from "./actions/dbus";
 import { DesktopFactory } from "./desktop";
 import { WindowExtensions, WorkspaceExtensions } from "./extensions";
 import { ShortcutManager } from "./actions/shortcuts";
-import { ClientHookManager } from "./actions/clienthooks";
+import { WindowHookManager } from "./actions/windowhooks";
 import { SettingsDialogManager } from "./actions/settingsdialog";
 
 export class Controller {
@@ -26,7 +26,7 @@ export class Controller {
     driverManager: DriverManager;
     dbusManager: DBusManager;
     shortcutManager: ShortcutManager;
-    clientHookManager: ClientHookManager;
+    windowHookManager: WindowHookManager;
     settingsDialogManager: SettingsDialogManager;
     
     logger: Log;
@@ -52,7 +52,7 @@ export class Controller {
         this.driverManager = new DriverManager(this);
         this.dbusManager = new DBusManager(this);
         this.shortcutManager = new ShortcutManager(this);
-        this.clientHookManager = new ClientHookManager(this);
+        this.windowHookManager = new WindowHookManager(this);
         this.settingsDialogManager = new SettingsDialogManager(this);
     }
 }

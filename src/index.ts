@@ -5,5 +5,4 @@ import { Controller } from "./controller";
 
 export function main(api: Api, qmlObjects: QmlObjects) {
     const ctrl = new Controller(api, qmlObjects);
-    ctrl.init();
 }

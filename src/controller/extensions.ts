@@ -1,16 +1,19 @@
 import { MaximizeMode, QmlWorkspace, VirtualDesktop, Window } from "kwin-api";
 import { Desktop } from "./desktop";
+import { WindowHooks } from "./actions/windowhooks";
 import { GPoint, GRect } from "../util/geometry";
 
 export class WorkspaceExtensions {
     // things added that we need
     public lastActivity: string;
     public lastDesktop: VirtualDesktop;
+    public lastActiveWindow: Window | null = null;
 
     // hidden stuff to track changes with
     private currentActivity: string;
     private currentDesktop: VirtualDesktop;
     private workspace: QmlWorkspace;
+    private currentActiveWindow: Window | null = null;
 
     constructor(workspace: QmlWorkspace) {
         this.workspace = workspace;
@@ -21,6 +24,10 @@ export class WorkspaceExtensions {
 
         this.workspace.currentActivityChanged.connect(this.repoll);
         this.workspace.currentDesktopChanged.connect(this.repoll);
+        this.workspace.windowActivated.connect((window: Window) => {
+            this.lastActiveWindow = this.currentActiveWindow;
+            this.currentActiveWindow = window;
+        });
     }
 
     private repoll(): void {
@@ -38,13 +45,13 @@ export class WindowExtensions {
     private previousDesktopsInternal: Desktop[] = [];
     isTiled: boolean = false; // not is in a tile, but is registered in engine
     lastTiledLocation: GPoint | null = null;
-    hooksRegistered: boolean = false;
+    clientHooks: WindowHooks | null = null;
 
     private window: Window;
 
     constructor(window: Window) {
         this.window = window;
-        
+
         window.maximizedAboutToChange.connect(
             (m: MaximizeMode) =>
                 (this.maximized = m == MaximizeMode.MaximizeFull),
@@ -53,7 +60,7 @@ export class WindowExtensions {
         window.desktopsChanged.connect(this.previousDesktopsChanged);
         window.activitiesChanged.connect(this.previousDesktopsChanged);
         window.outputChanged.connect(this.previousDesktopsChanged);
-        
+
         this.tileChanged();
         this.previousDesktopsChanged();
     }

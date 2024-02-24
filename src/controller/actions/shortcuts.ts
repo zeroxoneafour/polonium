@@ -6,18 +6,23 @@ import { Controller } from "../";
 
 export class ShortcutManager {
     private ctrl: Controller;
+    
     constructor(ctrl: Controller) {
         this.ctrl = ctrl;
+        let shortcuts = ctrl.qmlObjects.shortcuts;
+        shortcuts.retileWindow.activated.connect(this.retileWindow);
+        shortcuts.openSettings.activated.connect(this.openSettingsDialog);
     }
+    
     retileWindow(): void {
         const window = this.ctrl.workspace.activeWindow;
         if (window == null || !this.ctrl.windowExtensions.has(window)) {
             return;
         }
         if (this.ctrl.windowExtensions.get(window)!.isTiled) {
-            this.ctrl.driverManager.removeClient(window);
+            this.ctrl.driverManager.removeWindow(window);
         } else {
-            this.ctrl.driverManager.addClient(window);
+            this.ctrl.driverManager.addWindow(window);
         }
     }
 

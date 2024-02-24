@@ -1,91 +1,111 @@
 // actions/basic.ts - Basic actions performed by the window manager, such as adding or deleting clients
 
-import * as Kwin from "kwin-api";
+import { Window } from "kwin-api";
 import { Controller } from "../";
-import Log from "../../util/log";
-import Config, { Borders } from "../../util/config";
-import { attachClientHooks } from "./clienthooks";
+import { Log } from "../../util/log";
+import { Config, Borders } from "../../util/config";
+import { WindowExtensions } from "../extensions";
 
-function doTileWindow(c: Kwin.Window): boolean {
-    if (
-        c.normalWindow &&
-        !((c.popupWindow || c.transient) && !Config.tilePopups)
-    ) {
-        // check for things like max/min/fullscreen
-        if (c.fullScreen || c.minimized) {
+export class WorkspaceActions {
+    private logger: Log;
+    private config: Config;
+    private ctrl: Controller;
+    constructor(ctrl: Controller) {
+        this.logger = ctrl.logger;
+        this.config = ctrl.config;
+        this.ctrl = ctrl;
+
+        const workspace = this.ctrl.workspace;
+        workspace.windowAdded.connect(this.windowAdded);
+        workspace.windowRemoved.connect(this.windowRemoved);
+        workspace.currentActivityChanged.connect(this.currentDesktopChange);
+        workspace.currentDesktopChanged.connect(this.currentDesktopChange);
+        workspace.windowActivated.connect(this.windowActivated);
+    }
+
+    doTileWindow(c: Window): boolean {
+        if (
+            c.normalWindow &&
+            !((c.popupWindow || c.transient) && !this.config.tilePopups)
+        ) {
+            // check for things like max/min/fullscreen
+            if (c.fullScreen || c.minimized) {
+                return false;
+            }
+            // check if caption/resourceclass is substring as well
+            for (const s of this.config.filterProcess) {
+                if (s.length > 0 && c.resourceClass.includes(s)) {
+                    return false;
+                }
+            }
+            for (const s of this.config.filterCaption) {
+                if (s.length > 0 && c.caption.includes(s)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
             return false;
         }
-        // check if caption/resourceclass is substring as well
-        for (const s of Config.filterProcess) {
-            if (s.length > 0 && c.resourceClass.includes(s)) {
-                return false;
+    }
+
+    windowAdded(window: Window): void {
+        this.ctrl.windowExtensions.set(window, new WindowExtensions(window));
+        this.ctrl.windowHookManager.attachWindowHooks(window);
+        if (!this.doTileWindow(window)) {
+            this.logger.debug("Not tiling window", window.resourceClass);
+            return;
+        }
+        if (this.config.borders == Borders.NoAll) {
+            window.noBorder = true;
+        }
+        this.ctrl.driverManager.addWindow(window);
+        this.ctrl.driverManager.rebuildLayout();
+    }
+
+    windowRemoved(window: Window): void {
+        this.ctrl.windowExtensions.delete(window);
+        this.ctrl.driverManager.removeWindow(window);
+        this.ctrl.driverManager.rebuildLayout();
+    }
+
+    currentDesktopChange(): void {
+        // have to set this because this function temp untiles all windows
+        this.ctrl.driverManager.buildingLayout = true;
+        // set geometry for all clients manually to avoid resizing when tiles are deleted
+        for (const window of this.ctrl.workspace.windows) {
+            if (
+                window.tile != null &&
+                window.activities.includes(
+                    this.ctrl.workspaceExtensions.lastActivity!,
+                ) &&
+                window.desktops.includes(
+                    this.ctrl.workspaceExtensions.lastDesktop,
+                )
+            ) {
+                const tile = window.tile;
+                window.tile = null;
+                window.frameGeometry = tile.absoluteGeometry;
+                window.frameGeometry.width -= 2 * tile.padding;
+                window.frameGeometry.height -= 2 * tile.padding;
+                window.frameGeometry.x += tile.padding;
+                window.frameGeometry.y += tile.padding;
             }
         }
-        for (const s of Config.filterCaption) {
-            if (s.length > 0 && c.caption.includes(s)) {
-                return false;
+        this.ctrl.driverManager.rebuildLayout();
+    }
+
+    windowActivated(window: Window) {
+        if (this.config.borders == Borders.Selected) {
+            window.noBorder = false;
+            if (
+                this.ctrl.workspaceExtensions.lastActiveWindow != null &&
+                this.ctrl.windowExtensions.get(
+                    this.ctrl.workspaceExtensions.lastActiveWindow,
+                )!.isTiled
+            ) {
+                this.ctrl.workspaceExtensions.lastActiveWindow.noBorder = true;
             }
         }
-        return true;
-    } else {
-        return false;
     }
-}
-
-export function clientAdded(
-    this: Controller,
-    client: Kwin.Window,
-) {
-    if (!doTileClient(client)) {
-        Log.debug("Not tiling client", client.resourceClass);
-        return;
-    }
-    if (Config.borders == Borders.NoAll) {
-        client.noBorder = true;
-    }
-    attachClientHooks.bind(this)(client);
-    this.driverManager.addClient(client);
-    this.driverManager.rebuildLayout();
-}
-
-export function windowRemoved(this: Controller, window: Kwin.Window) {
-    this.driverManager.removeClient(window);
-    this.driverManager.rebuildLayout();
-}
-
-export function currentDesktopChange(this: Controller) {
-    // have to set this because this function temp untiles all windows
-    this.driverManager.buildingLayout = true;
-    // set geometry for all clients manually to avoid resizing when tiles are deleted
-    for (const client of Array.from(this.workspace.clientList())) {
-        if (
-            client.tile != null &&
-            client.activities.includes(this.workspace.lastActivity!) &&
-            client.desktop == this.workspace.lastDesktop
-        ) {
-            const tile = client.tile;
-            client.tile = null;
-            client.frameGeometry = tile.absoluteGeometry;
-            client.frameGeometry.width -= 2 * tile.padding;
-            client.frameGeometry.height -= 2 * tile.padding;
-            client.frameGeometry.x += tile.padding;
-            client.frameGeometry.y += tile.padding;
-        }
-    }
-    this.workspace.lastActivity = this.workspace.currentActivity;
-    this.workspace.lastDesktop = this.workspace.currentDesktop;
-    this.driverManager.rebuildLayout();
-}
-
-export function clientActivated(this: Controller, client: Kwin.Client) {
-    if (Config.borders == Borders.Selected) {
-        client.noBorder = false;
-        if (
-            this.glob.lastActiveClient != null &&
-            this.glob.lastActiveClient.isTiled
-        ) {
-            this.glob.lastActiveClient.noBorder = true;
-        }
-    }
-    this.glob.lastActiveClient = client;
 }
