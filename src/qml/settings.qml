@@ -9,16 +9,16 @@ PlasmaCore.Dialog {
     
     property var settings: ({
         // see engine enum
-        engine: 0,
+        engineType: 0,
         // 0 - left side, 1 - right side, 2 - active
         insertionPoint: 1,
         rotateLayout: false,
     })
     
     property var desktop: ({
-        screen: 0,
+        output: "",
         activity: "",
-        desktop: 1,
+        desktop: "",
     })
     
     property rect screenGeometry;
@@ -31,24 +31,24 @@ PlasmaCore.Dialog {
     hideOnWindowDeactivate: true;
 
     function setSettings(s) {
-        this.settings.engine = s.engine;
+        this.settings.engineType = s.engineType;
         this.settings.insertionPoint = s.insertionPoint;
         this.settings.rotateLayout = s.rotateLayout;
     }
     
     function show() {
         // update desktop
-        this.desktop.screen = workspace.activeScreen;
-        this.desktop.activity = workspace.currentActivity;
-        this.desktop.desktop = workspace.currentDesktop;
+        this.desktop.output = Workspace.activeScreen.name;
+        this.desktop.activity = Workspace.currentActivity;
+        this.desktop.desktop = Workspace.currentDesktop.id;
         
         // update settings
-        engine.currentIndex = this.settings.engine;
+        engine.currentIndex = this.settings.engineType;
         insertionPoint.currentIndex = this.settings.insertionPoint;
         rotation.checkState = this.settings.rotateLayout ? Qt.Checked : Qt.Unchecked;
         
         // Update current screen information
-        this.screenGeometry = workspace.clientArea(KWin.FullScreenArea, workspace.activeScreen, workspace.currentDesktop);
+        this.screenGeometry = Workspace.clientArea(KWin.FullScreenArea, Workspace.activeScreen, Workspace.currentDesktop);
         
         // Show the popup
         this.visible = true;
@@ -62,7 +62,7 @@ PlasmaCore.Dialog {
     signal removeSettingsInternal(desktop: var);
     
     function saveSettings() {
-        this.settings.engine = engine.currentIndex;
+        this.settings.engineType = engine.currentIndex;
         this.settings.insertionPoint = insertionPoint.currentIndex;
         this.settings.rotateLayout = (rotateLayout.checkState == Qt.Checked);
         this.saveSettingsInternal(this.settings, this.desktop);

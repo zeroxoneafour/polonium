@@ -89,7 +89,6 @@ export class TilingDriver {
         const queue: Queue<Tile> = new Queue();
         queue.enqueue(realRootTile);
         this.tiles.set(rootTile, realRootTile);
-
         while (queue.size > 0) {
             const tile = queue.dequeue()!;
             const kwinTile = this.tiles.inverse.get(tile)!;

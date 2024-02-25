@@ -266,6 +266,21 @@ export class DriverManager {
 
     removeEngineConfig(desktop: Desktop): void {
         this.logger.debug("Removing engine config for desktop", desktop);
+        const config: EngineConfig = {
+            engineType: this.config.engineType,
+            insertionPoint: this.config.insertionPoint,
+            rotateLayout: this.config.rotateLayout
+        }
         const driver = this.drivers.get(desktop.toString())!;
+        if (config.engineType != driver.engineType) {
+            driver.switchEngine(
+                this.engineFactory.newEngine(config),
+                config.engineType,
+            );
+        } else {
+            driver.engine.config = config;
+        }
+        this.ctrl.dbusManager.removeSettings(desktop.toString());
+        this.rebuildLayout(desktop.output);
     }
 }

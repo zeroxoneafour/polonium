@@ -9,6 +9,8 @@ export class SettingsDialogManager {
     
     constructor(ctrl: Controller) {
         this.ctrl = ctrl;
+        this.ctrl.qmlObjects.settings.saveSettings.connect(this.saveSettings.bind(this));
+        this.ctrl.qmlObjects.settings.removeSettings.connect(this.removeSettings.bind(this));
     }
     
     saveSettings(
