@@ -3,18 +3,27 @@
 import { Controller } from "../index";
 import { EngineConfig } from "../../engine";
 import { Log } from "../../util/log";
-import { DBus } from "../../extern/qml";
+import { DBusCall } from "kwin-api/qml";
 
 export class DBusManager {
     isConnected: boolean = false;
-    private dbus: DBus;
     private logger: Log;
+    private existsCall: DBusCall;
+    private getSettingsCall: DBusCall;
+    private setSettingsCall: DBusCall;
+    private removeSettingsCall: DBusCall;
     
     constructor(ctrl: Controller) {
         this.logger = ctrl.logger;
-        this.dbus = ctrl.qmlObjects.dbus;
-        this.dbus.exists.finished.connect(this.existsCallback);
-        this.dbus.exists.call();
+        const dbus = ctrl.qmlObjects.dbus;
+        
+        this.existsCall = dbus.getExists();
+        this.getSettingsCall = dbus.getGetSettings();
+        this.setSettingsCall = dbus.getSetSettings();
+        this.removeSettingsCall = dbus.getRemoveSettings();
+        
+        this.existsCall.finished.connect(this.existsCallback.bind(this));
+        this.existsCall.call();
     }
     
     private existsCallback() {
@@ -44,8 +53,8 @@ export class DBusManager {
             "to",
             stringConfig,
         );
-        this.dbus.setSettings.arguments = [desktop, stringConfig];
-        this.dbus.setSettings.call();
+        this.setSettingsCall.arguments = [desktop, stringConfig];
+        this.setSettingsCall.call();
     }
 
     getSettings(desktop: string, fn: (cfg: EngineConfig) => void): void {
@@ -53,11 +62,11 @@ export class DBusManager {
             return;
         }
         this.logger.debug("Getting settings over dbus for desktop", desktop);
-        this.dbus.getSettings.finished.connect(
+        this.getSettingsCall.finished.connect(
             this.getSettingsCallback.bind(this, fn),
         );
-        this.dbus.getSettings.arguments = [desktop];
-        this.dbus.getSettings.call();
+        this.getSettingsCall.arguments = [desktop];
+        this.getSettingsCall.call();
     }
 
     removeSettings(desktop: string): void {
@@ -65,7 +74,7 @@ export class DBusManager {
             return;
         }
         this.logger.debug("Removing settings over dbus for desktop", desktop);
-        this.dbus.removeSettings.arguments = [desktop];
-        this.dbus.removeSettings.call();
+        this.removeSettingsCall.arguments = [desktop];
+        this.removeSettingsCall.call();
     }
 }

@@ -27,7 +27,7 @@
         "esbuild": "^0.19.4",
         "eslint": "^8.51.0",
         "fast-copy": "^3.0.1",
-        "kwin-api": "^6.0.8",
+        "kwin-api": "^6.0.9",
         "mnemonist": "^0.39.5",
         "prettier": "3.2.5",
         "typescript": "^5.2.2"

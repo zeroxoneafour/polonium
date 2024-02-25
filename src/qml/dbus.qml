@@ -4,6 +4,22 @@ import org.kde.kwin;
 Item {
     id: dbus;
     
+    function getExists() {
+        return exists;
+    }
+    
+    function getGetSettings() {
+        return getSettings;
+    }
+    
+    function getSetSettings() {
+        return setSettings;
+    }
+    
+    function getRemoveSettings() {
+        return removeSettings;
+    }
+    
     DBusCall {
         id: getSettings;
         

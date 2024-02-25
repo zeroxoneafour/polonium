@@ -24,8 +24,8 @@ Item {
         const qmlObjects = {
             "root": root,
             "settings": settings,
-            "shortcuts": shortcuts,
-            "dbus": dbus
+            "shortcuts": shortcutsLoader.item,
+            "dbus": dbusLoader.item
         };
         Polonium.main(api, qmlObjects);
     }
@@ -69,26 +69,16 @@ Item {
             settings.removeSettings(a);
         }
     }
-    
+        
     Loader {
-        id: dbus;
-        
-        getSettings: dbus.getSettings;
-        
-        setSettings: dbus.setSettings;
-        
-        removeSettings: dbus.removeSettings;
+        id: dbusLoader;
         
         source: "dbus.qml";
     }
     
     Loader {
-        id: shortcuts;
-        
-        retileWindow: shortcuts.retileWindow;
-        
-        openSettings: shortcuts.openSettings;
-        
+        id: shortcutsLoader;
+                
         source: "shortcuts.qml";
     }
 }

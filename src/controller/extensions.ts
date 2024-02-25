@@ -1,4 +1,5 @@
-import { MaximizeMode, QmlWorkspace, VirtualDesktop, Window } from "kwin-api";
+import { MaximizeMode, VirtualDesktop, Window } from "kwin-api";
+import { Workspace } from "kwin-api/qml";
 import { Desktop } from "./desktop";
 import { WindowHooks } from "./actions/windowhooks";
 import { GPoint, GRect } from "../util/geometry";
@@ -12,18 +13,18 @@ export class WorkspaceExtensions {
     // hidden stuff to track changes with
     private currentActivity: string;
     private currentDesktop: VirtualDesktop;
-    private workspace: QmlWorkspace;
+    private workspace: Workspace;
     private currentActiveWindow: Window | null = null;
 
-    constructor(workspace: QmlWorkspace) {
+    constructor(workspace: Workspace) {
         this.workspace = workspace;
         this.currentActivity = this.workspace.currentActivity;
         this.currentDesktop = this.workspace.currentDesktop;
         this.lastActivity = this.currentActivity;
         this.lastDesktop = this.currentDesktop;
 
-        this.workspace.currentActivityChanged.connect(this.repoll);
-        this.workspace.currentDesktopChanged.connect(this.repoll);
+        this.workspace.currentActivityChanged.connect(this.repoll.bind(this));
+        this.workspace.currentDesktopChanged.connect(this.repoll.bind(this));
         this.workspace.windowActivated.connect((window: Window) => {
             this.lastActiveWindow = this.currentActiveWindow;
             this.currentActiveWindow = window;
@@ -56,10 +57,10 @@ export class WindowExtensions {
             (m: MaximizeMode) =>
                 (this.maximized = m == MaximizeMode.MaximizeFull),
         );
-        window.tileChanged.connect(this.tileChanged);
-        window.desktopsChanged.connect(this.previousDesktopsChanged);
-        window.activitiesChanged.connect(this.previousDesktopsChanged);
-        window.outputChanged.connect(this.previousDesktopsChanged);
+        window.tileChanged.connect(this.tileChanged.bind(this));
+        window.desktopsChanged.connect(this.previousDesktopsChanged.bind(this));
+        window.activitiesChanged.connect(this.previousDesktopsChanged.bind(this));
+        window.outputChanged.connect(this.previousDesktopsChanged.bind(this));
 
         this.tileChanged();
         this.previousDesktopsChanged();

@@ -2,7 +2,6 @@
 
 import { Config } from "./config";
 import { Root } from "../extern/qml";
-import { Controller } from "../controller";
 
 export class Log {
     private readonly printFn: Root["printQml"] | undefined;

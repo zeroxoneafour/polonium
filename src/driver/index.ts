@@ -26,10 +26,14 @@ export class DriverManager {
         this.engineFactory = new TilingEngineFactory(this.ctrl.config);
         this.logger = c.logger;
         this.config = c.config;
-        
-        c.workspace.screensChanged.connect(this.generateDrivers);
-        c.workspace.desktopsChanged.connect(this.generateDrivers);
-        c.workspace.activitiesChanged.connect(this.generateDrivers);
+    }
+    
+    init(): void {
+        const c = this.ctrl;
+        c.workspace.screensChanged.connect(this.generateDrivers.bind(this));
+        c.workspace.desktopsChanged.connect(this.generateDrivers.bind(this));
+        c.workspace.activitiesChanged.connect(this.generateDrivers.bind(this));
+        this.generateDrivers();
     }
 
     private generateDrivers(): void {

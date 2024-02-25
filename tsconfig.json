@@ -4,7 +4,7 @@
     "compilerOptions": {
         "target": "es2016",
         "module": "es6",
-        "moduleResolution": "node",
+        "moduleResolution": "nodeNext",
         "removeComments": true,
         "lib": ["es2016"],
         "alwaysStrict": true,

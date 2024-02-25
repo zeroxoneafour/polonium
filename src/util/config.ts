@@ -17,9 +17,9 @@ export const enum Borders {
 }
 
 export class Config {
-    private readonly readConfigFn: QmlKWin["readConfig"] | undefined;
+    private readonly readConfigFn: KWin["readConfig"] | undefined;
 
-    constructor(kwinApi: QmlKWin) {
+    constructor(kwinApi: KWin) {
         this.readConfigFn = kwinApi.readConfig;
         this.readConfig();
     }

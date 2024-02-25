@@ -57,8 +57,8 @@ export class DesktopFactory {
         this.desktopsChanged();
         this.screensChanged();
 
-        this.workspace.desktopsChanged.connect(this.desktopsChanged);
-        this.workspace.screensChanged.connect(this.screensChanged);
+        this.workspace.desktopsChanged.connect(this.desktopsChanged.bind(this));
+        this.workspace.screensChanged.connect(this.screensChanged.bind(this));
     }
 
     private desktopsChanged(): void {

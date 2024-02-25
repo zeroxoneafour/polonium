@@ -15,12 +15,16 @@ export class WorkspaceActions {
         this.config = ctrl.config;
         this.ctrl = ctrl;
 
+    }
+    
+    // done later after loading
+    addHooks(): void {
         const workspace = this.ctrl.workspace;
-        workspace.windowAdded.connect(this.windowAdded);
-        workspace.windowRemoved.connect(this.windowRemoved);
-        workspace.currentActivityChanged.connect(this.currentDesktopChange);
-        workspace.currentDesktopChanged.connect(this.currentDesktopChange);
-        workspace.windowActivated.connect(this.windowActivated);
+        workspace.windowAdded.connect(this.windowAdded.bind(this));
+        workspace.windowRemoved.connect(this.windowRemoved.bind(this));
+        workspace.currentActivityChanged.connect(this.currentDesktopChange.bind(this));
+        workspace.currentDesktopChanged.connect(this.currentDesktopChange.bind(this));
+        workspace.windowActivated.connect(this.windowActivated.bind(this));
     }
 
     doTileWindow(c: Window): boolean {
@@ -59,13 +63,15 @@ export class WorkspaceActions {
         if (this.config.borders == Borders.NoAll) {
             window.noBorder = true;
         }
+        this.logger.debug("Window", window.resourceClass, "added");
         this.ctrl.driverManager.addWindow(window);
         this.ctrl.driverManager.rebuildLayout();
     }
 
     windowRemoved(window: Window): void {
-        this.ctrl.windowExtensions.delete(window);
+        this.logger.debug("Window", window.resourceClass, "removed");
         this.ctrl.driverManager.removeWindow(window);
+        this.ctrl.windowExtensions.delete(window);
         this.ctrl.driverManager.rebuildLayout();
     }
 

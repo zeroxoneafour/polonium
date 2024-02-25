@@ -10,8 +10,8 @@ export class ShortcutManager {
     constructor(ctrl: Controller) {
         this.ctrl = ctrl;
         let shortcuts = ctrl.qmlObjects.shortcuts;
-        shortcuts.retileWindow.activated.connect(this.retileWindow);
-        shortcuts.openSettings.activated.connect(this.openSettingsDialog);
+        shortcuts.getRetileWindow().activated.connect(this.retileWindow.bind(this));
+        shortcuts.getOpenSettings().activated.connect(this.openSettingsDialog.bind(this));
     }
     
     retileWindow(): void {

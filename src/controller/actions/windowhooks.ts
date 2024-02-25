@@ -9,25 +9,6 @@ import { Log } from "../../util/log";
 import { Config } from "../../util/config";
 import { WindowExtensions } from "../extensions";
 
-export class WindowHookManager {
-    private ctrl: Controller;
-    private logger: Log;
-
-    constructor(ctrl: Controller) {
-        this.ctrl = ctrl;
-        this.logger = this.ctrl.logger;
-    }
-
-    attachWindowHooks(window: Window): void {
-        const extensions = this.ctrl.windowExtensions.get(window)!;
-        if (extensions.clientHooks == null) {
-            return;
-        }
-        this.logger.debug("Window", window.resourceClass, "hooked into script");
-        extensions.clientHooks = new WindowHooks(this.ctrl, window);
-    }
-}
-
 export class WindowHooks {
     private ctrl: Controller;
     private logger: Log;
@@ -42,13 +23,13 @@ export class WindowHooks {
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
 
-        window.desktopsChanged.connect(this.desktopChanged);
-        window.activitiesChanged.connect(this.desktopChanged);
-        window.outputChanged.connect(this.desktopChanged);
-        window.tileChanged.connect(this.tileChanged);
-        window.fullScreenChanged.connect(this.fullscreenChanged);
-        window.minimizedChanged.connect(this.minimizedChanged);
-        window.maximizedAboutToChange.connect(this.maximizedChanged);
+        window.desktopsChanged.connect(this.desktopChanged.bind(this));
+        window.activitiesChanged.connect(this.desktopChanged.bind(this));
+        window.outputChanged.connect(this.desktopChanged.bind(this));
+        window.tileChanged.connect(this.tileChanged.bind(this));
+        window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
+        window.minimizedChanged.connect(this.minimizedChanged.bind(this));
+        window.maximizedAboutToChange.connect(this.maximizedChanged.bind(this));
     }
 
     desktopChanged(): void {
@@ -233,5 +214,24 @@ export class WindowHooks {
         } else if (!maximized && !this.extensions.isTiled) {
             this.putWindowInBestTile();
         }
+    }
+}
+
+export class WindowHookManager {
+    private ctrl: Controller;
+    private logger: Log;
+
+    constructor(ctrl: Controller) {
+        this.ctrl = ctrl;
+        this.logger = this.ctrl.logger;
+    }
+
+    attachWindowHooks(window: Window): void {
+        const extensions = this.ctrl.windowExtensions.get(window)!;
+        if (extensions.clientHooks == null) {
+            return;
+        }
+        this.logger.debug("Window", window.resourceClass, "hooked into script");
+        extensions.clientHooks = new WindowHooks(this.ctrl, window);
     }
 }

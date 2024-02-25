@@ -37,13 +37,13 @@ export interface Settings {
 }
 
 export interface Shortcuts {
-    retileWindow: ShortcutHandler;
-    openSettings: ShortcutHandler;
+    getRetileWindow(): ShortcutHandler;
+    getOpenSettings(): ShortcutHandler;
 }
 
 export interface DBus {
-    getSettings: DBusCall;
-    setSettings: DBusCall;
-    removeSettings: DBusCall;
-    exists: DBusCall;
+    getGetSettings(): DBusCall;
+    getSetSettings(): DBusCall;
+    getRemoveSettings(): DBusCall;
+    getExists(): DBusCall;
 }

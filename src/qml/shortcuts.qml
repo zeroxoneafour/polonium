@@ -6,6 +6,14 @@ import org.kde.kwin;
 Item {
     id: dbus;
     
+    function getRetileWindow() {
+        return retileWindow;
+    }
+    
+    function getOpenSettings() {
+        return openSettings;
+    }
+    
     ShortcutHandler {
         id: retileWindow;
         
