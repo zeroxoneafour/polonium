@@ -70,8 +70,8 @@ export class WorkspaceActions {
 
     windowRemoved(window: Window): void {
         this.logger.debug("Window", window.resourceClass, "removed");
-        this.ctrl.driverManager.removeWindow(window);
         this.ctrl.windowExtensions.delete(window);
+        this.ctrl.driverManager.removeWindow(window);
         this.ctrl.driverManager.rebuildLayout();
     }
 

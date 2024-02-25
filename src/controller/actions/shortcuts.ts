@@ -24,6 +24,7 @@ export class ShortcutManager {
         } else {
             this.ctrl.driverManager.addWindow(window);
         }
+        this.ctrl.driverManager.rebuildLayout();
     }
 
     openSettingsDialog(): void {

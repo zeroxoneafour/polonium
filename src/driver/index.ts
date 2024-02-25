@@ -201,6 +201,7 @@ export class DriverManager {
         for (const desktop of desktops) {
             this.drivers.get(desktop.toString())!.addWindow(window);
         }
+        this.ctrl.windowExtensions.get(window)!.isTiled = true;
         this.applyTiled(window);
     }
 
@@ -217,8 +218,10 @@ export class DriverManager {
         for (const desktop of desktops) {
             this.drivers.get(desktop.toString())!.removeWindow(window);
         }
-        this.ctrl.windowExtensions.get(window)!.isTiled = false;
-        this.applyUntiled(window);
+        if (this.ctrl.windowExtensions.has(window)) {
+            this.ctrl.windowExtensions.get(window)!.isTiled = false;
+            this.applyUntiled(window);
+        }
     }
 
     putWindowInTile(window: Window, tile: Tile, direction?: Direction) {
@@ -237,6 +240,7 @@ export class DriverManager {
         this.drivers
             .get(desktop.toString())!
             .putWindowInTile(window, tile, direction);
+        this.ctrl.windowExtensions.get(window)!.isTiled = true;
         this.applyTiled(window);
     }
 
