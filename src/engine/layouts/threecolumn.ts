@@ -9,7 +9,7 @@ import { GSize } from "../../util/geometry";
 
 class ClientBox {
     client: Client;
-    size: GSize | null = null;
+    size: GSize = new GSize();
 
     constructor(client: Client) {
         this.client = client;

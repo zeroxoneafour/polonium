@@ -1,10 +1,14 @@
 // engine.ts - Exposes things that the layouts need
 
-import { Direction } from "../util/geometry";
+import { Direction, GSize } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
 import { LayoutDirection } from "kwin-api";
 import { QSize } from "kwin-api/qt";
-import { Client as IClient, Tile as ITile, TilingEngine as ITilingEngine } from "./index";
+import {
+    Client as IClient,
+    Tile as ITile,
+    TilingEngine as ITilingEngine,
+} from "./index";
 
 export interface EngineConfig {
     insertionPoint: InsertionPoint;
@@ -29,11 +33,11 @@ export class Tile implements ITile {
     tiles: ITile[] = [];
     layoutDirection: LayoutDirection = LayoutDirection.Horizontal;
     // requested size in pixels, may not be honored
-    requestedSize: QSize | null = null;
+    requestedSize: QSize = new GSize();
     clients: IClient[] = [];
-    
+
     // getter/setter for backwards compatibility
-    
+
     public get client(): Client | null {
         return this.clients.length > 0 ? this.clients[0] : null;
     }

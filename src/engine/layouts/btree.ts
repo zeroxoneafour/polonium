@@ -12,7 +12,7 @@ class TreeNode {
     sibling: TreeNode | null = null;
     children: [TreeNode, TreeNode] | null = null;
     client: Client | null = null;
-    requestedSize: GSize | null = null;
+    requestedSize: GSize = new GSize();
     // splits tile
     split(): void {
         // cannot already have children

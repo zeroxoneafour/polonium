@@ -42,7 +42,7 @@ export interface Tile {
     parent: Tile | null;
     tiles: Tile[];
     layoutDirection: LayoutDirection;
-    requestedSize: QSize | null;
+    requestedSize: QSize;
     clients: Client[];
 
     get client(): Client | null;

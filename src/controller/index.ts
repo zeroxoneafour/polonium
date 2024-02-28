@@ -23,7 +23,7 @@ export class Controller {
     options: Options;
     kwinApi: KWin;
     qmlObjects: Qml.Objects;
-    
+
     desktopFactory: DesktopFactory;
 
     driverManager: DriverManager;
@@ -32,14 +32,14 @@ export class Controller {
     windowHookManager: WindowHookManager;
     settingsDialogManager: SettingsDialogManager;
     workspaceActions: WorkspaceActions;
-    
+
     logger: Log;
     config: Config;
-    
+
     workspaceExtensions: WorkspaceExtensions;
     windowExtensions: Map<Window, WindowExtensions> = new Map();
     managedTiles: Set<Tile> = new Set();
-    
+
     initTimer: QTimer;
 
     constructor(qmlApi: Qml.Api, qmlObjects: Qml.Objects) {
@@ -53,27 +53,33 @@ export class Controller {
         this.config = new Config(this.kwinApi);
         this.logger = new Log(this.config, this.qmlObjects.root);
         this.logger.info("Polonium started!");
-        
+        if (!this.config.debug) {
+            this.logger.info(
+                "Polonium debug is DISABLED! Enable it and restart KWin before sending logs!",
+            );
+        }
+        this.logger.debug("Config is", JSON.stringify(this.config));
+
         this.workspaceExtensions = new WorkspaceExtensions(this.workspace);
-        
+
         this.dbusManager = new DBusManager(this);
         this.driverManager = new DriverManager(this);
         this.shortcutManager = new ShortcutManager(this);
         this.windowHookManager = new WindowHookManager(this);
         this.settingsDialogManager = new SettingsDialogManager(this);
         this.workspaceActions = new WorkspaceActions(this);
-        
+
         // delayed init will help with some stuff
         this.initTimer = qmlObjects.root.createTimer();
         this.initTimer.interval = 1000;
         this.initTimer.triggered.connect(this.initCallback.bind(this));
         this.initTimer.repeat = false;
     }
-    
+
     init(): void {
         this.initTimer.start();
     }
-    
+
     private initCallback(): void {
         // hook into kwin after everything loads nicely
         this.workspaceActions.addHooks();

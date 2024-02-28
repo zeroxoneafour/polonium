@@ -1,6 +1,13 @@
 // driver/driver.ts - Mapping from engines to Kwin API
 
-import { TilingEngine, Tile, Client, EngineCapability, EngineType, EngineConfig } from "../engine";
+import {
+    TilingEngine,
+    Tile,
+    Client,
+    EngineCapability,
+    EngineType,
+    EngineConfig,
+} from "../engine";
 import { Direction } from "../util/geometry";
 import { GSize, GPoint, DirectionTools } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
@@ -14,7 +21,7 @@ import { Controller } from "../controller";
 export class TilingDriver {
     engine: TilingEngine;
     engineType: EngineType;
-    
+
     private logger: Log;
     private config: Config;
     private ctrl: Controller;
@@ -23,12 +30,12 @@ export class TilingDriver {
     clients: BiMap<Kwin.Window, Client> = new BiMap();
     // windows that have no associated tile but are still in an engine go here
     untiledWindows: Kwin.Window[] = [];
-    
+
     get engineConfig(): EngineConfig {
         return {
             engineType: this.engineType,
             insertionPoint: this.engine.config.insertionPoint,
-            rotateLayout: this.engine.config.rotateLayout
+            rotateLayout: this.engine.config.rotateLayout,
         };
     }
 
@@ -95,7 +102,8 @@ export class TilingDriver {
             this.ctrl.managedTiles.add(kwinTile);
             kwinTile.layoutDirection = tile.layoutDirection;
             // 1 is vertical, 2 is horizontal
-            const horizontal = kwinTile.layoutDirection == 1;
+            const horizontal =
+                kwinTile.layoutDirection == Kwin.LayoutDirection.Horizontal;
             const tilesLen = tile.tiles.length;
             if (tilesLen > 1) {
                 for (let i = 0; i < tilesLen; i += 1) {
@@ -105,15 +113,36 @@ export class TilingDriver {
                     } else if (i > 1) {
                         kwinTile.tiles[i - 1].split(tile.layoutDirection);
                     }
+                    // custom resizing much easier now (?)
+                    const childKwinTile = kwinTile.tiles[i];
+                    const childTile = tile.tiles[i];
+                    this.tiles.set(childKwinTile, childTile);
+                    // only autosizing (we'll go back in later and size appropriately)
                     if (horizontal && i > 0) {
-                        kwinTile.tiles[i - 1].relativeGeometry.width =
-                            kwinTile.relativeGeometry.width / tilesLen;
+                        const targetSize =
+                            (kwinTile.absoluteGeometryInScreen.width /
+                                tilesLen) *
+                            (tilesLen - i);
+                        kwinTile.tiles[i].resizeByPixels(
+                            -(
+                                targetSize -
+                                childKwinTile.absoluteGeometryInScreen.width
+                            ),
+                            Kwin.Edge.LeftEdge,
+                        );
                     } else if (i > 0) {
-                        kwinTile.tiles[i - 1].relativeGeometry.height =
-                            kwinTile.relativeGeometry.height / tilesLen;
+                        const targetSize =
+                            (kwinTile.absoluteGeometryInScreen.height /
+                                tilesLen) *
+                            (tilesLen - i);
+                        kwinTile.tiles[i].resizeByPixels(
+                            -(
+                                targetSize -
+                                childKwinTile.absoluteGeometryInScreen.height
+                            ),
+                            Kwin.Edge.TopEdge,
+                        );
                     }
-                    // evenly distribute tile sizes before doing custom resizing
-                    this.tiles.set(kwinTile.tiles[i], tile.tiles[i]);
                     queue.enqueue(tile.tiles[i]);
                 }
             }
@@ -125,7 +154,11 @@ export class TilingDriver {
             if (tile.client != null) {
                 const window = this.clients.inverse.get(tile.client);
                 if (window == undefined) {
-                    this.logger.error("Client", tile.client.name, "does not exist");
+                    this.logger.error(
+                        "Client",
+                        tile.client.name,
+                        "does not exist",
+                    );
                     return;
                 }
                 const extensions = this.ctrl.windowExtensions.get(window)!;
@@ -141,14 +174,6 @@ export class TilingDriver {
                 );
             }
         }
-
-        // bubble up tile size fixing (didn't want to overbloat this function)
-        this.fixSizing(realRootTile, rootTile);
-    }
-
-    // kwin couldnt do this themselves?
-    private fixSizing(rootTile: Tile, kwinRootTile: Kwin.Tile): void {
-        // TODO - fixSizing
     }
 
     addWindow(window: Kwin.Window): void {
@@ -208,7 +233,11 @@ export class TilingDriver {
     ) {
         const tile = this.tiles.get(kwinTile);
         if (tile == undefined) {
-            this.logger.error("Tile", kwinTile.absoluteGeometry, "not registered");
+            this.logger.error(
+                "Tile",
+                kwinTile.absoluteGeometry,
+                "not registered",
+            );
             return;
         }
         if (!this.clients.has(window)) {
@@ -227,7 +256,10 @@ export class TilingDriver {
                 rotatedDirection = new DirectionTools(
                     rotatedDirection,
                 ).rotateCw();
-                this.logger.debug("Insertion direction rotated to", rotatedDirection);
+                this.logger.debug(
+                    "Insertion direction rotated to",
+                    rotatedDirection,
+                );
             }
             this.engine.putClientInTile(client, tile, rotatedDirection);
             this.engine.buildLayout();
@@ -243,7 +275,11 @@ export class TilingDriver {
             const kwinTile = queue.dequeue()!;
             const tile = this.tiles.get(kwinTile);
             if (tile == undefined) {
-                this.logger.error("Tile", kwinTile.absoluteGeometry, "not registered");
+                this.logger.error(
+                    "Tile",
+                    kwinTile.absoluteGeometry,
+                    "not registered",
+                );
                 continue;
             }
             tile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
