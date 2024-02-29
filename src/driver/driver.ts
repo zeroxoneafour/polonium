@@ -188,10 +188,10 @@ export class TilingDriver {
                         // if the layout is horizontal already, width resizing should be easy
                         if (index == 0) {
                             // first tile in sequence, shift border right
-                            kwinTile.resizeByPixels(diff, Kwin.Edge.RightEdge);
+                            kwinTile.resizeByPixels(-diff, Kwin.Edge.RightEdge);
                         } else {
                             // shift border left
-                            kwinTile.resizeByPixels(diff, Kwin.Edge.LeftEdge);
+                            kwinTile.resizeByPixels(-diff, Kwin.Edge.LeftEdge);
                         }
                     } else if (tile.parent.parent != null) {
                         // evaluate here if the tile is laid out vertically but needs to be expanded horizontally
@@ -200,10 +200,10 @@ export class TilingDriver {
                         );
                         if (parentIndex == 0) {
                             // first tile in sequence, shift border right
-                            kwinTile.resizeByPixels(diff, Kwin.Edge.RightEdge);
+                            kwinTile.resizeByPixels(-diff, Kwin.Edge.RightEdge);
                         } else {
                             // shift border left
-                            kwinTile.resizeByPixels(diff, Kwin.Edge.LeftEdge);
+                            kwinTile.resizeByPixels(-diff, Kwin.Edge.LeftEdge);
                         }
                     }
                 }
