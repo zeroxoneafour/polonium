@@ -151,14 +151,13 @@ export class TilingDriver {
                 this.tiles.set(kwinTile, tile.tiles[0]);
                 queue.enqueue(tile.tiles[0]);
             }
-            if (tile.client != null) {
-                const window = this.clients.inverse.get(tile.client);
+
+            // JAVASCRIPT MENTIONED !!!!! WHAT THE FUCK IS A IMMUTABLE ITERATOR ?!?!?!
+            for (let i = tile.clients.length - 1; i >= 0; i -= 1) {
+                const client = tile.clients[i];
+                const window = this.clients.inverse.get(client);
                 if (window == undefined) {
-                    this.logger.error(
-                        "Client",
-                        tile.client.name,
-                        "does not exist",
-                    );
+                    this.logger.error("Client", client.name, "does not exist");
                     return;
                 }
                 const extensions = this.ctrl.windowExtensions.get(window)!;
@@ -172,6 +171,69 @@ export class TilingDriver {
                 extensions.lastTiledLocation = GPoint.centerOfRect(
                     kwinTile.absoluteGeometry,
                 );
+                // windows raised in inverse order (first window in array goes on top eventually)
+                this.ctrl.workspace.raiseWindow(window);
+            }
+
+            // only resize if not root tile (obv)
+            if (tile.parent != null) {
+                let index = tile.parent.tiles.indexOf(tile);
+                
+                // horiz resize
+                if (tile.requestedSize.width != 0) {
+                    let diff =
+                        tile.requestedSize.width -
+                        kwinTile.absoluteGeometryInScreen.width;
+                    if (horizontal) {
+                        // if the layout is horizontal already, width resizing should be easy
+                        if (index == 0) {
+                            // first tile in sequence, shift border right
+                            kwinTile.resizeByPixels(diff, Kwin.Edge.RightEdge);
+                        } else {
+                            // shift border left
+                            kwinTile.resizeByPixels(diff, Kwin.Edge.LeftEdge);
+                        }
+                    } else if (tile.parent.parent != null) {
+                        // evaluate here if the tile is laid out vertically but needs to be expanded horizontally
+                        let parentIndex = tile.parent.parent.tiles.indexOf(
+                            tile.parent,
+                        );
+                        if (parentIndex == 0) {
+                            // first tile in sequence, shift border right
+                            kwinTile.resizeByPixels(diff, Kwin.Edge.RightEdge);
+                        } else {
+                            // shift border left
+                            kwinTile.resizeByPixels(diff, Kwin.Edge.LeftEdge);
+                        }
+                    }
+                }
+                
+                // vertical resize
+                if (tile.requestedSize.height != 0) {
+                    let diff =
+                        tile.requestedSize.height -
+                        kwinTile.absoluteGeometryInScreen.height;
+                    if (!horizontal) {
+                        if (index == 0) {
+                            // first tile in sequence, shift border down
+                            kwinTile.resizeByPixels(-diff, Kwin.Edge.TopEdge);
+                        } else {
+                            // shift border up
+                            kwinTile.resizeByPixels(-diff, Kwin.Edge.BottomEdge);
+                        }
+                    } else if (tile.parent.parent != null) {
+                        let parentIndex = tile.parent.parent.tiles.indexOf(
+                            tile.parent,
+                        );
+                        if (parentIndex == 0) {
+                            // first tile in sequence, shift border down
+                            kwinTile.resizeByPixels(diff, Kwin.Edge.TopEdge);
+                        } else {
+                            // shift border up
+                            kwinTile.resizeByPixels(diff, Kwin.Edge.BottomEdge);
+                        }
+                    }
+                }
             }
         }
     }
