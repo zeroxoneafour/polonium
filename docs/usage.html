@@ -1,31 +1,27 @@
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta id="pagename" content="usage">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta id="pagename" content="usage" />
     <title>Polonium | Usage</title>
     <script src="main.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-    
-<header>
-    <div id="header"></div>
-</header>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div id="header"></div>
+    </header>
 
-<div id="navbar" class="navbar"></div>
+    <div id="navbar" class="navbar"></div>
 
-<div id="content" class="content md">
+    <div id="content" class="content md"></div>
 
-</div>
+    <script>
+      markdownParse("usage.md", "content");
+    </script>
 
-<script>
-  markdownParse("usage.md", "content");
-</script>
-
-<footer>
-    <div id="footer"></div>
-</footer>
-
-</body>
+    <footer>
+      <div id="footer"></div>
+    </footer>
+  </body>
 </html>

@@ -3,58 +3,57 @@ description: File a bug report
 title: "[Bug]: "
 labels: ["bug"]
 body:
-  - type: checkboxes
-    id: checks
-    attributes:
-      label: Before you make the issue, confirm that
-      options:
-        - label: You are running the master build from GitHub actions
+    - type: checkboxes
+      id: checks
+      attributes:
+          label: Before you make the issue, confirm that
+          options:
+              - label: You are running the master build from GitHub actions
+                required: true
+              - label: You have read the FAQ and the usage instructions
+                required: true
+              - label: You have searched pull requests and issues and have found none similar to your issue
+                required: true
+              - label: This problem comes from a failure in the tiling system and not a missing feature
+                required: true
+    - type: textarea
+      id: describir
+      attributes:
+          label: Describe the bug
+          description: A clear and concise description of what the bug is.
+          placeholder: Tell us what you see!
+      validations:
           required: true
-        - label: You have read the FAQ and the usage instructions
+    - type: textarea
+      id: reproduce
+      attributes:
+          label: To reproduce
+          description: Steps to take to reproduce the bug
+          placeholder: To reproduce the bug -
+      validations:
           required: true
-        - label: You have searched pull requests and issues and have found none similar to your issue
+    - type: textarea
+      id: expectations
+      attributes:
+          label: Expected behavior
+          description: A clear and concise description of what you expected to happen.
+      validations:
           required: true
-        - label: This problem comes from a failure in the tiling system and not a missing feature
+    - type: textarea
+      id: logs
+      attributes:
+          label: Relevant log output
+          description: See the [usage instructions](https://zeroxoneafour.github.io/polonium/usage.html#getting-a-log) for how to get a log on systemd-based distributions
+          render: shell
+      validations:
           required: true
-  - type: textarea
-    id: describir
-    attributes:
-      label: Describe the bug
-      description: A clear and concise description of what the bug is.
-      placeholder: Tell us what you see!
-    validations:
-      required: true
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: To reproduce
-      description: Steps to take to reproduce the bug
-      placeholder: To reproduce the bug -
-    validations:
-      required: true
-  - type: textarea
-    id: expectations
-    attributes:
-      label: Expected behavior
-      description: A clear and concise description of what you expected to happen.
-    validations:
-      required: true
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant log output
-      description: See the [usage instructions](https://zeroxoneafour.github.io/polonium/usage.html#getting-a-log) for how to get a log on systemd-based distributions
-      render: shell
-    validations:
-      required: true
-  - type: textarea
-    id: pictures
-    attributes:
-      label: Screenshots and videos
-      description: If possible, screenshots and videos will help
-  - type: textarea
-    id: context
-    attributes:
-      label: Additional context
-      description: Add additional context if needed
-      
+    - type: textarea
+      id: pictures
+      attributes:
+          label: Screenshots and videos
+          description: If possible, screenshots and videos will help
+    - type: textarea
+      id: context
+      attributes:
+          label: Additional context
+          description: Add additional context if needed

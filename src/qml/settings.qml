@@ -1,25 +1,24 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import org.kde.kwin 2.0
-import org.kde.plasma.components 3.0 as PC3
-import org.kde.plasma.core 2.0 as PlasmaCore
+import QtQuick;
+import QtQuick.Layouts;
+import org.kde.kwin;
+import org.kde.plasma.components 3.0 as PC3;
+import org.kde.plasma.core 2.0 as PlasmaCore;
 
 PlasmaCore.Dialog {
     id: settingsDialog;
     
     property var settings: ({
         // see engine enum
-        engine: 0,
+        engineType: 0,
         // 0 - left side, 1 - right side, 2 - active
         insertionPoint: 1,
-        // 90 degree rotation
-        rotation: false,
+        rotateLayout: false,
     })
     
     property var desktop: ({
-        screen: 0,
+        output: "",
         activity: "",
-        desktop: 1,
+        desktop: "",
     })
     
     property rect screenGeometry;
@@ -32,24 +31,24 @@ PlasmaCore.Dialog {
     hideOnWindowDeactivate: true;
 
     function setSettings(s) {
-        this.settings.engine = s.engine;
+        this.settings.engineType = s.engineType;
         this.settings.insertionPoint = s.insertionPoint;
-        this.settings.rotation = s.rotation;
+        this.settings.rotateLayout = s.rotateLayout;
     }
     
     function show() {
         // update desktop
-        this.desktop.screen = workspace.activeScreen;
-        this.desktop.activity = workspace.currentActivity;
-        this.desktop.desktop = workspace.currentDesktop;
+        this.desktop.output = Workspace.activeScreen.name;
+        this.desktop.activity = Workspace.currentActivity;
+        this.desktop.desktop = Workspace.currentDesktop.id;
         
         // update settings
-        engine.currentIndex = this.settings.engine;
+        engine.currentIndex = this.settings.engineType;
         insertionPoint.currentIndex = this.settings.insertionPoint;
-        rotation.checkState = this.settings.rotation ? Qt.Checked : Qt.Unchecked;
+        rotation.checkState = this.settings.rotateLayout ? Qt.Checked : Qt.Unchecked;
         
         // Update current screen information
-        this.screenGeometry = workspace.clientArea(KWin.FullScreenArea, workspace.activeScreen, workspace.currentDesktop);
+        this.screenGeometry = Workspace.clientArea(KWin.FullScreenArea, Workspace.activeScreen, Workspace.currentDesktop);
         
         // Show the popup
         this.visible = true;
@@ -63,16 +62,16 @@ PlasmaCore.Dialog {
     signal removeSettingsInternal(desktop: var);
     
     function saveSettings() {
-        this.settings.engine = engine.currentIndex;
+        this.settings.engineType = engine.currentIndex;
         this.settings.insertionPoint = insertionPoint.currentIndex;
-        this.settings.rotation = (rotation.checkState == Qt.Checked);
+        this.settings.rotateLayout = (rotateLayout.checkState == Qt.Checked);
         this.saveSettingsInternal(this.settings, this.desktop);
     }
     
     function removeSettings() {
         this.removeSettingsInternal(this.desktop);
     }
-    
+        
     mainItem: ColumnLayout {
         id: main;
         Layout.alignment: Qt.AlignHCenter;
@@ -88,7 +87,7 @@ PlasmaCore.Dialog {
             }
             PC3.ComboBox {
                 id: engine;
-                model: ["Binary Tree", "Half", "Three Column", "Monocle", "KWin"];
+                model: ["Binary Tree", "Half", "Three Column", "KWin"];
             }
         }
         
@@ -109,11 +108,11 @@ PlasmaCore.Dialog {
         RowLayout {
             Layout.alignment: Qt.AlignHCenter;
             Layout.fillWidth: true;
-            spacing: 10;
+            spacing:10;
             
             PC3.CheckBox {
-                id: rotation;
-                text: "Rotate layout";
+                id: rotateLayout;
+                text: "Rotate Layout"
             }
         }
         
@@ -121,9 +120,9 @@ PlasmaCore.Dialog {
             Layout.alignment: Qt.AlignHCenter;
             Layout.fillWidth: true;
             
-            PC3.Button {
+            PC3.Button  {
                 text: "Save and close";
-                onClicked: {
+                onClicked:  {
                     settingsDialog.saveSettings();
                     settingsDialog.hide();
                 }

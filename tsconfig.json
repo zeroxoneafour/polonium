@@ -1,18 +1,12 @@
 {
-    "include": [
-        "src/"
-    ],
-    "exclude": [
-        "*.*",
-        "pkg/"
-    ],
+    "include": ["src/"],
+    "exclude": ["*.*", "pkg/"],
     "compilerOptions": {
-        "target": "es2021",
+        "target": "es2016",
         "module": "es6",
-        "moduleResolution": "node",
-        "noEmitOnError": false,
+        "moduleResolution": "nodeNext",
         "removeComments": true,
-        "lib": ["es2022", "dom"],
+        "lib": ["es2016"],
         "alwaysStrict": true,
         "strict": true
     }

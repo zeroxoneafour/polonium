@@ -1,344 +1,151 @@
-import { TilingEngine, Direction, Settings } from "./common";
-import { config, printDebug } from "../util";
-import { workspace, showDialog, createTimer, createDBusCall, dbusClientInstalled } from "../index";
+// engine.ts - Exposes things that the layouts need
 
-// engines and engine enum
-import * as BTree from "./btree";
-import * as Half from "./half";
-import * as ThreeColumn from "./threecolumn";
-import * as Monocle from "./monocle";
-import * as Kwin from "./kwin";
+import { Direction, GSize } from "../util/geometry";
+import { InsertionPoint } from "../util/config";
+import { LayoutDirection } from "kwin-api";
+import { QSize } from "kwin-api/qt";
+import {
+    Client as IClient,
+    Tile as ITile,
+    TilingEngine as ITilingEngine,
+} from "./index";
 
-export enum EngineTypes {
-    BTree = 0,
-    Half,
-    ThreeColumn,
-    Monocle,
-    Kwin,
-    // this enum member is used to loop the enum when iterating it
-    _loop,
+export interface EngineConfig {
+    insertionPoint: InsertionPoint;
+    rotateLayout: boolean;
 }
 
-export class Desktop {
-    screen: number;
-    activity: string;
-    desktop: number;
-    toString(): string {
-        return "(" + this.screen + ", " + this.activity + ", " + this.desktop + ")";
+export const enum EngineCapability {
+    None = 0,
+    // whether the driver should translate the rotation for the engine when inserting clients
+    TranslateRotation = 1,
+    // whether the amount of tiles can be changed
+    TilesMutable = 2,
+}
+
+export interface Client {
+    name: string;
+    minSize: QSize;
+}
+
+export class Tile implements ITile {
+    parent: ITile | null;
+    tiles: ITile[] = [];
+    layoutDirection: LayoutDirection = LayoutDirection.Horizontal;
+    // requested size in pixels, may not be honored
+    requestedSize: QSize = new GSize();
+    clients: IClient[] = [];
+
+    // getter/setter for backwards compatibility
+
+    public get client(): Client | null {
+        return this.clients.length > 0 ? this.clients[0] : null;
     }
-    constructor(screen?: number, activity?: string, desktop?: number) {
-        if (screen == undefined || activity == undefined || desktop == undefined) {
-            this.screen = workspace.activeScreen;
-            this.activity = workspace.currentActivity;
-            this.desktop = workspace.currentDesktop;
+    public set client(value: Client | null) {
+        if (value != null) {
+            this.clients[0] = value;
         } else {
-            this.screen = screen;
-            this.activity = activity;
-            this.desktop = desktop;
+            this.clients = [];
         }
+    }
+
+    constructor(parent?: Tile) {
+        this.parent = parent ?? null;
+        if (this.parent) {
+            this.parent.tiles.push(this);
+        }
+    }
+
+    // adds a child that will split perpendicularly to the parent. Returns the child
+    addChild(): Tile {
+        let splitDirection: LayoutDirection = 1;
+        if (this.layoutDirection == 1) {
+            splitDirection = 2;
+        }
+        const childTile = new Tile(this);
+        childTile.layoutDirection = splitDirection;
+        return childTile;
+    }
+
+    // adds a child that will split parallel to the parent. Not really recommeneded
+    addChildParallel(): Tile {
+        const childTile = new Tile(this);
+        childTile.layoutDirection = this.layoutDirection;
+        return childTile;
+    }
+
+    // split a tile perpendicularly
+    split(): void {
+        this.addChild();
+        this.addChild();
+    }
+
+    // have a tile replace its parent, destroying its siblings
+    secede(): void {
+        const parent = this.parent;
+        // cant secede as root
+        if (parent == null) {
+            return;
+        }
+        this.parent = parent.parent;
+        if (this.parent != null) {
+            this.parent.tiles[this.parent.tiles.indexOf(parent)] = this;
+            for (const tile of parent.tiles) {
+                if (tile != this) {
+                    tile.remove(true);
+                }
+            }
+            parent.tiles = [];
+            parent.client = null;
+        } else {
+            // special case for roottile because it cant be destroyed
+            parent.client = this.client;
+            parent.tiles = this.tiles;
+            this.tiles = [];
+            this.client = null;
+        }
+    }
+
+    // removes a tile and all its children
+    remove(batchRemove: boolean = false): void {
+        const parent = this.parent;
+        if (parent == null) {
+            return;
+        }
+        if (!batchRemove) {
+            parent.tiles.splice(parent.tiles.indexOf(this), 1);
+        }
+        this.tiles = [];
+        this.client = null;
+    }
+
+    // remove child tiles
+    removeChildren(): void {
+        for (const tile of this.tiles) {
+            tile.remove(true);
+        }
+        this.tiles = [];
     }
 }
 
-function engineForEnum(engine: EngineTypes): TilingEngine {
-    switch (engine) {
-        case EngineTypes.BTree:
-            return new BTree.TilingEngine;
-        case EngineTypes.Half:
-            return new Half.TilingEngine;
-        case EngineTypes.ThreeColumn:
-            return new ThreeColumn.TilingEngine;
-        case EngineTypes.Monocle:
-            return new Monocle.TilingEngine;
-        case EngineTypes.Kwin: default:
-            return new Kwin.TilingEngine;
-    }
-}
+export abstract class TilingEngine implements ITilingEngine {
+    rootTile: ITile = new Tile();
+    untiledClients: IClient[] = [];
+    config: EngineConfig;
+    abstract readonly engineCapability: EngineCapability;
 
-function isQmlSetting(setting: object): setting is Qml.Settings {
-    return "insertionPoint" in setting;
-}
-
-export class EngineManager {
-    engineTypes: Map<string, EngineTypes> = new Map;
-    private engines: Map<string, TilingEngine> = new Map;
-    layoutBuilding: boolean = false;
-    tileRebuildTimers: Map<KWin.RootTile, Qt.QTimer> = new Map;
-    getSettingsDbus: KWin.DBusCall = createDBusCall();
-    
-    constructor() {
-        this.getSettingsDbus.service = "org.polonium.SettingSaver";
-        this.getSettingsDbus.path = "/saver";
-        this.getSettingsDbus.dbusInterface = "org.polonium.SettingSaver";
-        this.getSettingsDbus.method = "GetSettings";
-        this.getSettingsDbus.finished.connect(((returnValues: string[]) => {
-            if (returnValues[1].length == 0) return;
-            let desktop = returnValues[0];
-            let settings = JSON.parse(returnValues[1]);
-            if (!isQmlSetting(settings)) {
-                printDebug("Invalid settings for desktop " + returnValues[0], true);
-                return;
-            }
-            let engine: TilingEngine | undefined;
-            printDebug("Restoring settings for desktop " + returnValues[0] + " as " + returnValues[1], false);
-            if (settings.engine != this.engineTypes.get(desktop)) {
-                engine = engineForEnum(settings.engine);
-                this.engineTypes.set(desktop, settings.engine);
-                this.engines.set(desktop, engine);
-            } else {
-                engine = this.engines.get(desktop);
-            }
-            if (engine == undefined) return;
-            engine.settings = new Settings(settings);
-        }).bind(this));
-    }
-    
-    private createNewEngine(desktop: Desktop): TilingEngine {
-        this.engineTypes.set(desktop.toString(), config.defaultEngine);
-        const engine = engineForEnum(config.defaultEngine);
-        this.engines.set(desktop.toString(), engine);
-        if (dbusClientInstalled) {
-            this.getSettingsDbus.arguments = [desktop.toString()];
-            this.getSettingsDbus.call();
-        }
-        return engine;
+    public constructor(config: EngineConfig) {
+        this.config = config;
     }
 
-    private getEngine(desktop?: Desktop): TilingEngine {
-        if (desktop === undefined) {
-            desktop = new Desktop();
-        }
-        return this.engines.get(desktop.toString()) ?? this.createNewEngine(desktop);
-    }
-    
-    cycleEngine(desktop: Desktop): boolean {
-        let engineType = this.engineTypes.get(desktop.toString());
-        if (engineType == undefined) {
-            printDebug("No engine found for desktop " + desktop, true);
-            return false;
-        }
-        engineType += 1;
-        this.setEngine(desktop, engineType, true)
-        return true;
-    }
-    
-    setEngine(desktop: Desktop, engineType: EngineTypes, dialog: boolean = false): boolean {
-        engineType %= EngineTypes._loop;
-        printDebug("Setting engine for " + desktop + " to engine " + EngineTypes[engineType], false);
-        this.engineTypes.set(desktop.toString(), engineType);
-        const engine = engineForEnum(engineType);
-        this.engines.set(desktop.toString(), engine);
-        if (dialog) {
-            showDialog(EngineTypes[engineType]);
-        }
-        return true;
-    }
-    
-    buildLayout(rootTile: KWin.RootTile, desktop: Desktop): boolean {
-        // disconnect layout modified signal temporarily to stop them from interfering
-        this.layoutBuilding = true;
-        printDebug("Building layout for desktop " + desktop, false);
-        // wipe rootTile clean
-        while (rootTile.tiles.length > 0) {
-            rootTile.tiles[0].remove();
-        }
-        const ret = this.getEngine(desktop).buildLayout(rootTile);
-        // set the generated property on all tiles
-        let stack: Array<KWin.Tile> = [rootTile];
-        let stackNext: Array<KWin.Tile> = [];
-        while (stack.length != 0) {
-            for (const tile of stack) {
-                tile.generated = true;
-                for (let i = 0; i < tile.tiles.length; i += 1) {
-                    stackNext.push(tile.tiles[i]);
-                }
-            }
-            stack = stackNext;
-            stackNext = [];
-        }
-        this.layoutBuilding = false;
-        if (!rootTile.connected) {
-            rootTile.connected = true;
-            rootTile.layoutModified.connect(this.updateTilesSignal.bind(this, rootTile));
-        }
-        return ret;
-    }
-
-    private updateTilesSignal(rootTile: KWin.RootTile): void {
-        // do not execute while layout is building
-        if (this.layoutBuilding) return;
-        if (!this.tileRebuildTimers.has(rootTile)) {
-            printDebug("Creating tile update timer", false);
-            this.tileRebuildTimers.set(rootTile, createTimer());
-            const timer = this.tileRebuildTimers.get(rootTile)!;
-            timer.repeat = false;
-            timer.triggered.connect(this.updateTiles.bind(this, rootTile));
-            timer.interval = config.timerDelay;
-        }
-        this.tileRebuildTimers.get(rootTile)!.restart();
-    }
-    
-    setSettings(desktop: Desktop, qmlSettings: Qml.Settings): void {
-        const settings = new Settings(qmlSettings);
-        this.getEngine(desktop).settings = settings;
-    }
-    
-    removeSettings(desktop: Desktop): void {
-        this.getEngine(desktop).settings = new Settings;
-    }
-    
-    getSettings(desktop: Desktop): Qml.Settings | null {
-        const engine = this.getEngine(desktop);
-        const engineType = this.engineTypes.get(desktop.toString());
-        if (engineType == undefined) return null;
-        return engine.settings.toQmlSettings(engineType);
-    }
-
-    updateTiles(rootTile: KWin.RootTile): boolean {
-        // do not execute while layout is building
-        if (this.layoutBuilding) return true;
-        // should work as you can only modify tiles on the current desktop
-        const desktop = new Desktop;
-        printDebug("Updating tiles for desktop " + desktop, false);
-        return this.getEngine(desktop).updateTiles(rootTile);
-    }
-    
-    resizeTile(tile: KWin.Tile, direction: Direction, amount: number): boolean {
-        // set layoutBuilding to prevent updateTiles from being called
-        this.layoutBuilding = true;
-        // there are some new things that go on behind the scenes
-        // all of the engines deal with sizes in relatives (QRectF) but the amount given in the function is now in pixels
-        // this means some new math must be added, putting it here so that the engine code can remain simple across new engines as well
-        const desktop = new Desktop;
-        const parent = tile.parent;
-        // cant even resize root tile so yeah
-        if (parent == null) return false;
-        // convert pixels into a relative size based on the parent
-        let relativeAmount = 0;
-        // resizing vertically
-        if (direction.primary) {
-            relativeAmount = amount / parent.absoluteGeometry.height;
-        } else { // horizontally
-            relativeAmount = amount / parent.absoluteGeometry.width;
-        }
-        printDebug("Resizing tile " + tile.absoluteGeometry + " in direction " + direction + " by " + amount + " pixels on desktop " + desktop, false);
-        const ret = this.getEngine(desktop).resizeTile(tile, direction, relativeAmount);
-        this.layoutBuilding = false;
-        return ret;
-    }
-    
-    placeClients(desktop: Desktop): Array<[KWin.AbstractClient, KWin.Tile | null]> {
-        printDebug("Placing clients for desktop " + desktop, false);
-        return this.getEngine(desktop).placeClients();
-    }
-    
-    addClient(client: KWin.AbstractClient, optionalDesktop?: Desktop): boolean {
-        let desktops: Array<Desktop> = new Array;
-        if (!optionalDesktop) {
-            if (client.desktop == -1) {
-                for (let i = 0; i < workspace.desktops; i += 1) {
-                    for (const activity of client.activities) {
-                        const desktop = new Desktop(client.screen, activity, i);
-                        desktops.push(desktop);
-                    }
-                }
-            } else {
-                for (const activity of client.activities) {
-                    const desktop = new Desktop(client.screen, activity, client.desktop);
-                    desktops.push(desktop);
-                }
-            }
-        } else {
-            desktops.push(optionalDesktop);
-        }
-        for (const desktop of desktops) {
-            printDebug("Adding " + client.resourceClass + " to desktop " + desktop, false);
-            if (!this.getEngine(desktop).addClient(client)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    updateClientDesktop(client: KWin.AbstractClient, oldDesktops: Array<Desktop>): boolean {
-        printDebug("Updating desktop for client " + client.resourceClass, false);
-        let newDesktops = new Array<Desktop>();
-        if (client.desktop == -1) {
-            for (let i = 0; i < workspace.desktops; i += 1) {
-                for (const activity of client.activities) {
-                    const desktop = new Desktop(client.screen, activity, i);
-                    newDesktops.push(desktop);
-                }
-            }
-        } else {
-            for (const activity of client.activities) {
-                const desktop = new Desktop(client.screen, activity, client.desktop);
-                newDesktops.push(desktop);
-            }
-        }
-        // have to do this because of js object equality
-        let newDesktopsStrings = newDesktops.map(x => x.toString());
-        let oldDesktopsStrings = oldDesktops.map(x => x.toString());
-        for (const desktop of oldDesktops) {
-            // do not retile on desktops that the window is already on
-            if (newDesktopsStrings.includes(desktop.toString())) continue;
-            if (!this.removeClient(client, desktop)) {
-                return false;
-            }
-        }
-        for (const desktop of newDesktops) {
-            // do not readd client to windows it is on
-            if (oldDesktopsStrings.includes(desktop.toString())) continue;
-            if (!this.addClient(client, desktop)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    putClientInTile(client: KWin.AbstractClient, tile: KWin.Tile, direction?: Direction): boolean {
-        printDebug("Placing " + client.resourceClass + " in " + tile.absoluteGeometry + " with direction " + direction, false);
-        if (!this.getEngine().putClientInTile(client, tile, direction)) {
-            return this.getEngine().addClient(client);
-        } else {
-            return true;
-        }
-    }
-    
-    clientOfTile(tile: KWin.Tile): KWin.AbstractClient | null {
-        printDebug("Getting client of " + tile.absoluteGeometry, false);
-        return this.getEngine().clientOfTile(tile);
-    }
-    
-    swapTiles(tileA: KWin.Tile, tileB: KWin.Tile): boolean {
-        printDebug("Swapping clients of " + tileA.absoluteGeometry + " and " + tileB.absoluteGeometry, false);
-        return this.getEngine().swapTiles(tileA, tileB);
-    }
-    
-    removeClient(client: KWin.AbstractClient, optionalDesktop?: Desktop): boolean {
-        let desktops: Array<Desktop> = new Array;
-        if (!optionalDesktop) {
-            if (client.desktop == -1) {
-                for (let i = 0; i < workspace.desktops; i += 1) {
-                    for (const activity of client.activities) {
-                        const desktop = new Desktop(client.screen, activity, i);
-                        desktops.push(desktop);
-                    }
-                }
-            } else {
-                for (const activity of client.activities) {
-                    const desktop = new Desktop(client.screen, activity, client.desktop);
-                    desktops.push(desktop);
-                }
-            }
-        } else {
-            desktops.push(optionalDesktop);
-        }
-        for (const desktop of desktops) {
-            printDebug("Removing " + client.resourceClass + " from desktop " + desktop, false);
-            if (!this.getEngine(desktop).removeClient(client)) {
-                return false;
-            }
-        }
-        return true;
-    }
+    // creates the root tile layout
+    public abstract buildLayout(): void;
+    // adds a new client to the engine
+    public abstract addClient(c: Client): void;
+    // removes a client
+    public abstract removeClient(c: Client): void;
+    // places a client in a specific tile, in the direction d
+    public abstract putClientInTile(c: Client, t: Tile, d?: Direction): void;
+    // called after subtiles are edited (ex. sizes) so the engine can update them internally if needed
+    public abstract regenerateLayout(): void;
 }

@@ -8,18 +8,23 @@ body {
   min-width: 350px;
   color: var(--on-navgroup);
   background-color: var(--page-bg);
-  font-family: 'Lexend Decca', sans-serif;
+  font-family: "Lexend Decca", sans-serif;
   font-size: 1.1rem;
   line-height: 1.5rem;
-  transition: 0.3s
+  transition: 0.3s;
 }
 
 body::-webkit-scrollbar {
   display: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lexend Zetta', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Lexend Zetta", sans-serif;
 }
 
 h1 {
@@ -67,7 +72,8 @@ a svg {
   transition: 0s;
 }
 
-a:hover, a:hover *:not(p) {
+a:hover,
+a:hover *:not(p) {
   text-shadow: 0px 0px 10px #2f80ed;
   color: #2f80ed;
 }
@@ -97,7 +103,7 @@ button:hover {
 
 header,
 footer {
-  font-family: 'Lexend Zetta', sans-serif;
+  font-family: "Lexend Zetta", sans-serif;
   background-color: var(--navgroup-bg);
   text-align: center;
   z-index: 2;

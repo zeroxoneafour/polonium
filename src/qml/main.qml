@@ -1,46 +1,35 @@
-import "./main.mjs" as Polonium
-import QtQuick 2.15
-import org.kde.kwin 2.0
+// main.qml - Entry point into script
+
+import "../code/main.mjs" as Polonium;
+import QtQuick;
+import org.kde.kwin;
 
 Item {
-    id: rootScript;
-    
-    function createTimer() {
-        return Qt.createQmlObject("import QtQuick 2.15; Timer {}", rootScript);
-    }
-    
+    id: root;
+
     function printQml(string) {
         print(string);
     }
-    
-    function createDBusCall() {
-        return Qt.createQmlObject("import QtQuick 2.15; import org.kde.kwin 2.0; DBusCall {}", rootScript);
+
+    function createTimer() {
+        return Qt.createQmlObject("import QtQuick; Timer {}", root);
     }
     
     Component.onCompleted: {
         const api = {
-            "workspace": workspace,
-            "options": options,
+            "workspace": Workspace,
+            "options": Options,
             "kwin": KWin,
         };
         const qmlObjects = {
-            "rootScript": rootScript,
-            "dialog": dialog,
+            "root": root,
             "settings": settings,
+            "shortcuts": shortcutsLoader.item,
+            "dbus": dbusLoader.item
         };
-        Polonium.init(api, qmlObjects);
+        Polonium.main(api, qmlObjects);
     }
-    
-    Loader {
-        id: dialog;
 
-        function show(text) {
-            dialog.item.show(text);
-        }
-
-        source: "dialog.qml";
-    }
-    
     Loader {
         id: settings;
         
@@ -79,5 +68,17 @@ Item {
         function onRemoveSettingsInternal(a) {
             settings.removeSettings(a);
         }
+    }
+        
+    Loader {
+        id: dbusLoader;
+        
+        source: "dbus.qml";
+    }
+    
+    Loader {
+        id: shortcutsLoader;
+                
+        source: "shortcuts.qml";
     }
 }

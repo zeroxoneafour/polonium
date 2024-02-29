@@ -2,6 +2,7 @@
 pkg/
 *.kate-swp
 src/**/*.js
+.scannerwork
 
 # github default for node
 
