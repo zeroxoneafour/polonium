@@ -4,7 +4,14 @@
 
 ### 1.0b1
 
--   Rewrote entire engine
+- Update to Plasma 6
+- Internal engine rewrite
+- Separate engine API
+- Use object-oriented paradigm instead of event-oriented
+- Use external kwin-api package
+- Stability improvements
+- Better multi-screen support
+- Better minimum size and resizing support
 
 ## 0.6
 

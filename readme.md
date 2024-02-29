@@ -2,7 +2,7 @@
 
 # polonium
 
-An (unofficial) successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 5.27.
+An (unofficial) successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 6.
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
@@ -16,11 +16,12 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ## features
 
--   Works in Wayland Plasma 6.0 and up
--   Actual tiling backend using binary trees and decent enough code where you can mod in your own
--   Edit tile sizes with the integrated KWin GUI
--   Move and tile windows with your mouse and keyboard
--   Set layouts independently of desktop
+- Works in Wayland Plasma 6.0 and up
+- Custom moddable tiling engine backend
+- Edit tile sizes with the integrated KWin GUI
+- Move and tile windows with your mouse and keyboard
+- Set layouts independently of desktop, activity, and screen
+- DBus integration to save layouts and configurations
 
 ## X11
 
@@ -40,7 +41,7 @@ Commands -
 
 ## license
 
--   Majority of this project is MIT licensed, please bum my code if you can use to make something better. Make sure to give credit though!
+-   Majority of this project is [MIT licensed](license.txt), please bum my code if you can use to make something better. Make sure to give credit though!
 
 ## name
 
