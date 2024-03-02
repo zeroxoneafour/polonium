@@ -71,7 +71,7 @@ export class Controller {
 
         // delayed init will help with some stuff
         this.initTimer = qmlObjects.root.createTimer();
-        this.initTimer.interval = 1000;
+        this.initTimer.interval = 100;
         this.initTimer.triggered.connect(this.initCallback.bind(this));
         this.initTimer.repeat = false;
     }
@@ -81,6 +81,18 @@ export class Controller {
     }
 
     private initCallback(): void {
+        // keep restarting the call until it actually initializes properly
+        if (
+            this.workspace.activities.length == 1 &&
+            this.workspace.activities[0] ==
+                "00000000-0000-0000-0000-000000000000"
+        ) {
+            this.logger.debug("Restarting init timer");
+            // gradually increase time between restart calls for slower systems
+            this.initTimer.interval += 100;
+            this.initTimer.restart();
+            return;
+        }
         // hook into kwin after everything loads nicely
         this.workspaceActions.addHooks();
         this.driverManager.init();
