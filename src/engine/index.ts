@@ -2,7 +2,7 @@
 
 import { Config } from "../util/config";
 import { Direction } from "../util/geometry";
-import { LayoutDirection, Window } from "kwin-api";
+import { LayoutDirection, Output, Window } from "kwin-api";
 import { QSize } from "kwin-api/qt";
 import {
     EngineCapability,
@@ -68,6 +68,8 @@ export interface TilingEngine {
     config: InternalEngineConfig;
     readonly engineCapability: EngineCapability;
 
+    // initializes optional stuff in the engine if necessary
+    initEngine(): void;
     // creates the root tile layout
     buildLayout(): void;
     // adds a new client to the engine
@@ -87,7 +89,7 @@ export class TilingEngineFactory {
         this.config = config;
     }
 
-    public newEngine(optConfig?: EngineConfig): TilingEngine {
+    public newEngine(output: Output, optConfig?: EngineConfig): TilingEngine {
         let config = optConfig;
         if (config == undefined) {
             config = {
@@ -97,17 +99,24 @@ export class TilingEngineFactory {
             };
         }
         const t = config.engineType % EngineType._loop;
+        let engine: TilingEngine;
         switch (t) {
             case EngineType.BTree:
-                return new BTreeEngine(config);
+                engine = new BTreeEngine(output, config);
+                break;
             case EngineType.Half:
-                return new HalfEngine(config);
+                engine = new HalfEngine(output, config);
+                break;
             case EngineType.ThreeColumn:
-                return new ThreeColumnEngine(config);
+                engine = new ThreeColumnEngine(output, config);
+                break;
             case EngineType.Kwin:
-                return new KwinEngine(config);
+                engine = new KwinEngine(output, config);
+                break;
             default:
                 throw new Error("Engine not found for engine type " + t);
         }
+        engine.initEngine();
+        return engine;
     }
 }

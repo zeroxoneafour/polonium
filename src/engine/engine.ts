@@ -2,8 +2,8 @@
 
 import { Direction, GSize } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
-import { LayoutDirection } from "kwin-api";
-import { QSize } from "kwin-api/qt";
+import { LayoutDirection, Output } from "kwin-api";
+import { QRect, QSize } from "kwin-api/qt";
 import {
     Client as IClient,
     Tile as ITile,
@@ -133,10 +133,16 @@ export abstract class TilingEngine implements ITilingEngine {
     untiledClients: IClient[] = [];
     config: EngineConfig;
     abstract readonly engineCapability: EngineCapability;
+    // need output so engines know how many pixels they have to work with
+    screenSize: QRect;
 
-    public constructor(config: EngineConfig) {
+    public constructor(output: Output, config: EngineConfig) {
         this.config = config;
+        this.screenSize = output.geometry;
     }
+    
+    // overrideable method if more internal engine stuff needs to be constructed
+    public initEngine(): void {}
 
     // creates the root tile layout
     public abstract buildLayout(): void;

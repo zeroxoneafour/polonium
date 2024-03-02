@@ -39,6 +39,21 @@ export interface Settings {
 export interface Shortcuts {
     getRetileWindow(): ShortcutHandler;
     getOpenSettings(): ShortcutHandler;
+
+    getFocusAbove(): ShortcutHandler;
+    getFocusBelow(): ShortcutHandler;
+    getFocusLeft(): ShortcutHandler;
+    getFocusRight(): ShortcutHandler;
+
+    getInsertAbove(): ShortcutHandler;
+    getInsertBelow(): ShortcutHandler;
+    getInsertLeft(): ShortcutHandler;
+    getInsertRight(): ShortcutHandler;
+    
+    getResizeAbove(): ShortcutHandler;
+    getResizeBelow(): ShortcutHandler;
+    getResizeLeft(): ShortcutHandler;
+    getResizeRight(): ShortcutHandler;
 }
 
 export interface DBus {

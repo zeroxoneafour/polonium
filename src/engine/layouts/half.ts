@@ -3,11 +3,9 @@
 import { Tile, Client, TilingEngine, EngineCapability } from "../engine";
 import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
-import { GSize } from "../../util/geometry";
 
 class ClientBox {
     client: Client;
-    size: GSize = new GSize();
 
     constructor(client: Client) {
         this.client = client;
@@ -46,6 +44,12 @@ export default class HalfEngine extends TilingEngine {
     tileMap: Map<Tile, ClientBox> = new Map();
     left: ClientBox[] = [];
     right: ClientBox[] = [];
+    rightSize: number = 0;
+
+    override initEngine() {
+        super.initEngine();
+        this.rightSize = this.screenSize.width / 2;
+    }
 
     buildLayout() {
         // set original tile direction based on rotating layout or not
@@ -58,14 +62,12 @@ export default class HalfEngine extends TilingEngine {
             for (const box of this.right) {
                 const tile = this.rootTile.addChild();
                 tile.client = box.client;
-                tile.requestedSize = box.size;
                 this.tileMap.set(tile, box);
             }
         } else if (this.left.length > 0 && this.right.length == 0) {
             for (const box of this.left) {
                 const tile = this.rootTile.addChild();
                 tile.client = box.client;
-                tile.requestedSize = box.size;
                 this.tileMap.set(tile, box);
             }
         } else {
@@ -76,13 +78,11 @@ export default class HalfEngine extends TilingEngine {
             for (const box of this.left) {
                 const tile = left.addChild();
                 tile.client = box.client;
-                tile.requestedSize = box.size;
                 this.tileMap.set(tile, box);
             }
             for (const box of this.right) {
                 const tile = right.addChild();
                 tile.client = box.client;
-                tile.requestedSize = box.size;
                 this.tileMap.set(tile, box);
             }
         }
@@ -127,15 +127,11 @@ export default class HalfEngine extends TilingEngine {
     putClientInTile(client: Client, tile: Tile, direction?: Direction) {
         const clientBox = new ClientBox(client);
         let targetBox: BoxIndex;
-        try {
-            const box = this.tileMap.get(tile);
-            if (box == undefined) {
-                throw new Error("Box not found for tile");
-            }
-            targetBox = new BoxIndex(this, box.client);
-        } catch (e) {
-            throw e;
+        const box = this.tileMap.get(tile);
+        if (box == undefined) {
+            throw new Error("Box not found for tile");
         }
+        targetBox = new BoxIndex(this, box.client);
 
         const targetArr = targetBox.left ? this.left : this.right;
         if (direction == null || direction & Direction.Up) {
@@ -145,12 +141,5 @@ export default class HalfEngine extends TilingEngine {
         }
     }
 
-    regenerateLayout() {
-        for (const tile of this.tileMap.keys()) {
-            if (tile.requestedSize == null) {
-                continue;
-            }
-            this.tileMap.get(tile)!.size = new GSize(tile.requestedSize);
-        }
-    }
+    regenerateLayout(): void {}
 }

@@ -1,12 +1,10 @@
 // actions/clienthook.ts - Actions performed individually on or by clients (ex. tile changes)
 
 import { MaximizeMode, Tile, Window } from "kwin-api";
-import { QTimer } from "kwin-api/qt";
 import { Controller } from "../";
 import { Desktop } from "../desktop";
 import { GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
-import { Config } from "../../util/config";
 import { WindowExtensions } from "../extensions";
 
 export class WindowHooks {
@@ -63,7 +61,7 @@ export class WindowHooks {
         this.ctrl.driverManager.rebuildLayout();
     }
 
-    tileChanged(inputTile: Tile) {
+    tileChanged(inputTile: Tile): void {
         // dont react to geometry changes while the layout is rebuilding
         if (this.ctrl.driverManager.buildingLayout) return;
         // something about single window maximizing used to be here?

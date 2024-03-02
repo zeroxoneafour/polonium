@@ -58,7 +58,7 @@ export class DriverManager {
                     insertionPoint: this.config.insertionPoint,
                     rotateLayout: this.config.rotateLayout
                 }
-                const engine = this.engineFactory.newEngine(config);
+                const engine = this.engineFactory.newEngine(desktop.output, config);
                 const driver = new TilingDriver(engine, engineType, this.ctrl);
                 this.drivers.set(desktopString, driver);
                 this.ctrl.dbusManager.getSettings(
@@ -254,7 +254,7 @@ export class DriverManager {
         const driver = this.drivers.get(desktop.toString())!;
         if (config.engineType != driver.engineType) {
             driver.switchEngine(
-                this.engineFactory.newEngine(config),
+                this.engineFactory.newEngine(desktop.output, config),
                 config.engineType,
             );
         } else {
@@ -274,7 +274,7 @@ export class DriverManager {
         const driver = this.drivers.get(desktop.toString())!;
         if (config.engineType != driver.engineType) {
             driver.switchEngine(
-                this.engineFactory.newEngine(config),
+                this.engineFactory.newEngine(desktop.output, config),
                 config.engineType,
             );
         } else {
