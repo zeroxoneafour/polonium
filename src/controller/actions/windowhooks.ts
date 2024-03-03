@@ -62,7 +62,6 @@ export class WindowHooks {
     }
 
     tileChanged(inputTile: Tile): void {
-        this.logger.debug("a");
         // dont react to geometry changes while the layout is rebuilding
         if (this.ctrl.driverManager.buildingLayout) return;
         // something about single window maximizing used to be here?
