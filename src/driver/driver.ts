@@ -65,6 +65,10 @@ export class TilingDriver {
     }
 
     buildLayout(rootTile: Kwin.Tile): void {
+        // unset tile for all clients ahead of time
+        for (const window of this.clients.keys()) {
+            window.tile = null;
+        }
         // clear root tile
         while (rootTile.tiles.length > 0) {
             rootTile.tiles[0].remove();
