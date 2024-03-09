@@ -25,10 +25,10 @@ export class WorkspaceExtensions {
 
         this.workspace.currentActivityChanged.connect(this.repoll.bind(this));
         this.workspace.currentDesktopChanged.connect(this.repoll.bind(this));
-        this.workspace.windowActivated.connect((window: Window) => {
+        this.workspace.windowActivated.connect(((_window: Window) => {
             this.lastActiveWindow = this.currentActiveWindow;
-            this.currentActiveWindow = window;
-        });
+            this.currentActiveWindow = this.workspace.activeWindow;
+        }).bind(this));
     }
 
     private repoll(): void {

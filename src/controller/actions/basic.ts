@@ -101,16 +101,19 @@ export class WorkspaceActions {
         this.ctrl.driverManager.rebuildLayout();
     }
 
-    windowActivated(window: Window) {
+    windowActivated(_window: Window) {
+        // _window is null??? kwin fix your api
         if (this.config.borders == Borders.Selected) {
-            window.noBorder = false;
+            this.ctrl.workspace.activeWindow!.noBorder = false;
+            const lastActiveWindow = this.ctrl.workspaceExtensions.lastActiveWindow;
+            this.logger.debug(lastActiveWindow?.resourceClass);
             if (
-                this.ctrl.workspaceExtensions.lastActiveWindow != null &&
+                lastActiveWindow != null &&
                 this.ctrl.windowExtensions.get(
-                    this.ctrl.workspaceExtensions.lastActiveWindow,
+                    lastActiveWindow,
                 )!.isTiled
             ) {
-                this.ctrl.workspaceExtensions.lastActiveWindow.noBorder = true;
+                lastActiveWindow.noBorder = true;
             }
         }
     }

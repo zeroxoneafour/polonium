@@ -2,7 +2,7 @@
 
 import { Controller } from "../";
 import { Edge, Tile, Window } from "kwin-api";
-import { GPoint, GRect } from "../../util/geometry";
+import { GPoint, GRect, Direction as GDirection } from "../../util/geometry";
 import { QPoint } from "kwin-api/qt";
 import { Log } from "../../util/log";
 import { Config } from "../../util/config";
@@ -82,6 +82,19 @@ function pointInDirection(window: Window, direction: Direction): GPoint | null {
             return pointRight(window);
         default:
             return null;
+    }
+}
+
+function gdirectionFromDirection(direction: Direction): GDirection {
+    switch (direction) {
+        case Direction.Above:
+            return GDirection.Up | GDirection.Vertical;
+        case Direction.Below:
+            return GDirection.Vertical;
+        case Direction.Left:
+            return GDirection.None;
+        case Direction.Right:
+            return GDirection.Right;
     }
 }
 
@@ -216,10 +229,11 @@ export class ShortcutManager {
                 tile = tile.tiles[0];
             }
         }
+        // insert on other side of tile in question
         this.ctrl.driverManager.putWindowInTile(
             window,
             tile,
-            new GRect(tile.absoluteGeometry).directionFromPoint(point),
+            gdirectionFromDirection(direction),
         );
         this.ctrl.driverManager.rebuildLayout(window.output);
     }
