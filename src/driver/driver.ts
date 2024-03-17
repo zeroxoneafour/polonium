@@ -30,7 +30,9 @@ export class TilingDriver {
     clients: BiMap<Kwin.Window, Client> = new BiMap();
     // windows that have no associated tile but are still in an engine go here
     untiledWindows: Kwin.Window[] = [];
-
+    // windows that are marked for untiling but are not registered in the engine
+    windowsToUntile: Kwin.Window[] = [];
+    
     get engineConfig(): EngineConfig {
         return {
             engineType: this.engineType,
@@ -75,6 +77,10 @@ export class TilingDriver {
         }
         this.tiles.clear();
         this.untiledWindows = [];
+        for (const window of this.windowsToUntile) {
+            this.untiledWindows.push(window);
+        }
+        this.windowsToUntile = [];
         for (const client of this.engine.untiledClients) {
             const window = this.clients.inverse.get(client);
             if (window != null) {
@@ -277,19 +283,23 @@ export class TilingDriver {
         }
     }
 
-    removeWindow(window: Kwin.Window): void {
+    // returns whether the window is still registered or not
+    removeWindow(window: Kwin.Window): boolean {
         const client = this.clients.get(window);
         if (client == undefined) {
-            return;
+            return false;
         }
         this.clients.delete(window);
-        this.untiledWindows.push(window);
         try {
             this.engine.removeClient(client);
             this.engine.buildLayout();
+            if (this.engine.untiledClients.includes(client)) {
+                return true;
+            }
         } catch (e) {
             this.logger.error(e);
         }
+        return false;
     }
 
     putWindowInTile(

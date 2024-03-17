@@ -137,6 +137,7 @@ export class DriverManager {
     }
 
     private applyTiled(window: Window): void {
+        this.ctrl.windowExtensions.get(window)!.isTiled = true;
         if (this.config.keepTiledBelow) {
             window.keepBelow = true;
         }
@@ -149,6 +150,7 @@ export class DriverManager {
     }
 
     private applyUntiled(window: Window): void {
+        this.ctrl.windowExtensions.get(window)!.isTiled = false;
         if (this.config.keepTiledBelow) {
             window.keepBelow = false;
         }
@@ -182,7 +184,11 @@ export class DriverManager {
             );
             // make registered "untiled" clients appear untiled
             for (const window of driver.untiledWindows) {
+                window.tile = null;
                 this.applyUntiled(window);
+            }
+            for (const window of driver.clients.keys()) {
+                this.applyTiled(window);
             }
         }
         this.buildingLayout = false;
@@ -201,8 +207,6 @@ export class DriverManager {
         for (const desktop of desktops) {
             this.drivers.get(desktop.toString())!.addWindow(window);
         }
-        this.ctrl.windowExtensions.get(window)!.isTiled = true;
-        this.applyTiled(window);
     }
 
     removeWindow(window: Window, desktops?: Desktop[]): void {
@@ -216,11 +220,12 @@ export class DriverManager {
             desktops,
         );
         for (const desktop of desktops) {
-            this.drivers.get(desktop.toString())!.removeWindow(window);
-        }
-        if (this.ctrl.windowExtensions.has(window)) {
-            this.ctrl.windowExtensions.get(window)!.isTiled = false;
-            this.applyUntiled(window);
+            const driver = this.drivers.get(desktop.toString())!;
+            const windowRemoved = driver.removeWindow(window);
+            // if the window is truly removed from the layout then add it to windows to untile
+            if (windowRemoved && this.ctrl.windowExtensions.has(window)) {
+                driver.windowsToUntile.push(window);
+            }
         }
     }
 

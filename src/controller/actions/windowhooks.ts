@@ -239,7 +239,8 @@ export class WindowHooks {
         if (this.window.fullScreen && this.extensions.isTiled) {
             this.ctrl.driverManager.removeWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
-        } else if (!this.window.fullScreen && !this.extensions.isTiled) {
+            this.extensions.wasTiled = true;
+        } else if (!this.window.fullScreen && this.extensions.wasTiled && !this.extensions.isTiled) {
             this.putWindowInBestTile();
         }
     }
@@ -255,7 +256,8 @@ export class WindowHooks {
         if (this.window.minimized && this.extensions.isTiled) {
             this.ctrl.driverManager.removeWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
-        } else if (!this.window.minimized && !this.extensions.isTiled) {
+            this.extensions.wasTiled = true;
+        } else if (!this.window.minimized && this.extensions.wasTiled && !this.extensions.isTiled) {
             this.putWindowInBestTile();
         }
     }
@@ -281,7 +283,8 @@ export class WindowHooks {
         if (maximized && this.extensions.isTiled) {
             this.ctrl.driverManager.removeWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
-        } else if (!maximized && !this.extensions.isTiled) {
+            this.extensions.wasTiled = true;
+        } else if (!maximized && this.extensions.wasTiled && !this.extensions.isTiled) {
             this.putWindowInBestTile();
         }
     }

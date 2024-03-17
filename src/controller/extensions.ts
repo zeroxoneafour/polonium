@@ -45,6 +45,7 @@ export class WindowExtensions {
     previousDesktops: Desktop[] = [];
     private previousDesktopsInternal: Desktop[] = [];
     isTiled: boolean = false; // not is in a tile, but is registered in engine
+    wasTiled: boolean = false; // windows that were tiled when they could be (minimized/maximized/fullscreen)
     lastTiledLocation: GPoint | null = null;
     clientHooks: WindowHooks | null = null;
 
