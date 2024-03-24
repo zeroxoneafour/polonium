@@ -182,13 +182,13 @@ export class DriverManager {
             driver.buildLayout(
                 this.ctrl.workspace.tilingForScreen(desktop.output).rootTile,
             );
+            for (const window of driver.clients.keys()) {
+                this.applyTiled(window);
+            }
             // make registered "untiled" clients appear untiled
             for (const window of driver.untiledWindows) {
                 window.tile = null;
                 this.applyUntiled(window);
-            }
-            for (const window of driver.clients.keys()) {
-                this.applyTiled(window);
             }
         }
         this.buildingLayout = false;

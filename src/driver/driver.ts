@@ -245,6 +245,7 @@ export class TilingDriver {
         if (client == undefined) {
             return;
         }
+        this.untiledWindows.push(window);
         try {
             this.engine.removeClient(client);
             this.engine.buildLayout();
