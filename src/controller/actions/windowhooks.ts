@@ -6,7 +6,7 @@ import { Desktop } from "../desktop";
 import { GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
 import { WindowExtensions } from "../extensions";
-import { QTimer } from "kwin-api/qt";
+//import { QTimer } from "kwin-api/qt";
 
 export class WindowHooks {
     private ctrl: Controller;
@@ -14,7 +14,7 @@ export class WindowHooks {
     //private config: Config;
     private window: Window;
     private extensions: WindowExtensions;
-    private tileChangedTimer: QTimer;
+    //private tileChangedTimer: QTimer;
 
     constructor(ctrl: Controller, window: Window) {
         this.ctrl = ctrl;
@@ -23,16 +23,18 @@ export class WindowHooks {
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
         
+        /*
         this.tileChangedTimer = this.ctrl.qmlObjects.root.createTimer();
         this.tileChangedTimer.triggeredOnStart = false;
         this.tileChangedTimer.repeat = false;
         this.tileChangedTimer.interval = this.ctrl.config.timerDelay;
         this.tileChangedTimer.triggered.connect(this.tileChangedCallback.bind(this));
+        */
 
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
         window.outputChanged.connect(this.desktopChanged.bind(this));
-        window.tileChanged.connect(this.tileChanged.bind(this));
+        window.moveResizedChanged.connect(this.moveResizeChanged.bind(this));
         window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
         window.minimizedChanged.connect(this.minimizedChanged.bind(this));
         window.maximizedAboutToChange.connect(this.maximizedChanged.bind(this));
@@ -60,16 +62,17 @@ export class WindowHooks {
         this.ctrl.driverManager.rebuildLayout();
     }
     
+    /*
     tileChanged(_inputTile: Tile): void {
-        this.logger.debug(this.ctrl.driverManager.buildingLayout);
         // dont react to geometry changes while the layout is rebuilding
         if (this.ctrl.driverManager.buildingLayout) return;
-        this.logger.debug("a");
         this.tileChangedTimer.start();
-    }
+    }*/
 
-    tileChangedCallback(): void {
-        this.logger.debug("a");
+    // have to use framegeometrychanged because kwin doesnt update on tile change anymore?????
+    moveResizeChanged(): void {
+        this.logger.debug(this.ctrl.driverManager.buildingLayout);
+        if (this.ctrl.driverManager.buildingLayout) return;
         const inputTile = this.window.tile;
         const inManagedTile =
             inputTile != null &&

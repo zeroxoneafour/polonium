@@ -199,9 +199,9 @@ export class DriverManager {
             desktops = Desktop.fromWindow(window);
         }
         this.logger.debug(
-            "Removing window",
+            "Untiling window",
             window.resourceClass,
-            "from desktops",
+            "on desktops",
             desktops,
         );
         for (const desktop of desktops) {
