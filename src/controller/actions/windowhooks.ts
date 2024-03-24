@@ -32,7 +32,7 @@ export class WindowHooks {
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
         window.outputChanged.connect(this.desktopChanged.bind(this));
-        window.frameGeometryChanged.connect(this.frameGeometryChanged.bind(this));
+        //window.frameGeometryChanged.connect(this.frameGeometryChanged.bind(this));
         window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
         window.minimizedChanged.connect(this.minimizedChanged.bind(this));
         window.maximizedAboutToChange.connect(this.maximizedChanged.bind(this));
