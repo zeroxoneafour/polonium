@@ -237,7 +237,7 @@ export class WindowHooks {
             this.window.fullScreen,
         );
         if (this.window.fullScreen && this.extensions.isTiled) {
-            this.ctrl.driverManager.removeWindow(this.window);
+            this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;
         } else if (!this.window.fullScreen && this.extensions.wasTiled && !this.extensions.isTiled) {
@@ -254,7 +254,7 @@ export class WindowHooks {
             this.window.minimized,
         );
         if (this.window.minimized && this.extensions.isTiled) {
-            this.ctrl.driverManager.removeWindow(this.window);
+            this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;
         } else if (!this.window.minimized && this.extensions.wasTiled && !this.extensions.isTiled) {
@@ -281,7 +281,7 @@ export class WindowHooks {
         }
         */
         if (maximized && this.extensions.isTiled) {
-            this.ctrl.driverManager.removeWindow(this.window);
+            this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;
         } else if (!maximized && this.extensions.wasTiled && !this.extensions.isTiled) {

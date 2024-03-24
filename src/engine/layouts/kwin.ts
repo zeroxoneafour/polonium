@@ -6,21 +6,19 @@ import { Direction } from "../../util/geometry";
 
 export default class KwinEngine extends TilingEngine {
     // tilesmutable moves all processing work to driver
-    engineCapability = EngineCapability.TilesMutable;
+    engineCapability = EngineCapability.TilesMutable | EngineCapability.UntiledByDefault;
 
     buildLayout() {
         // literally nothing
         return;
     }
-
-    addClient(client: Client) {
-        this.untiledClients.push(client);
+    
+    addClient() {
+        return;
     }
-
-    removeClient(client: Client) {
-        if (this.untiledClients.includes(client)) {
-            this.untiledClients.splice(this.untiledClients.indexOf(client), 1);
-        }
+    
+    removeClient() {
+        return;
     }
 
     putClientInTile(client: Client, tile: Tile, _direction?: Direction) {

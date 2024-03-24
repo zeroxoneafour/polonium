@@ -64,7 +64,6 @@ export interface Tile {
 
 export interface TilingEngine {
     rootTile: Tile;
-    untiledClients: Client[];
     config: InternalEngineConfig;
     readonly engineCapability: EngineCapability;
 

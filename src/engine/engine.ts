@@ -21,6 +21,8 @@ export const enum EngineCapability {
     TranslateRotation = 1,
     // whether the amount of tiles can be changed
     TilesMutable = 2,
+    // whether tiles should be untiled or not by default when added
+    UntiledByDefault = 4,
 }
 
 export interface Client {
@@ -130,7 +132,6 @@ export class Tile implements ITile {
 
 export abstract class TilingEngine implements ITilingEngine {
     rootTile: ITile = new Tile();
-    untiledClients: IClient[] = [];
     config: EngineConfig;
     abstract readonly engineCapability: EngineCapability;
     // need output so engines know how many pixels they have to work with

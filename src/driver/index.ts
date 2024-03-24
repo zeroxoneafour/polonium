@@ -193,13 +193,28 @@ export class DriverManager {
         }
         this.buildingLayout = false;
     }
+    
+    untileWindow(window: Window, desktops?: Desktop[]): void {
+        if (desktops == undefined) {
+            desktops = Desktop.fromWindow(window);
+        }
+        this.logger.debug(
+            "Removing window",
+            window.resourceClass,
+            "from desktops",
+            desktops,
+        );
+        for (const desktop of desktops) {
+            this.drivers.get(desktop.toString())!.untileWindow(window);
+        }
+    }
 
     addWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
             desktops = Desktop.fromWindow(window);
         }
         this.logger.debug(
-            "Adding client",
+            "Adding window",
             window.resourceClass,
             "to desktops",
             desktops,
@@ -208,24 +223,19 @@ export class DriverManager {
             this.drivers.get(desktop.toString())!.addWindow(window);
         }
     }
-
+    
     removeWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
             desktops = Desktop.fromWindow(window);
         }
         this.logger.debug(
-            "Removing client",
+            "Removing window",
             window.resourceClass,
             "from desktops",
             desktops,
         );
         for (const desktop of desktops) {
-            const driver = this.drivers.get(desktop.toString())!;
-            const windowRemoved = driver.removeWindow(window);
-            // if the window is truly removed from the layout then add it to windows to untile
-            if (windowRemoved && this.ctrl.windowExtensions.has(window)) {
-                driver.windowsToUntile.push(window);
-            }
+            this.drivers.get(desktop.toString())!.removeWindow(window);
         }
     }
 
@@ -245,8 +255,6 @@ export class DriverManager {
         this.drivers
             .get(desktop.toString())!
             .putWindowInTile(window, tile, direction);
-        this.ctrl.windowExtensions.get(window)!.isTiled = true;
-        this.applyTiled(window);
     }
 
     getEngineConfig(desktop: Desktop): EngineConfig {

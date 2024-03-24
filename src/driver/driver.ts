@@ -30,8 +30,6 @@ export class TilingDriver {
     clients: BiMap<Kwin.Window, Client> = new BiMap();
     // windows that have no associated tile but are still in an engine go here
     untiledWindows: Kwin.Window[] = [];
-    // windows that are marked for untiling but are not registered in the engine
-    windowsToUntile: Kwin.Window[] = [];
     
     get engineConfig(): EngineConfig {
         return {
@@ -57,8 +55,10 @@ export class TilingDriver {
         this.engine = engine;
         this.engineType = engineType;
         try {
-            for (const client of this.clients.values()) {
-                this.engine.addClient(client);
+            for (const window of this.clients.keys()) {
+                if (!this.untiledWindows.includes(window)) {
+                    this.engine.addClient(this.clients.get(window)!);
+                }
             }
             this.engine.buildLayout();
         } catch (e) {
@@ -76,17 +76,6 @@ export class TilingDriver {
             rootTile.tiles[0].remove();
         }
         this.tiles.clear();
-        this.untiledWindows = [];
-        for (const window of this.windowsToUntile) {
-            this.untiledWindows.push(window);
-        }
-        this.windowsToUntile = [];
-        for (const client of this.engine.untiledClients) {
-            const window = this.clients.inverse.get(client);
-            if (window != null) {
-                this.untiledWindows.push(window);
-            }
-        }
 
         // for maximizing single, sometimes engines can create overlapping root tiles so find the real root
         let realRootTile: Tile = this.engine.rootTile;
@@ -248,13 +237,35 @@ export class TilingDriver {
         }
     }
 
-    addWindow(window: Kwin.Window): void {
-        if (this.clients.has(window)) {
+    untileWindow(window: Kwin.Window): void {
+        if (this.untiledWindows.includes(window)) {
             return;
         }
-        const client = new Client(window);
-        this.clients.set(window, client);
-
+        const client = this.clients.get(window);
+        if (client == undefined) {
+            return;
+        }
+        try {
+            this.engine.removeClient(client);
+            this.engine.buildLayout();
+        } catch (e) {
+            this.logger.error(e);
+        }
+    }
+    
+    addWindow(window: Kwin.Window): void {
+        if (!this.clients.has(window)) {
+            this.clients.set(window, new Client(window));
+            if (this.engine.engineCapability & EngineCapability.UntiledByDefault) {
+                this.untiledWindows.push(window);
+                return;
+            }
+        }
+        let index = this.untiledWindows.indexOf(window);
+        if (index >= 0) {
+            this.untiledWindows.splice(index, 1)[0];
+        }
+        const client = this.clients.get(window)!;
         // tries to use active insertion if it should, but can fail and fall back
         let failedActive: boolean = true;
         activeChecks: if (
@@ -281,25 +292,26 @@ export class TilingDriver {
         } catch (e) {
             this.logger.error(e);
         }
+
     }
 
     // returns whether the window is still registered or not
-    removeWindow(window: Kwin.Window): boolean {
+    removeWindow(window: Kwin.Window): void {
         const client = this.clients.get(window);
         if (client == undefined) {
-            return false;
+            return;
         }
         this.clients.delete(window);
+        if (this.untiledWindows.includes(window)) {
+            this.untiledWindows.splice(this.untiledWindows.indexOf(window), 1);
+            return;
+        }
         try {
             this.engine.removeClient(client);
             this.engine.buildLayout();
-            if (this.engine.untiledClients.includes(client)) {
-                return true;
-            }
         } catch (e) {
             this.logger.error(e);
         }
-        return false;
     }
 
     putWindowInTile(
@@ -320,6 +332,10 @@ export class TilingDriver {
             this.clients.set(window, new Client(window));
         }
         const client = this.clients.get(window)!;
+        let index = this.untiledWindows.indexOf(window);
+        if (index >= 0) {
+            this.untiledWindows.splice(index, 1)[0];
+        }
         try {
             let rotatedDirection = direction;
             if (

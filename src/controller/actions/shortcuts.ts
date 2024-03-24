@@ -162,7 +162,7 @@ export class ShortcutManager {
             return;
         }
         if (this.ctrl.windowExtensions.get(window)!.isTiled) {
-            this.ctrl.driverManager.removeWindow(window);
+            this.ctrl.driverManager.untileWindow(window);
         } else {
             this.ctrl.driverManager.addWindow(window);
         }
@@ -219,7 +219,7 @@ export class ShortcutManager {
             return;
         }
         this.logger.debug("Moving", window.resourceClass);
-        this.ctrl.driverManager.removeWindow(window);
+        this.ctrl.driverManager.untileWindow(window);
         this.ctrl.driverManager.rebuildLayout(window.output);
         let tile = this.tileInDirection(window, point);
         if (tile == null) {
