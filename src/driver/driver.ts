@@ -67,10 +67,6 @@ export class TilingDriver {
     }
 
     buildLayout(rootTile: Kwin.Tile): void {
-        // unset tile for all clients ahead of time
-        for (const window of this.clients.keys()) {
-            window.tile = null;
-        }
         // clear root tile
         while (rootTile.tiles.length > 0) {
             rootTile.tiles[0].remove();
@@ -296,7 +292,6 @@ export class TilingDriver {
 
     }
 
-    // returns whether the window is still registered or not
     removeWindow(window: Kwin.Window): void {
         const client = this.clients.get(window);
         if (client == undefined) {

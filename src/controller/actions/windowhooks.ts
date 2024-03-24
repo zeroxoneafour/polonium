@@ -41,9 +41,6 @@ export class WindowHooks {
     }
 
     desktopChanged(): void {
-        if (!this.extensions.isTiled) {
-            return;
-        }
         const currentDesktops = Desktop.fromWindow(this.window);
         const removeDesktops = [];
         for (const desktop of this.extensions.previousDesktops) {
@@ -59,6 +56,9 @@ export class WindowHooks {
             }
         }
         this.ctrl.driverManager.addWindow(this.window, addDesktops);
+        if (!this.extensions.isTiled) {
+            this.ctrl.driverManager.untileWindow(this.window, addDesktops);
+        }
         this.ctrl.driverManager.rebuildLayout();
     }
     
