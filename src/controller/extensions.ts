@@ -48,6 +48,7 @@ export class WindowExtensions {
     wasTiled: boolean = false; // windows that were tiled when they could be (minimized/maximized/fullscreen)
     lastTiledLocation: GPoint | null = null;
     clientHooks: WindowHooks | null = null;
+    isSingleMaximized: boolean = false; // whether the window is solo maximized or not (in accordance with maximize single windows)
 
     private window: Window;
 

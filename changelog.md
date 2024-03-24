@@ -2,6 +2,12 @@
 
 ## 1.0
 
+### 1.0b2
+
+- Dragging tile functionality temporarily suspended due to kwin bugs
+- Better fullscreen/max/min support
+- Fix some other strange untile/tile interactions
+
 ### 1.0b1
 
 - Update to Plasma 6

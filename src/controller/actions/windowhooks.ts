@@ -6,7 +6,7 @@ import { Desktop } from "../desktop";
 import { GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
 import { WindowExtensions } from "../extensions";
-//import { QTimer } from "kwin-api/qt";
+import { QTimer } from "kwin-api/qt";
 
 export class WindowHooks {
     private ctrl: Controller;
@@ -14,7 +14,7 @@ export class WindowHooks {
     //private config: Config;
     private window: Window;
     private extensions: WindowExtensions;
-    //private tileChangedTimer: QTimer;
+    private tileChangedTimer: QTimer;
 
     constructor(ctrl: Controller, window: Window) {
         this.ctrl = ctrl;
@@ -23,18 +23,16 @@ export class WindowHooks {
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
         
-        /*
         this.tileChangedTimer = this.ctrl.qmlObjects.root.createTimer();
         this.tileChangedTimer.triggeredOnStart = false;
         this.tileChangedTimer.repeat = false;
         this.tileChangedTimer.interval = this.ctrl.config.timerDelay;
         this.tileChangedTimer.triggered.connect(this.tileChangedCallback.bind(this));
-        */
 
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
         window.outputChanged.connect(this.desktopChanged.bind(this));
-        window.moveResizedChanged.connect(this.moveResizeChanged.bind(this));
+        window.frameGeometryChanged.connect(this.frameGeometryChanged.bind(this));
         window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
         window.minimizedChanged.connect(this.minimizedChanged.bind(this));
         window.maximizedAboutToChange.connect(this.maximizedChanged.bind(this));
@@ -70,73 +68,11 @@ export class WindowHooks {
     }*/
 
     // have to use framegeometrychanged because kwin doesnt update on tile change anymore?????
-    moveResizeChanged(): void {
-        this.logger.debug(this.ctrl.driverManager.buildingLayout);
+    frameGeometryChanged(): void {
         if (this.ctrl.driverManager.buildingLayout) return;
-        const inputTile = this.window.tile;
-        const inManagedTile =
-            inputTile != null &&
-            this.ctrl.managedTiles.has(inputTile);
-        // client is moved into managed tile from outside
-        if (
-            !this.extensions.isTiled &&
-            inManagedTile &&
-            inputTile != null
-        ) {
-            this.logger.debug(
-                "Putting client",
-                this.window.resourceClass,
-                "in tile",
-                inputTile!.absoluteGeometry,
-            );
-            const direction = new GRect(
-                inputTile.absoluteGeometry,
-            ).directionFromPoint(this.ctrl.workspace.cursorPos);
-            this.ctrl.driverManager.putWindowInTile(
-                this.window,
-                inputTile,
-                direction,
-            );
-        }
-        // client is in a non-managed tile (move it to a managed one)
-        else if (!inManagedTile && inputTile != null) {
-            const center = new GRect(this.window.frameGeometry).center;
-            let tile = this.ctrl.workspace
-                .tilingForScreen(this.window.output)
-                .bestTileForPosition(center.x, center.y);
-            // if its null then its root tile (usually)
-            if (tile == null) {
-                tile = this.ctrl.workspace.tilingForScreen(
-                    this.window.output,
-                ).rootTile;
-            }
-            if (this.extensions.isTiled) {
-                this.ctrl.driverManager.removeWindow(this.window);
-            }
-            this.ctrl.driverManager.putWindowInTile(
-                this.window,
-                tile,
-                new GRect(tile.absoluteGeometry).directionFromPoint(center),
-            );
-        }
-        // client is moved out of a managed tile and into no tile
-        else if (
-            this.extensions.isTiled &&
-            !inManagedTile &&
-            inputTile == null
-        ) {
-            this.logger.debug(
-                "Client",
-                this.window.resourceClass,
-                "was moved out of a tile",
-            );
-            this.ctrl.driverManager.removeWindow(this.window);
-        }
-
-        this.ctrl.driverManager.rebuildLayout(this.window.output);
+        this.tileChangedTimer.restart();
     }
 
-    /*
     tileChangedCallback() {
         const inManagedTile =
             this.window.tile != null &&
@@ -148,7 +84,7 @@ export class WindowHooks {
             this.window.tile != null
         ) {
             this.logger.debug(
-                "Putting client",
+                "Putting window",
                 this.window.resourceClass,
                 "in tile",
                 this.window.tile!.absoluteGeometry,
@@ -187,10 +123,11 @@ export class WindowHooks {
         else if (
             this.extensions.isTiled &&
             !inManagedTile &&
-            this.window.tile == null
+            this.window.tile == null &&
+            !this.extensions.isSingleMaximized // single maximized windows are basically tiled
         ) {
             this.logger.debug(
-                "Client",
+                "Window",
                 this.window.resourceClass,
                 "was moved out of a tile",
             );
@@ -199,7 +136,6 @@ export class WindowHooks {
 
         this.ctrl.driverManager.rebuildLayout(this.window.output);
     }
-    */
 
     putWindowInBestTile(): void {
         if (this.extensions.lastTiledLocation != null) {
@@ -268,6 +204,10 @@ export class WindowHooks {
     maximizedChanged(mode: MaximizeMode) {
         // ignore if the driver is making windows maximized
         if (this.ctrl.driverManager.buildingLayout) {
+            return;
+        }
+        // dont interfere with single maximized windows
+        if (this.extensions.isSingleMaximized) {
             return;
         }
         let maximized = mode == MaximizeMode.MaximizeFull;

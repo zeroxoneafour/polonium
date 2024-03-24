@@ -85,6 +85,7 @@ export class TilingDriver {
                 return;
             }
             window.tile = null;
+            this.ctrl.windowExtensions.get(window)!.isSingleMaximized = true;
             window.setMaximize(true, true);
             return;
         }
@@ -162,6 +163,7 @@ export class TilingDriver {
                 if (extensions.maximized) {
                     window.setMaximize(false, false);
                 }
+                extensions.isSingleMaximized = false;
                 window.tile = kwinTile;
                 extensions.lastTiledLocation = GPoint.centerOfRect(
                     kwinTile.absoluteGeometry,

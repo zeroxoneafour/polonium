@@ -183,7 +183,9 @@ export class DriverManager {
                 this.ctrl.workspace.tilingForScreen(desktop.output).rootTile,
             );
             for (const window of driver.clients.keys()) {
-                this.applyTiled(window);
+                if (!driver.untiledWindows.includes(window)) {
+                    this.applyTiled(window);
+                }
             }
             // make registered "untiled" clients appear untiled
             for (const window of driver.untiledWindows) {
