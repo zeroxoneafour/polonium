@@ -39,6 +39,7 @@ export class WorkspaceExtensions {
     }
 }
 
+// important that this is connected first to new windows
 export class WindowExtensions {
     // only store state of full maximization (who maximizes only directionally?)
     maximized: boolean = false;

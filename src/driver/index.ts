@@ -191,6 +191,12 @@ export class DriverManager {
             for (const window of driver.untiledWindows) {
                 window.tile = null;
                 this.applyUntiled(window);
+                // sometimes effects on untiled windows dont properly apply
+                if (window.fullScreen) {
+                    this.logger.debug("fullscreen");
+                    window.fullScreen = false;
+                    window.fullScreen = true;
+                }
             }
         }
         this.buildingLayout = false;
