@@ -27,7 +27,7 @@ export class DriverManager {
         this.logger = c.logger;
         this.config = c.config;
     }
-    
+
     init(): void {
         const c = this.ctrl;
         c.workspace.screensChanged.connect(this.generateDrivers.bind(this));
@@ -56,9 +56,12 @@ export class DriverManager {
                 const config: EngineConfig = {
                     engineType: engineType,
                     insertionPoint: this.config.insertionPoint,
-                    rotateLayout: this.config.rotateLayout
-                }
-                const engine = this.engineFactory.newEngine(desktop.output, config);
+                    rotateLayout: this.config.rotateLayout,
+                };
+                const engine = this.engineFactory.newEngine(
+                    desktop.output,
+                    config,
+                );
                 const driver = new TilingDriver(engine, engineType, this.ctrl);
                 this.drivers.set(desktopString, driver);
                 this.ctrl.dbusManager.getSettings(
@@ -201,7 +204,7 @@ export class DriverManager {
         }
         this.buildingLayout = false;
     }
-    
+
     untileWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
             desktops = Desktop.fromWindow(window);
@@ -231,7 +234,7 @@ export class DriverManager {
             this.drivers.get(desktop.toString())!.addWindow(window);
         }
     }
-    
+
     removeWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
             desktops = Desktop.fromWindow(window);
@@ -290,8 +293,8 @@ export class DriverManager {
         const config: EngineConfig = {
             engineType: this.config.engineType,
             insertionPoint: this.config.insertionPoint,
-            rotateLayout: this.config.rotateLayout
-        }
+            rotateLayout: this.config.rotateLayout,
+        };
         const driver = this.drivers.get(desktop.toString())!;
         if (config.engineType != driver.engineType) {
             driver.switchEngine(

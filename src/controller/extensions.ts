@@ -25,10 +25,12 @@ export class WorkspaceExtensions {
 
         this.workspace.currentActivityChanged.connect(this.repoll.bind(this));
         this.workspace.currentDesktopChanged.connect(this.repoll.bind(this));
-        this.workspace.windowActivated.connect(((_window: Window) => {
-            this.lastActiveWindow = this.currentActiveWindow;
-            this.currentActiveWindow = this.workspace.activeWindow;
-        }).bind(this));
+        this.workspace.windowActivated.connect(
+            ((_window: Window) => {
+                this.lastActiveWindow = this.currentActiveWindow;
+                this.currentActiveWindow = this.workspace.activeWindow;
+            }).bind(this),
+        );
     }
 
     private repoll(): void {
@@ -62,7 +64,9 @@ export class WindowExtensions {
         );
         window.tileChanged.connect(this.tileChanged.bind(this));
         window.desktopsChanged.connect(this.previousDesktopsChanged.bind(this));
-        window.activitiesChanged.connect(this.previousDesktopsChanged.bind(this));
+        window.activitiesChanged.connect(
+            this.previousDesktopsChanged.bind(this),
+        );
         window.outputChanged.connect(this.previousDesktopsChanged.bind(this));
 
         this.tileChanged();

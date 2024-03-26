@@ -14,16 +14,19 @@ export class WorkspaceActions {
         this.logger = ctrl.logger;
         this.config = ctrl.config;
         this.ctrl = ctrl;
-
     }
-    
+
     // done later after loading
     addHooks(): void {
         const workspace = this.ctrl.workspace;
         workspace.windowAdded.connect(this.windowAdded.bind(this));
         workspace.windowRemoved.connect(this.windowRemoved.bind(this));
-        workspace.currentActivityChanged.connect(this.currentDesktopChange.bind(this));
-        workspace.currentDesktopChanged.connect(this.currentDesktopChange.bind(this));
+        workspace.currentActivityChanged.connect(
+            this.currentDesktopChange.bind(this),
+        );
+        workspace.currentDesktopChanged.connect(
+            this.currentDesktopChange.bind(this),
+        );
         workspace.windowActivated.connect(this.windowActivated.bind(this));
     }
 
@@ -105,13 +108,12 @@ export class WorkspaceActions {
         // _window is null??? kwin fix your api
         if (this.config.borders == Borders.Selected) {
             this.ctrl.workspace.activeWindow!.noBorder = false;
-            const lastActiveWindow = this.ctrl.workspaceExtensions.lastActiveWindow;
+            const lastActiveWindow =
+                this.ctrl.workspaceExtensions.lastActiveWindow;
             this.logger.debug(lastActiveWindow?.resourceClass);
             if (
                 lastActiveWindow != null &&
-                this.ctrl.windowExtensions.get(
-                    lastActiveWindow,
-                )!.isTiled
+                this.ctrl.windowExtensions.get(lastActiveWindow)!.isTiled
             ) {
                 lastActiveWindow.noBorder = true;
             }

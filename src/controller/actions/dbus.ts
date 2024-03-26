@@ -12,28 +12,28 @@ export class DBusManager {
     private getSettingsCall: DBusCall;
     private setSettingsCall: DBusCall;
     private removeSettingsCall: DBusCall;
-    
+
     constructor(ctrl: Controller) {
         this.logger = ctrl.logger;
         const dbus = ctrl.qmlObjects.dbus;
-        
+
         this.existsCall = dbus.getExists();
         this.getSettingsCall = dbus.getGetSettings();
         this.setSettingsCall = dbus.getSetSettings();
         this.removeSettingsCall = dbus.getRemoveSettings();
-        
+
         this.existsCall.finished.connect(this.existsCallback.bind(this));
         this.existsCall.call();
     }
-    
+
     private existsCallback() {
         this.isConnected = true;
         this.logger.debug("DBus connected");
     }
-    
+
     private getSettingsCallback(
         setEngineConfig: (cfg: EngineConfig) => void,
-        args: any[]
+        args: any[],
     ): void {
         if (args[1].length == 0) {
             return;

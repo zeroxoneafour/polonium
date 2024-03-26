@@ -22,7 +22,7 @@ export class WindowHooks {
         //this.config = ctrl.config;
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
-        
+
         /*
         this.tileChangedTimer = this.ctrl.qmlObjects.root.createTimer();
         this.tileChangedTimer.triggeredOnStart = false;
@@ -61,7 +61,7 @@ export class WindowHooks {
         }
         this.ctrl.driverManager.rebuildLayout();
     }
-    
+
     /*
     tileChanged(_inputTile: Tile): void {
         // dont react to geometry changes while the layout is rebuilding
@@ -185,7 +185,11 @@ export class WindowHooks {
             this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;
-        } else if (!this.window.fullScreen && this.extensions.wasTiled && !this.extensions.isTiled) {
+        } else if (
+            !this.window.fullScreen &&
+            this.extensions.wasTiled &&
+            !this.extensions.isTiled
+        ) {
             this.putWindowInBestTile();
         }
     }
@@ -202,7 +206,11 @@ export class WindowHooks {
             this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;
-        } else if (!this.window.minimized && this.extensions.wasTiled && !this.extensions.isTiled) {
+        } else if (
+            !this.window.minimized &&
+            this.extensions.wasTiled &&
+            !this.extensions.isTiled
+        ) {
             this.putWindowInBestTile();
         }
     }
@@ -233,7 +241,11 @@ export class WindowHooks {
             this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;
-        } else if (!maximized && this.extensions.wasTiled && !this.extensions.isTiled) {
+        } else if (
+            !maximized &&
+            this.extensions.wasTiled &&
+            !this.extensions.isTiled
+        ) {
             this.putWindowInBestTile();
         }
     }

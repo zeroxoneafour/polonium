@@ -7,7 +7,7 @@ import { QSize } from "kwin-api/qt";
 import {
     EngineCapability,
     EngineConfig as InternalEngineConfig,
-    Client as IClient
+    Client as IClient,
 } from "./engine";
 import BTreeEngine from "./layouts/btree";
 import HalfEngine from "./layouts/half";

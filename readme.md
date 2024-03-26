@@ -16,12 +16,12 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ## features
 
-- Works in Wayland Plasma 6.0 and up
-- Custom moddable tiling engine backend
-- Edit tile sizes with the integrated KWin GUI
-- Move and tile windows with your mouse and keyboard
-- Set layouts independently of desktop, activity, and screen
-- DBus integration to save layouts and configurations
+-   Works in Wayland Plasma 6.0 and up
+-   Custom moddable tiling engine backend
+-   Edit tile sizes with the integrated KWin GUI
+-   Move and tile windows with your mouse and keyboard
+-   Set layouts independently of desktop, activity, and screen
+-   DBus integration to save layouts and configurations
 
 ## X11
 

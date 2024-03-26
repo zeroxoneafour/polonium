@@ -141,7 +141,7 @@ export abstract class TilingEngine implements ITilingEngine {
         this.config = config;
         this.screenSize = output.geometry;
     }
-    
+
     // overrideable method if more internal engine stuff needs to be constructed
     public initEngine(): void {}
 

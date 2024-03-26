@@ -30,7 +30,7 @@ export class TilingDriver {
     clients: BiMap<Kwin.Window, Client> = new BiMap();
     // windows that have no associated tile but are still in an engine go here
     untiledWindows: Kwin.Window[] = [];
-    
+
     get engineConfig(): EngineConfig {
         return {
             engineType: this.engineType,
@@ -175,7 +175,7 @@ export class TilingDriver {
             // only resize if not root tile (obv)
             if (tile.parent != null) {
                 let index = tile.parent.tiles.indexOf(tile);
-                
+
                 // horiz resize
                 if (tile.requestedSize.width != 0) {
                     let diff =
@@ -204,7 +204,7 @@ export class TilingDriver {
                         }
                     }
                 }
-                
+
                 // vertical resize
                 if (tile.requestedSize.height != 0) {
                     let diff =
@@ -216,7 +216,10 @@ export class TilingDriver {
                             kwinTile.resizeByPixels(-diff, Kwin.Edge.TopEdge);
                         } else {
                             // shift border up
-                            kwinTile.resizeByPixels(-diff, Kwin.Edge.BottomEdge);
+                            kwinTile.resizeByPixels(
+                                -diff,
+                                Kwin.Edge.BottomEdge,
+                            );
                         }
                     } else if (tile.parent.parent != null) {
                         let parentIndex = tile.parent.parent.tiles.indexOf(
@@ -251,11 +254,13 @@ export class TilingDriver {
             this.logger.error(e);
         }
     }
-    
+
     addWindow(window: Kwin.Window): void {
         if (!this.clients.has(window)) {
             this.clients.set(window, new Client(window));
-            if (this.engine.engineCapability & EngineCapability.UntiledByDefault) {
+            if (
+                this.engine.engineCapability & EngineCapability.UntiledByDefault
+            ) {
                 this.untiledWindows.push(window);
                 return;
             }
@@ -291,7 +296,6 @@ export class TilingDriver {
         } catch (e) {
             this.logger.error(e);
         }
-
     }
 
     removeWindow(window: Kwin.Window): void {

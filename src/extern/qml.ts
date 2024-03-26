@@ -49,7 +49,7 @@ export interface Shortcuts {
     getInsertBelow(): ShortcutHandler;
     getInsertLeft(): ShortcutHandler;
     getInsertRight(): ShortcutHandler;
-    
+
     getResizeAbove(): ShortcutHandler;
     getResizeBelow(): ShortcutHandler;
     getResizeLeft(): ShortcutHandler;

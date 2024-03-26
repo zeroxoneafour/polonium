@@ -6,7 +6,7 @@ Follow the instructions [here](usage.md#getting-a-log).
 
 ### How do I move windows with my mouse?
 
-You need to hold down the KWin tile snapping key and drag the window with your mouse into one of the available tiles. By default, this key is shift.
+As of right now, moving windows using the mouse is bugged. It can result in either the window not sticking to its movement or a KWin crash. The bug should be fixed soon.
 
 ### How do I move windows with my keyboard / shortcuts not working?
 

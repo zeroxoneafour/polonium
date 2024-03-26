@@ -114,7 +114,7 @@ export class ShortcutManager {
         shortcuts
             .getOpenSettings()
             .activated.connect(this.openSettingsDialog.bind(this));
-        
+
         shortcuts
             .getFocusAbove()
             .activated.connect(this.focus.bind(this, Direction.Above));
@@ -153,7 +153,6 @@ export class ShortcutManager {
         shortcuts
             .getResizeRight()
             .activated.connect(this.resize.bind(this, Direction.Right));
-
     }
 
     retileWindow(): void {
@@ -237,7 +236,7 @@ export class ShortcutManager {
         );
         this.ctrl.driverManager.rebuildLayout(window.output);
     }
-    
+
     resize(direction: Direction): void {
         const window = this.ctrl.workspace.activeWindow;
         if (window == null || window.tile == null) {

@@ -4,20 +4,20 @@
 
 ### 1.0b2
 
-- Dragging tile functionality temporarily suspended due to kwin bugs
-- Better fullscreen/max/min support
-- Fix some other strange untile/tile interactions
+-   Dragging tile functionality temporarily suspended due to kwin bugs
+-   Better fullscreen/max/min support
+-   Fix some other strange untile/tile interactions
 
 ### 1.0b1
 
-- Update to Plasma 6
-- Internal engine rewrite
-- Separate engine API
-- Use object-oriented paradigm instead of event-oriented
-- Use external kwin-api package
-- Stability improvements
-- Better multi-screen support
-- Better minimum size and resizing support
+-   Update to Plasma 6
+-   Internal engine rewrite
+-   Separate engine API
+-   Use object-oriented paradigm instead of event-oriented
+-   Use external kwin-api package
+-   Stability improvements
+-   Better multi-screen support
+-   Better minimum size and resizing support
 
 ## 0.6
 
