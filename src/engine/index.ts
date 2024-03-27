@@ -43,6 +43,7 @@ export interface Tile {
     tiles: Tile[];
     layoutDirection: LayoutDirection;
     requestedSize: QSize;
+    requestedRelativeSize: QSize;
     clients: Client[];
 
     get client(): Client | null;

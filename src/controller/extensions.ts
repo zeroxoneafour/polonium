@@ -3,6 +3,7 @@ import { Workspace } from "kwin-api/qml";
 import { Desktop } from "./desktop";
 import { WindowHooks } from "./actions/windowhooks";
 import { GPoint, GRect } from "../util/geometry";
+import { Log } from "../util/log";
 
 export class WorkspaceExtensions {
     // things added that we need
@@ -15,9 +16,11 @@ export class WorkspaceExtensions {
     private currentDesktop: VirtualDesktop;
     private workspace: Workspace;
     private currentActiveWindow: Window | null = null;
+    //private logger: Log;
 
     constructor(workspace: Workspace) {
         this.workspace = workspace;
+        //this.logger = logger;
         this.currentActivity = this.workspace.currentActivity;
         this.currentDesktop = this.workspace.currentDesktop;
         this.lastActivity = this.currentActivity;
@@ -29,9 +32,13 @@ export class WorkspaceExtensions {
         this.workspace.windowActivated.connect(this.windowActivated.bind(this));
     }
     
+    // this flickers to null and then back so account for null
     private windowActivated(window: Window) {
+        if (window == null) {
+            return;
+        }
         this.lastActiveWindow = this.currentActiveWindow;
-        this.lastActiveWindow = window;
+        this.currentActiveWindow = window;
     }
 
     private repoll(): void {

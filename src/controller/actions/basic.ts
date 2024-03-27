@@ -104,13 +104,12 @@ export class WorkspaceActions {
         this.ctrl.driverManager.rebuildLayout();
     }
 
-    windowActivated(_window: Window) {
+    windowActivated(window: Window) {
         // _window is null??? kwin fix your api
-        if (this.config.borders == Borders.Selected) {
-            this.ctrl.workspace.activeWindow!.noBorder = false;
+        if (this.config.borders == Borders.Selected && window != null) {
+            window.noBorder = false;
             const lastActiveWindow =
                 this.ctrl.workspaceExtensions.lastActiveWindow;
-            this.logger.debug(lastActiveWindow?.resourceClass);
             if (
                 lastActiveWindow != null &&
                 this.ctrl.windowExtensions.get(lastActiveWindow)!.isTiled

@@ -41,17 +41,20 @@ export class WindowHooks {
     }
 
     desktopChanged(): void {
+        this.logger.debug("Desktops changed for window", this.window.resourceClass);
         const currentDesktops = Desktop.fromWindow(this.window);
         const removeDesktops = [];
+        const currentDesktopStrings = currentDesktops.map((desktop) => desktop.toString());
         for (const desktop of this.extensions.previousDesktops) {
-            if (!currentDesktops.includes(desktop)) {
+            if (!currentDesktopStrings.includes(desktop.toString())) {
                 removeDesktops.push(desktop);
             }
         }
         this.ctrl.driverManager.removeWindow(this.window, removeDesktops);
         const addDesktops = [];
+        const previousDesktopStrings = this.extensions.previousDesktops.map((desktop) => desktop.toString());
         for (const desktop of currentDesktops) {
-            if (!this.extensions.previousDesktops.includes(desktop)) {
+            if (!previousDesktopStrings.includes(desktop.toString())) {
                 addDesktops.push(desktop);
             }
         }

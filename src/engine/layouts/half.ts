@@ -124,7 +124,8 @@ export default class HalfEngine extends TilingEngine {
         }
     }
 
-    putClientInTile(client: Client, tile: Tile, direction?: Direction) {
+    // default to inserting below
+    putClientInTile(client: Client, tile: Tile, direction: Direction = Direction.Vertical) {
         const clientBox = new ClientBox(client);
         let targetBox: BoxIndex;
         const box = this.tileMap.get(tile);
@@ -134,7 +135,7 @@ export default class HalfEngine extends TilingEngine {
         targetBox = new BoxIndex(this, box.client);
 
         const targetArr = targetBox.left ? this.left : this.right;
-        if (direction == null || direction & Direction.Up) {
+        if (direction & Direction.Up) {
             targetArr.splice(targetBox.index, 0, clientBox);
         } else {
             targetArr.splice(targetBox.index + 1, 0, clientBox);
