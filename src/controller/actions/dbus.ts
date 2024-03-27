@@ -12,6 +12,7 @@ export class DBusManager {
     private getSettingsCall: DBusCall;
     private setSettingsCall: DBusCall;
     private removeSettingsCall: DBusCall;
+    private connectedDesktops: Set<String> = new Set();
 
     constructor(ctrl: Controller) {
         this.logger = ctrl.logger;
@@ -32,9 +33,14 @@ export class DBusManager {
     }
 
     private getSettingsCallback(
+        desktop: string,
         setEngineConfig: (cfg: EngineConfig) => void,
         args: any[],
     ): void {
+        // make sure only apply changes to the correct desktop
+        if (args[0] != desktop) {
+            return;
+        }
         if (args[1].length == 0) {
             return;
         }
@@ -62,9 +68,13 @@ export class DBusManager {
             return;
         }
         this.logger.debug("Getting settings over dbus for desktop", desktop);
-        this.getSettingsCall.finished.connect(
-            this.getSettingsCallback.bind(this, fn),
-        );
+        // make sure only one callback is registered per desktop
+        if (!this.connectedDesktops.has(desktop)) {
+            this.getSettingsCall.finished.connect(
+                this.getSettingsCallback.bind(this, desktop, fn),
+            );
+            this.connectedDesktops.add(desktop);
+        }
         this.getSettingsCall.arguments = [desktop];
         this.getSettingsCall.call();
     }

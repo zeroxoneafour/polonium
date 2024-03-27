@@ -35,7 +35,7 @@ Item {
         service: "org.polonium.SettingSaver";
         path: "/saver";
         dbusInterface: "org.polonium.SettingSaver";
-        method: "GetSettings";
+        method: "SetSettings";
     }
 
     DBusCall {

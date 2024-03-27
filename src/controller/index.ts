@@ -71,7 +71,7 @@ export class Controller {
 
         // delayed init will help with some stuff
         this.initTimer = qmlObjects.root.createTimer();
-        this.initTimer.interval = 100;
+        this.initTimer.interval = this.config.timerDelay;
         this.initTimer.triggered.connect(this.initCallback.bind(this));
         this.initTimer.repeat = false;
     }
@@ -89,7 +89,7 @@ export class Controller {
         ) {
             this.logger.debug("Restarting init timer");
             // gradually increase time between restart calls for slower systems
-            this.initTimer.interval += 100;
+            this.initTimer.interval += this.config.timerDelay;
             this.initTimer.restart();
             return;
         }

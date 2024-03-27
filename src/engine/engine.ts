@@ -36,6 +36,8 @@ export class Tile implements ITile {
     layoutDirection: LayoutDirection = LayoutDirection.Horizontal;
     // requested size in pixels, may not be honored
     requestedSize: QSize = new GSize();
+    // requested relative size to screen, more likely to be honored 
+    requestedRelativeSize: QSize = new GSize();
     clients: IClient[] = [];
 
     // getter/setter for backwards compatibility

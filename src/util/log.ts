@@ -19,7 +19,11 @@ export class Log {
         let ret = opener;
         for (const s of stuff) {
             ret += " ";
-            if (typeof s == "string") {
+            if (s === null) {
+                ret += "null";
+            } else if (s === undefined) {
+                ret += "undefined";
+            } else if (typeof s == "string") {
                 ret += s;
             } else {
                 ret += s.toString();

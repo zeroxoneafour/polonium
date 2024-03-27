@@ -22,15 +22,16 @@ export class WorkspaceExtensions {
         this.currentDesktop = this.workspace.currentDesktop;
         this.lastActivity = this.currentActivity;
         this.lastDesktop = this.currentDesktop;
+        this.currentActiveWindow = this.workspace.activeWindow;
 
         this.workspace.currentActivityChanged.connect(this.repoll.bind(this));
         this.workspace.currentDesktopChanged.connect(this.repoll.bind(this));
-        this.workspace.windowActivated.connect(
-            ((_window: Window) => {
-                this.lastActiveWindow = this.currentActiveWindow;
-                this.currentActiveWindow = this.workspace.activeWindow;
-            }).bind(this),
-        );
+        this.workspace.windowActivated.connect(this.windowActivated.bind(this));
+    }
+    
+    private windowActivated(window: Window) {
+        this.lastActiveWindow = this.currentActiveWindow;
+        this.lastActiveWindow = window;
     }
 
     private repoll(): void {
