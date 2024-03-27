@@ -248,13 +248,13 @@ export class ShortcutManager {
         this.logger.debug("Changing size of", tile.absoluteGeometry);
         switch (direction) {
             case Direction.Above:
-                tile.resizeByPixels(resizeAmount, Edge.TopEdge);
+                tile.resizeByPixels(-resizeAmount, Edge.TopEdge);
                 break;
             case Direction.Below:
                 tile.resizeByPixels(resizeAmount, Edge.BottomEdge);
                 break;
             case Direction.Left:
-                tile.resizeByPixels(resizeAmount, Edge.LeftEdge);
+                tile.resizeByPixels(-resizeAmount, Edge.LeftEdge);
                 break;
             case Direction.Right:
                 tile.resizeByPixels(resizeAmount, Edge.RightEdge);
