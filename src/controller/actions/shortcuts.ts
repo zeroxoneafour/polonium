@@ -100,12 +100,7 @@ function gdirectionFromDirection(direction: Direction): GDirection {
 }
 
 function engineName(engineType: EngineType): string {
-    const engines = [
-        "Binary Tree",
-        "Half",
-        "Three Column",
-        "KWin",
-    ];
+    const engines = ["Binary Tree", "Half", "Three Column", "KWin"];
     return engines[engineType];
 }
 
@@ -164,11 +159,11 @@ export class ShortcutManager {
         shortcuts
             .getResizeRight()
             .activated.connect(this.resize.bind(this, Direction.Right));
-        
+
         shortcuts
             .getCycleEngine()
             .activated.connect(this.cycleEngine.bind(this));
-        
+
         shortcuts
             .getSwitchBTree()
             .activated.connect(this.setEngine.bind(this, EngineType.BTree));
@@ -179,7 +174,9 @@ export class ShortcutManager {
 
         shortcuts
             .getSwitchThreeColumn()
-            .activated.connect(this.setEngine.bind(this, EngineType.ThreeColumn));
+            .activated.connect(
+                this.setEngine.bind(this, EngineType.ThreeColumn),
+            );
 
         shortcuts
             .getSwitchKwin()
@@ -291,7 +288,7 @@ export class ShortcutManager {
                 tile.resizeByPixels(resizeAmount, Edge.RightEdge);
         }
     }
-    
+
     setEngine(engineType: EngineType): void {
         const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
         const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);
@@ -299,7 +296,7 @@ export class ShortcutManager {
         this.ctrl.qmlObjects.osd.show(engineName(engineType));
         this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
     }
-    
+
     cycleEngine(): void {
         const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
         const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);

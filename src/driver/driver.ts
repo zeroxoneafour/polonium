@@ -58,7 +58,10 @@ export class TilingDriver {
             for (const window of this.clients.keys()) {
                 if (!this.untiledWindows.includes(window)) {
                     // if untiled by default then dont try to tile windows when switching
-                    if (this.engine.engineCapability & EngineCapability.UntiledByDefault) {
+                    if (
+                        this.engine.engineCapability &
+                        EngineCapability.UntiledByDefault
+                    ) {
                         this.untiledWindows.push(window);
                     } else {
                         this.engine.addClient(this.clients.get(window)!);

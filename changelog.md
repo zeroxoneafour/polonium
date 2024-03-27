@@ -6,7 +6,9 @@
 
 -   Dragging tile functionality temporarily suspended due to kwin bugs
 -   Better fullscreen/max/min support
--   Fix some other strange untile/tile interactions
+-   Fixed some other strange untile/tile
+-   Made resizing shortcuts a bit more useable
+-   Added shortcuts for each layout
 
 ### 1.0b1
 
