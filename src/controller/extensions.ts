@@ -31,7 +31,7 @@ export class WorkspaceExtensions {
         this.workspace.currentDesktopChanged.connect(this.repoll.bind(this));
         this.workspace.windowActivated.connect(this.windowActivated.bind(this));
     }
-    
+
     // this flickers to null and then back so account for null
     private windowActivated(window: Window) {
         if (window == null) {

@@ -159,4 +159,60 @@ Item {
         text: "Polonium: Resize Right";
         sequence: "Meta+Ctrl+L";
     }
+    
+    function getCycleEngine() {
+        return cycleEngine;
+    }
+    ShortcutHandler {
+        id: cycleEngine;
+        
+        name: "PoloniumCycleEngine";
+        text: "Polonium: Cycle Engine";
+        sequence: "Meta+|";
+    }
+    
+    // no default shortcuts for specific engines
+    function getSwitchBTree() {
+        return switchBTree;
+    }
+    ShortcutHandler {
+        id: switchBTree;
+        
+        name: "PoloniumSwitchBTree";
+        text: "Polonium: Use Binary Tree Engine";
+        sequence: "";
+    }
+
+    function getSwitchHalf() {
+        return switchHalf;
+    }
+    ShortcutHandler {
+        id: switchHalf;
+        
+        name: "PoloniumSwitchHalf";
+        text: "Polonium: Use Half Engine";
+        sequence: "";
+    }
+    
+    function getSwitchThreeColumn() {
+        return switchThreeColumn;
+    }
+    ShortcutHandler {
+        id: switchThreeColumn;
+        
+        name: "PoloniumSwitchThreeColumn";
+        text: "Polonium: Use Three Column Engine";
+        sequence: "";
+    }
+    
+    function getSwitchKwin() {
+        return switchKwin;
+    }
+    ShortcutHandler {
+        id: switchKwin;
+        
+        name: "PoloniumSwitchKwin";
+        text: "Polonium: Use KWin Engine";
+        sequence: "";
+    }
 }

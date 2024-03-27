@@ -6,6 +6,7 @@ import { GPoint, GRect, Direction as GDirection } from "../../util/geometry";
 import { QPoint } from "kwin-api/qt";
 import { Log } from "../../util/log";
 import { Config } from "../../util/config";
+import { EngineType } from "../../engine";
 
 const enum Direction {
     Above,
@@ -98,6 +99,16 @@ function gdirectionFromDirection(direction: Direction): GDirection {
     }
 }
 
+function engineName(engineType: EngineType): string {
+    const engines = [
+        "Binary Tree",
+        "Half",
+        "Three Column",
+        "KWin",
+    ];
+    return engines[engineType];
+}
+
 export class ShortcutManager {
     private ctrl: Controller;
     private logger: Log;
@@ -153,6 +164,26 @@ export class ShortcutManager {
         shortcuts
             .getResizeRight()
             .activated.connect(this.resize.bind(this, Direction.Right));
+        
+        shortcuts
+            .getCycleEngine()
+            .activated.connect(this.cycleEngine.bind(this));
+        
+        shortcuts
+            .getSwitchBTree()
+            .activated.connect(this.setEngine.bind(this, EngineType.BTree));
+
+        shortcuts
+            .getSwitchHalf()
+            .activated.connect(this.setEngine.bind(this, EngineType.Half));
+
+        shortcuts
+            .getSwitchThreeColumn()
+            .activated.connect(this.setEngine.bind(this, EngineType.ThreeColumn));
+
+        shortcuts
+            .getSwitchKwin()
+            .activated.connect(this.setEngine.bind(this, EngineType.Kwin));
     }
 
     retileWindow(): void {
@@ -259,5 +290,24 @@ export class ShortcutManager {
             case Direction.Right:
                 tile.resizeByPixels(resizeAmount, Edge.RightEdge);
         }
+    }
+    
+    setEngine(engineType: EngineType): void {
+        const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
+        const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);
+        engineConfig.engineType = engineType;
+        this.ctrl.qmlObjects.osd.show(engineName(engineType));
+        this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+    }
+    
+    cycleEngine(): void {
+        const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
+        const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);
+        let engineType = engineConfig.engineType;
+        engineType += 1;
+        engineType %= EngineType._loop;
+        engineConfig.engineType = engineType;
+        this.ctrl.qmlObjects.osd.show(engineName(engineType));
+        this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
     }
 }

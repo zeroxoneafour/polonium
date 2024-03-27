@@ -272,9 +272,7 @@ export class TilingDriver {
         const client = this.clients.get(window)!;
         // tries to use active insertion if it should, but can fail and fall back
         let activeTile: Tile | null = null;
-        if (
-            this.engine.config.insertionPoint == InsertionPoint.Active
-        ) {
+        if (this.engine.config.insertionPoint == InsertionPoint.Active) {
             // use last active window because kwin switches focus when new windows are added (usually)
             const activeWindow = this.ctrl.workspaceExtensions.lastActiveWindow;
             if (activeWindow != null && activeWindow.tile != null) {

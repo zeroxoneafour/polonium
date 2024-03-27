@@ -148,7 +148,14 @@ export class DriverManager {
             this.config.borders == Borders.NoTiled ||
             this.config.borders == Borders.Selected
         ) {
-            window.noBorder = true;
+            if (
+                !(
+                    this.config.borders == Borders.Selected &&
+                    this.ctrl.workspace.activeWindow == window
+                )
+            ) {
+                window.noBorder = true;
+            }
         }
     }
 

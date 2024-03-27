@@ -125,7 +125,11 @@ export default class HalfEngine extends TilingEngine {
     }
 
     // default to inserting below
-    putClientInTile(client: Client, tile: Tile, direction: Direction = Direction.Vertical) {
+    putClientInTile(
+        client: Client,
+        tile: Tile,
+        direction: Direction = Direction.Vertical,
+    ) {
         const clientBox = new ClientBox(client);
         let targetBox: BoxIndex;
         const box = this.tileMap.get(tile);

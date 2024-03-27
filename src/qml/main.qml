@@ -25,7 +25,8 @@ Item {
             "root": root,
             "settings": settings,
             "shortcuts": shortcutsLoader.item,
-            "dbus": dbusLoader.item
+            "dbus": dbusLoader.item,
+            "osd": osdLoader.item,
         };
         Polonium.main(api, qmlObjects);
     }
@@ -80,5 +81,11 @@ Item {
         id: shortcutsLoader;
                 
         source: "shortcuts.qml";
+    }
+    
+    Loader {
+        id: osdLoader;
+        
+        source: "osd.qml";
     }
 }

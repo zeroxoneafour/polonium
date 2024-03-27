@@ -17,6 +17,7 @@ export interface Objects {
     settings: Settings;
     shortcuts: Shortcuts;
     dbus: DBus;
+    osd: Osd;
 }
 
 export interface Root {
@@ -54,6 +55,16 @@ export interface Shortcuts {
     getResizeBelow(): ShortcutHandler;
     getResizeLeft(): ShortcutHandler;
     getResizeRight(): ShortcutHandler;
+    
+    getCycleEngine(): ShortcutHandler;
+    getSwitchBTree(): ShortcutHandler;
+    getSwitchHalf(): ShortcutHandler;
+    getSwitchThreeColumn(): ShortcutHandler;
+    getSwitchKwin(): ShortcutHandler;
+}
+
+export interface Osd {
+    show(text: string): void;
 }
 
 export interface DBus {
