@@ -89,7 +89,7 @@ export class TilingEngineFactory {
         this.config = config;
     }
 
-    public newEngine(output: Output, optConfig?: EngineConfig): TilingEngine {
+    public newEngine(optConfig?: EngineConfig): TilingEngine {
         let config = optConfig;
         if (config == undefined) {
             config = {
@@ -102,16 +102,16 @@ export class TilingEngineFactory {
         let engine: TilingEngine;
         switch (t) {
             case EngineType.BTree:
-                engine = new BTreeEngine(output, config);
+                engine = new BTreeEngine(config);
                 break;
             case EngineType.Half:
-                engine = new HalfEngine(output, config);
+                engine = new HalfEngine(config);
                 break;
             case EngineType.ThreeColumn:
-                engine = new ThreeColumnEngine(output, config);
+                engine = new ThreeColumnEngine(config);
                 break;
             case EngineType.Kwin:
-                engine = new KwinEngine(output, config);
+                engine = new KwinEngine(config);
                 break;
             default:
                 throw new Error("Engine not found for engine type " + t);

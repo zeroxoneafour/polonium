@@ -201,11 +201,11 @@ export class ShortcutManager {
         if (settings.isVisible()) {
             settings.hide();
         } else {
-            settings.setSettings(
-                this.ctrl.driverManager.getEngineConfig(
-                    this.ctrl.desktopFactory.createDefaultDesktop(),
-                ),
+            const config = this.ctrl.driverManager.getEngineConfig(
+                this.ctrl.desktopFactory.createDefaultDesktop(),
             );
+            this.logger.debug(JSON.stringify(config));
+            settings.setSettings(config);
             settings.show();
         }
     }

@@ -44,11 +44,9 @@ export default class HalfEngine extends TilingEngine {
     tileMap: Map<Tile, ClientBox> = new Map();
     left: ClientBox[] = [];
     right: ClientBox[] = [];
-    rightSize: number = 0;
 
     override initEngine() {
         super.initEngine();
-        this.rightSize = this.screenSize.width / 2;
     }
 
     buildLayout() {

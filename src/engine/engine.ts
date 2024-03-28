@@ -136,12 +136,9 @@ export abstract class TilingEngine implements ITilingEngine {
     rootTile: ITile = new Tile();
     config: EngineConfig;
     abstract readonly engineCapability: EngineCapability;
-    // need output so engines know how many pixels they have to work with
-    screenSize: QRect;
 
-    public constructor(output: Output, config: EngineConfig) {
+    public constructor(config: EngineConfig) {
         this.config = config;
-        this.screenSize = output.geometry;
     }
 
     // overrideable method if more internal engine stuff needs to be constructed

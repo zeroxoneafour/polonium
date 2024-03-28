@@ -59,10 +59,9 @@ export class DriverManager {
                     rotateLayout: this.config.rotateLayout,
                 };
                 const engine = this.engineFactory.newEngine(
-                    desktop.output,
                     config,
                 );
-                const driver = new TilingDriver(engine, engineType, this.ctrl);
+                const driver = new TilingDriver(engine, engineType, this.ctrl, this.engineFactory);
                 this.drivers.set(desktopString, driver);
                 this.ctrl.dbusManager.getSettings(
                     desktopString,
@@ -282,15 +281,7 @@ export class DriverManager {
 
     setEngineConfig(desktop: Desktop, config: EngineConfig) {
         this.logger.debug("Setting engine config for desktop", desktop);
-        const driver = this.drivers.get(desktop.toString())!;
-        if (config.engineType != driver.engineType) {
-            driver.switchEngine(
-                this.engineFactory.newEngine(desktop.output, config),
-                config.engineType,
-            );
-        } else {
-            driver.engine.config = config;
-        }
+        this.drivers.get(desktop.toString())!.engineConfig = config;
         this.ctrl.dbusManager.setSettings(desktop.toString(), config);
         this.rebuildLayout(desktop.output);
     }
@@ -302,15 +293,7 @@ export class DriverManager {
             insertionPoint: this.config.insertionPoint,
             rotateLayout: this.config.rotateLayout,
         };
-        const driver = this.drivers.get(desktop.toString())!;
-        if (config.engineType != driver.engineType) {
-            driver.switchEngine(
-                this.engineFactory.newEngine(desktop.output, config),
-                config.engineType,
-            );
-        } else {
-            driver.engine.config = config;
-        }
+        this.drivers.get(desktop.toString())!.engineConfig = config;
         this.ctrl.dbusManager.removeSettings(desktop.toString());
         this.rebuildLayout(desktop.output);
     }

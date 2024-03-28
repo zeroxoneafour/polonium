@@ -7,6 +7,7 @@ import {
     EngineCapability,
     EngineType,
     EngineConfig,
+    TilingEngineFactory,
 } from "../engine";
 import { Direction } from "../util/geometry";
 import { GSize, GPoint, DirectionTools } from "../util/geometry";
@@ -25,6 +26,7 @@ export class TilingDriver {
     private logger: Log;
     private config: Config;
     private ctrl: Controller;
+    private engineFactory: TilingEngineFactory;
 
     tiles: BiMap<Kwin.Tile, Tile> = new BiMap();
     clients: BiMap<Kwin.Window, Client> = new BiMap();
@@ -38,20 +40,33 @@ export class TilingDriver {
             rotateLayout: this.engine.config.rotateLayout,
         };
     }
+    
+    set engineConfig(config: EngineConfig) {
+        if (config.engineType != this.engineType) {
+            this.switchEngine(
+                this.engineFactory.newEngine(config),
+                config.engineType,
+            );
+        }
+        this.engine.config.insertionPoint = config.insertionPoint;
+        this.engine.config.rotateLayout = config.rotateLayout;
+    }
 
     constructor(
         engine: TilingEngine,
         engineType: EngineType,
         ctrl: Controller,
+        engineFactory: TilingEngineFactory,
     ) {
         this.engine = engine;
         this.engineType = engineType;
         this.ctrl = ctrl;
+        this.engineFactory = engineFactory;
         this.logger = ctrl.logger;
         this.config = ctrl.config;
     }
 
-    switchEngine(engine: TilingEngine, engineType: EngineType): void {
+    private switchEngine(engine: TilingEngine, engineType: EngineType): void {
         this.engine = engine;
         this.engineType = engineType;
         try {
