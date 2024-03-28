@@ -46,7 +46,6 @@ PlasmaCore.Dialog {
         engine.currentIndex = this.settings.engineType;
         insertionPoint.currentIndex = this.settings.insertionPoint;
         rotateLayout.checkState = this.settings.rotateLayout ? Qt.Checked : Qt.Unchecked;
-        print(rotateLayout.checkState);
         
         // Update current screen information
         this.screenGeometry = Workspace.clientArea(KWin.FullScreenArea, Workspace.activeScreen, Workspace.currentDesktop);
