@@ -43,7 +43,6 @@ PlasmaCore.Dialog {
         this.desktop.desktop = Workspace.currentDesktop.id;
         
         // update settings
-        print(JSON.stringify(this.settings));
         engine.currentIndex = this.settings.engineType;
         insertionPoint.currentIndex = this.settings.insertionPoint;
         rotateLayout.checkState = this.settings.rotateLayout ? Qt.Checked : Qt.Unchecked;

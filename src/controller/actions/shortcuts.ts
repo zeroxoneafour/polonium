@@ -204,7 +204,6 @@ export class ShortcutManager {
             const config = this.ctrl.driverManager.getEngineConfig(
                 this.ctrl.desktopFactory.createDefaultDesktop(),
             );
-            this.logger.debug(JSON.stringify(config));
             settings.setSettings(config);
             settings.show();
         }
