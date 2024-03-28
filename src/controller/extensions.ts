@@ -1,9 +1,8 @@
 import { MaximizeMode, VirtualDesktop, Window } from "kwin-api";
 import { Workspace } from "kwin-api/qml";
-import { Desktop } from "./desktop";
+import { Desktop, DesktopFactory } from "./desktop";
 import { WindowHooks } from "./actions/windowhooks";
 import { GPoint, GRect } from "../util/geometry";
-import { Log } from "../util/log";
 
 export class WorkspaceExtensions {
     // things added that we need
@@ -62,9 +61,11 @@ export class WindowExtensions {
     isSingleMaximized: boolean = false; // whether the window is solo maximized or not (in accordance with maximize single windows)
 
     private window: Window;
+    private desktopFactory: DesktopFactory;
 
-    constructor(window: Window) {
+    constructor(window: Window, desktopFactory: DesktopFactory) {
         this.window = window;
+        this.desktopFactory = desktopFactory;
 
         window.maximizedAboutToChange.connect(
             (m: MaximizeMode) =>
@@ -90,13 +91,6 @@ export class WindowExtensions {
 
     private previousDesktopsChanged(): void {
         this.previousDesktops = this.previousDesktopsInternal;
-        this.previousDesktopsInternal = [];
-        for (const desktop of this.window.desktops) {
-            for (const activity of this.window.activities) {
-                this.previousDesktopsInternal.push(
-                    new Desktop(desktop, activity, this.window.output),
-                );
-            }
-        }
+        this.previousDesktopsInternal = this.desktopFactory.createDesktopsFromWindow(this.window);
     }
 }

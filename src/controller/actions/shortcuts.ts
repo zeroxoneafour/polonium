@@ -2,7 +2,7 @@
 
 import { Controller } from "../";
 import { Edge, Tile, Window } from "kwin-api";
-import { GPoint, GRect, Direction as GDirection } from "../../util/geometry";
+import { GPoint, Direction as GDirection } from "../../util/geometry";
 import { QPoint } from "kwin-api/qt";
 import { Log } from "../../util/log";
 import { Config } from "../../util/config";

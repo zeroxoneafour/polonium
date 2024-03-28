@@ -213,7 +213,7 @@ export class DriverManager {
 
     untileWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
-            desktops = Desktop.fromWindow(window);
+            desktops = this.ctrl.desktopFactory.createDesktopsFromWindow(window);
         }
         this.logger.debug(
             "Untiling window",
@@ -228,7 +228,7 @@ export class DriverManager {
 
     addWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
-            desktops = Desktop.fromWindow(window);
+            desktops = this.ctrl.desktopFactory.createDesktopsFromWindow(window);
         }
         this.logger.debug(
             "Adding window",
@@ -243,7 +243,7 @@ export class DriverManager {
 
     removeWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
-            desktops = Desktop.fromWindow(window);
+            desktops = this.ctrl.desktopFactory.createDesktopsFromWindow(window);
         }
         this.logger.debug(
             "Removing window",

@@ -24,15 +24,6 @@ export class Desktop {
         this.output = output;
     }
 
-    public static fromWindow(window: Window): Desktop[] {
-        const ret = [];
-        for (const desktop of window.desktops) {
-            for (const activity of window.activities) {
-                ret.push(new Desktop(desktop, activity, window.output));
-            }
-        }
-        return ret;
-    }
 
     public toRawDesktop(): StringDesktop {
         return {
@@ -59,6 +50,22 @@ export class DesktopFactory {
 
         this.workspace.desktopsChanged.connect(this.desktopsChanged.bind(this));
         this.workspace.screensChanged.connect(this.screensChanged.bind(this));
+    }
+    
+    public createDesktopsFromWindow(window: Window): Desktop[] {
+        const ret = [];
+        let desktops: VirtualDesktop[];
+        if (window.onAllDesktops) {
+            desktops = this.workspace.desktops;
+        } else {
+            desktops = window.desktops;
+        }
+        for (const desktop of desktops) {
+            for (const activity of window.activities) {
+                ret.push(new Desktop(desktop, activity, window.output));
+            }
+        }
+        return ret;
     }
 
     private desktopsChanged(): void {

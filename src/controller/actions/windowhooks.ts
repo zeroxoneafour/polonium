@@ -2,7 +2,6 @@
 
 import { MaximizeMode, Tile, Window } from "kwin-api";
 import { Controller } from "../";
-import { Desktop } from "../desktop";
 import { GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
 import { WindowExtensions } from "../extensions";
@@ -45,7 +44,7 @@ export class WindowHooks {
             "Desktops changed for window",
             this.window.resourceClass,
         );
-        const currentDesktops = Desktop.fromWindow(this.window);
+        const currentDesktops = this.ctrl.desktopFactory.createDesktopsFromWindow(this.window);
         const removeDesktops = [];
         const currentDesktopStrings = currentDesktops.map((desktop) =>
             desktop.toString(),
