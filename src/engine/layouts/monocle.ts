@@ -4,25 +4,32 @@ import { TilingEngine, EngineCapability, Client, Tile } from "../engine";
 import { Direction } from "../../util/geometry";
 
 export default class MonocleEngine extends TilingEngine {
-    // tilesmutable moves all processing work to driver
-    engineCapability =
-        EngineCapability.TilesMutable | EngineCapability.UntiledByDefault;
-
+    engineCapability = EngineCapability.None;
+    clients: Client[] = [];
+    
     buildLayout() {
-        // literally nothing
+        this.rootTile = new Tile();
+        for (const client of this.clients) {
+            this.rootTile.clients.push(client);
+        }
+    }
+
+    addClient(client: Client) {
+        if (!this.clients.includes(client)) {
+            this.clients.push(client);
+        }
         return;
     }
 
-    addClient() {
-        return;
+    removeClient(client: Client) {
+        const index = this.clients.indexOf(client);
+        if (index >= 0) {
+            this.clients.splice(index, 1);
+        }
     }
 
-    removeClient() {
-        return;
-    }
-
-    putClientInTile(client: Client, tile: Tile, _direction?: Direction) {
-        tile.client = client;
+    putClientInTile(client: Client, _tile: Tile, _direction?: Direction) {
+        this.addClient(client);
     }
 
     regenerateLayout() {

@@ -194,7 +194,7 @@
    <item row="46" column="1" colspan="2">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Changes apply only after disabling and re-enabling the script!</string>
+      <string>Changes only apply after logging out or restarting KWin!</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -313,6 +313,9 @@ Comma separated list of window titles.</string>
    </item>
    <item row="19" column="1">
     <widget class="QLabel" name="label_9">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The amount of pixels to resize windows by when using shortcuts.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Resize amount</string>
      </property>
@@ -327,6 +330,9 @@ Comma separated list of window titles.</string>
    </item>
    <item row="19" column="2">
     <widget class="QSlider" name="kcfg_ResizeAmount">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The amount of pixels to resize windows by when using shortcuts.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="whatsThis">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>

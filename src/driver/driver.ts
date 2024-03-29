@@ -101,6 +101,7 @@ export class TilingDriver {
         while (realRootTile.tiles.length == 1 && realRootTile.client == null) {
             realRootTile = realRootTile.tiles[0];
         }
+        this.tiles.set(rootTile, realRootTile);
         // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
         if (realRootTile.client != null && this.config.maximizeSingle) {
             const window = this.clients.inverse.get(realRootTile.client);
@@ -114,7 +115,6 @@ export class TilingDriver {
         }
         const queue: Queue<Tile> = new Queue();
         queue.enqueue(realRootTile);
-        this.tiles.set(rootTile, realRootTile);
         while (queue.size > 0) {
             const tile = queue.dequeue()!;
             const kwinTile = this.tiles.inverse.get(tile)!;
@@ -324,7 +324,7 @@ export class TilingDriver {
         kwinTile: Kwin.Tile,
         direction?: Direction,
     ) {
-        const tile = this.tiles.get(kwinTile);
+        let tile = this.tiles.get(kwinTile);
         if (tile == undefined) {
             this.logger.error(
                 "Tile",

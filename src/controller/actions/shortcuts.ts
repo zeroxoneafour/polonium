@@ -10,9 +10,9 @@ import { EngineType } from "../../engine";
 
 const enum Direction {
     Above,
+    Right,
     Below,
     Left,
-    Right,
 }
 
 function pointAbove(window: Window): GPoint | null {
@@ -259,7 +259,6 @@ export class ShortcutManager {
                 tile = tile.tiles[0];
             }
         }
-        // insert on other side of tile in question
         this.ctrl.driverManager.putWindowInTile(
             window,
             tile,
