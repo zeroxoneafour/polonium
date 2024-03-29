@@ -2,8 +2,8 @@
 
 import { Direction, GSize } from "../util/geometry";
 import { InsertionPoint } from "../util/config";
-import { LayoutDirection, Output } from "kwin-api";
-import { QRect, QSize } from "kwin-api/qt";
+import { LayoutDirection } from "kwin-api";
+import { QSize } from "kwin-api/qt";
 import {
     Client as IClient,
     Tile as ITile,
@@ -37,7 +37,7 @@ export class Tile implements ITile {
     // requested size in pixels, may not be honored
     requestedSize: QSize = new GSize();
     // requested relative size to screen, more likely to be honored
-    requestedRelativeSize: QSize = new GSize();
+    relativeSize: number = 1;
     clients: IClient[] = [];
 
     // getter/setter for backwards compatibility
@@ -55,8 +55,19 @@ export class Tile implements ITile {
 
     constructor(parent?: Tile) {
         this.parent = parent ?? null;
-        if (this.parent) {
-            this.parent.tiles.push(this);
+        if (this.parent == null) {
+            return;
+        }
+        this.parent.tiles.push(this);
+        // sizing
+        const childrenLen = this.parent.tiles.length;
+        if (childrenLen <= 1) {
+            return;
+        }
+        // cancels out to be an even 1/childrenLen eventually
+        this.relativeSize = 1 / (childrenLen - 1);
+        for (const child of this.parent.tiles) {
+            child.relativeSize *= (childrenLen - 1) / childrenLen;
         }
     }
 
@@ -119,6 +130,10 @@ export class Tile implements ITile {
         if (!batchRemove) {
             parent.tiles.splice(parent.tiles.indexOf(this), 1);
         }
+        const childrenLen = parent.tiles.length;
+        for (const child of parent.tiles) {
+            child.relativeSize *= (childrenLen + 1) / childrenLen;
+        }
         this.tiles = [];
         this.client = null;
     }
@@ -129,6 +144,20 @@ export class Tile implements ITile {
             tile.remove(true);
         }
         this.tiles = [];
+    }
+    
+    // should be auto ran by driver but can be ran by engines too
+    fixRelativeSizing(): void {
+        let totalSize = 0;
+        for (const tile of this.tiles) {
+            totalSize += tile.relativeSize;
+        }
+        if (totalSize == 1) {
+            return;
+        }
+        for (const tile of this.tiles) {
+            tile.relativeSize /= totalSize;
+        }
     }
 }
 

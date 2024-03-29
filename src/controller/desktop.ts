@@ -24,7 +24,6 @@ export class Desktop {
         this.output = output;
     }
 
-
     public toRawDesktop(): StringDesktop {
         return {
             desktop: this.desktop.id,
@@ -51,7 +50,7 @@ export class DesktopFactory {
         this.workspace.desktopsChanged.connect(this.desktopsChanged.bind(this));
         this.workspace.screensChanged.connect(this.screensChanged.bind(this));
     }
-    
+
     public createDesktopsFromWindow(window: Window): Desktop[] {
         const ret = [];
         let desktops: VirtualDesktop[];

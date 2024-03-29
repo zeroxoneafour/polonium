@@ -2,7 +2,7 @@
 
 import { Config } from "../util/config";
 import { Direction } from "../util/geometry";
-import { LayoutDirection, Output, Window } from "kwin-api";
+import { LayoutDirection, Window } from "kwin-api";
 import { QSize } from "kwin-api/qt";
 import {
     EngineCapability,
@@ -12,6 +12,7 @@ import {
 import BTreeEngine from "./layouts/btree";
 import HalfEngine from "./layouts/half";
 import ThreeColumnEngine from "./layouts/threecolumn";
+import MonocleEngine from "./layouts/monocle";
 import KwinEngine from "./layouts/kwin";
 
 export interface EngineConfig extends InternalEngineConfig {
@@ -24,6 +25,7 @@ export const enum EngineType {
     BTree = 0,
     Half,
     ThreeColumn,
+    Monocle,
     Kwin,
     _loop,
 }
@@ -43,7 +45,7 @@ export interface Tile {
     tiles: Tile[];
     layoutDirection: LayoutDirection;
     requestedSize: QSize;
-    requestedRelativeSize: QSize;
+    relativeSize: number;
     clients: Client[];
 
     get client(): Client | null;
@@ -61,6 +63,9 @@ export interface Tile {
     remove(batchRemove?: boolean): void;
 
     removeChildren(): void;
+    
+    // fix possible relative size conflicts
+    fixRelativeSizing(): void;
 }
 
 export interface TilingEngine {
@@ -110,6 +115,8 @@ export class TilingEngineFactory {
             case EngineType.ThreeColumn:
                 engine = new ThreeColumnEngine(config);
                 break;
+            case EngineType.Monocle:
+                engine = new MonocleEngine(config);
             case EngineType.Kwin:
                 engine = new KwinEngine(config);
                 break;

@@ -87,7 +87,7 @@ PlasmaCore.Dialog {
             }
             PC3.ComboBox {
                 id: engine;
-                model: ["Binary Tree", "Half", "Three Column", "KWin"];
+                model: ["Binary Tree", "Half", "Three Column", "Monocle", "KWin"];
             }
         }
         

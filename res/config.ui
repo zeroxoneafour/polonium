@@ -369,6 +369,11 @@ Comma separated list of window titles.</string>
      </item>
      <item>
       <property name="text">
+       <string>Monocle</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>KWin</string>
       </property>
      </item>

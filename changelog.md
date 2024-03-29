@@ -2,6 +2,13 @@
 
 ## 1.0
 
+### 1.0b3
+
+-   Monocle layout
+-   Pinned windows fix
+-   Fixed settings dialog and setting application
+-   Support relative sizing as determined by engines
+
 ### 1.0b2
 
 -   Dragging tile functionality temporarily suspended due to kwin bugs

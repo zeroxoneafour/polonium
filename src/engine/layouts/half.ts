@@ -44,10 +44,8 @@ export default class HalfEngine extends TilingEngine {
     tileMap: Map<Tile, ClientBox> = new Map();
     left: ClientBox[] = [];
     right: ClientBox[] = [];
-
-    override initEngine() {
-        super.initEngine();
-    }
+    // the ratio of left side to total space
+    middleSplit: number = 0.5;
 
     buildLayout() {
         // set original tile direction based on rotating layout or not
@@ -73,6 +71,8 @@ export default class HalfEngine extends TilingEngine {
             const left = this.rootTile.tiles[0];
             const right = this.rootTile.tiles[1];
 
+            left.relativeSize = this.middleSplit;
+            right.relativeSize = 1 - this.middleSplit;
             for (const box of this.left) {
                 const tile = left.addChild();
                 tile.client = box.client;
@@ -144,5 +144,9 @@ export default class HalfEngine extends TilingEngine {
         }
     }
 
-    regenerateLayout(): void {}
+    regenerateLayout(): void {
+        if (this.rootTile.tiles.length == 2) {
+            this.middleSplit = this.rootTile.tiles[0].relativeSize;
+        }
+    }
 }

@@ -44,7 +44,8 @@ export class WindowHooks {
             "Desktops changed for window",
             this.window.resourceClass,
         );
-        const currentDesktops = this.ctrl.desktopFactory.createDesktopsFromWindow(this.window);
+        const currentDesktops =
+            this.ctrl.desktopFactory.createDesktopsFromWindow(this.window);
         const removeDesktops = [];
         const currentDesktopStrings = currentDesktops.map((desktop) =>
             desktop.toString(),

@@ -100,7 +100,7 @@ function gdirectionFromDirection(direction: Direction): GDirection {
 }
 
 function engineName(engineType: EngineType): string {
-    const engines = ["Binary Tree", "Half", "Three Column", "KWin"];
+    const engines = ["Binary Tree", "Half", "Three Column", "Monocle", "KWin"];
     return engines[engineType];
 }
 
@@ -177,6 +177,10 @@ export class ShortcutManager {
             .activated.connect(
                 this.setEngine.bind(this, EngineType.ThreeColumn),
             );
+
+        shortcuts
+            .getSwitchMonocle()
+            .activated.connect(this.setEngine.bind(this, EngineType.Monocle));
 
         shortcuts
             .getSwitchKwin()

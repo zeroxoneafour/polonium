@@ -58,10 +58,13 @@ export class DriverManager {
                     insertionPoint: this.config.insertionPoint,
                     rotateLayout: this.config.rotateLayout,
                 };
-                const engine = this.engineFactory.newEngine(
-                    config,
+                const engine = this.engineFactory.newEngine(config);
+                const driver = new TilingDriver(
+                    engine,
+                    engineType,
+                    this.ctrl,
+                    this.engineFactory,
                 );
-                const driver = new TilingDriver(engine, engineType, this.ctrl, this.engineFactory);
                 this.drivers.set(desktopString, driver);
                 this.ctrl.dbusManager.getSettings(
                     desktopString,
@@ -213,7 +216,8 @@ export class DriverManager {
 
     untileWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
-            desktops = this.ctrl.desktopFactory.createDesktopsFromWindow(window);
+            desktops =
+                this.ctrl.desktopFactory.createDesktopsFromWindow(window);
         }
         this.logger.debug(
             "Untiling window",
@@ -228,7 +232,8 @@ export class DriverManager {
 
     addWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
-            desktops = this.ctrl.desktopFactory.createDesktopsFromWindow(window);
+            desktops =
+                this.ctrl.desktopFactory.createDesktopsFromWindow(window);
         }
         this.logger.debug(
             "Adding window",
@@ -243,7 +248,8 @@ export class DriverManager {
 
     removeWindow(window: Window, desktops?: Desktop[]): void {
         if (desktops == undefined) {
-            desktops = this.ctrl.desktopFactory.createDesktopsFromWindow(window);
+            desktops =
+                this.ctrl.desktopFactory.createDesktopsFromWindow(window);
         }
         this.logger.debug(
             "Removing window",

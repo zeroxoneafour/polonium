@@ -91,6 +91,7 @@ export class WindowExtensions {
 
     private previousDesktopsChanged(): void {
         this.previousDesktops = this.previousDesktopsInternal;
-        this.previousDesktopsInternal = this.desktopFactory.createDesktopsFromWindow(this.window);
+        this.previousDesktopsInternal =
+            this.desktopFactory.createDesktopsFromWindow(this.window);
     }
 }

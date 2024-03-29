@@ -57,7 +57,10 @@ export class WorkspaceActions {
     }
 
     windowAdded(window: Window): void {
-        this.ctrl.windowExtensions.set(window, new WindowExtensions(window, this.ctrl.desktopFactory));
+        this.ctrl.windowExtensions.set(
+            window,
+            new WindowExtensions(window, this.ctrl.desktopFactory),
+        );
         this.ctrl.windowHookManager.attachWindowHooks(window);
         if (!this.doTileWindow(window)) {
             this.logger.debug("Not tiling window", window.resourceClass);

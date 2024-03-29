@@ -60,6 +60,7 @@ export interface Shortcuts {
     getSwitchBTree(): ShortcutHandler;
     getSwitchHalf(): ShortcutHandler;
     getSwitchThreeColumn(): ShortcutHandler;
+    getSwitchMonocle(): ShortcutHandler;
     getSwitchKwin(): ShortcutHandler;
 }
 

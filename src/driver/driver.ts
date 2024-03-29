@@ -40,7 +40,7 @@ export class TilingDriver {
             rotateLayout: this.engine.config.rotateLayout,
         };
     }
-    
+
     set engineConfig(config: EngineConfig) {
         if (config.engineType != this.engineType) {
             this.switchEngine(
@@ -124,6 +124,8 @@ export class TilingDriver {
             const horizontal =
                 kwinTile.layoutDirection == Kwin.LayoutDirection.Horizontal;
             const tilesLen = tile.tiles.length;
+            // fix sizing issues (ex. size > 1) prematurely
+            tile.fixRelativeSizing();
             if (tilesLen > 1) {
                 for (let i = 0; i < tilesLen; i += 1) {
                     // tiling has weird splitting mechanics, so hopefully this code can help with that
@@ -136,33 +138,18 @@ export class TilingDriver {
                     const childKwinTile = kwinTile.tiles[i];
                     const childTile = tile.tiles[i];
                     this.tiles.set(childKwinTile, childTile);
-                    // only autosizing (we'll go back in later and size appropriately)
+                    // size based on relative size plus autosizing
+                    // yeah whatever im just using relative size idc anymore and it works (?)
                     if (horizontal && i > 0) {
-                        const targetSize =
-                            (kwinTile.absoluteGeometryInScreen.width /
-                                tilesLen) *
-                            (tilesLen - i);
-                        kwinTile.tiles[i].resizeByPixels(
-                            -(
-                                targetSize -
-                                childKwinTile.absoluteGeometryInScreen.width
-                            ),
-                            Kwin.Edge.LeftEdge,
-                        );
+                        kwinTile.tiles[i-1].relativeGeometry.width =
+                            kwinTile.relativeGeometry.width *
+                            tile.tiles[i-1].relativeSize;
                     } else if (i > 0) {
-                        const targetSize =
-                            (kwinTile.absoluteGeometryInScreen.height /
-                                tilesLen) *
-                            (tilesLen - i);
-                        kwinTile.tiles[i].resizeByPixels(
-                            -(
-                                targetSize -
-                                childKwinTile.absoluteGeometryInScreen.height
-                            ),
-                            Kwin.Edge.TopEdge,
-                        );
+                        kwinTile.tiles[i-1].relativeGeometry.height =
+                            kwinTile.relativeGeometry.height *
+                            tile.tiles[i-1].relativeSize;
                     }
-                    queue.enqueue(tile.tiles[i]);
+                    queue.enqueue(childTile);
                 }
             }
             // if there is one child tile, replace this tile with the child tile
@@ -392,7 +379,26 @@ export class TilingDriver {
                 );
                 continue;
             }
-            tile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
+            // make sure parent squashing doesnt break resizing when a tile has one child
+            // if the tile is normal, this all boils down to the old code so its whatever
+            const tilesToSetSize = [tile];
+            let parentTmp = tile.parent;
+            while (parentTmp != null && parentTmp.tiles.length == 1) {
+                tilesToSetSize.push(parentTmp);
+                parentTmp = parentTmp.parent;
+            }
+            // because its a variable that should also be named tile... (keep the scopes clean!)
+            for (const variableAlsoNamedTile of tilesToSetSize) {
+                variableAlsoNamedTile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
+                variableAlsoNamedTile.relativeSize = 1;
+            }
+            // only properly set relativeSize for the highest tile (its the only one actually affected)
+            const highestTile = tilesToSetSize[tilesToSetSize.length - 1];
+            if (kwinTile.parent != null && kwinTile.parent.layoutDirection == Kwin.LayoutDirection.Horizontal) {
+                highestTile.relativeSize = kwinTile.relativeGeometry.width / kwinTile.parent.relativeGeometry.width;
+            } else if (kwinTile.parent != null) {
+                highestTile.relativeSize = kwinTile.relativeGeometry.height / kwinTile.parent.relativeGeometry.height;
+            }
             // if the layout is mutable (tiles can be created/destroyed) then change it. really only for kwin layout
             if (
                 (this.engine.engineCapability &

@@ -205,6 +205,17 @@ Item {
         sequence: "";
     }
     
+    function getSwitchMonocle() {
+        return switchMonocle;
+    }
+    ShortcutHandler {
+        id: switchMonocle;
+        
+        name: "PoloniumSwitchMonocle";
+        text: "Polonium: Use Monocle Engine";
+        sequence: "";
+    }
+    
     function getSwitchKwin() {
         return switchKwin;
     }
