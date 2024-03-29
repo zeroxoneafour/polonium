@@ -67,6 +67,9 @@ export default class BTreeEngine extends TilingEngine {
     private rootNode: RootNode = new RootNode();
     private nodeMap: BiMap<TreeNode, Tile> = new BiMap();
 
+    // no engine settings for btree
+    engineSettings = {};
+
     buildLayout() {
         // set original tile direction based on rotating layout or not
         this.rootTile = new Tile();

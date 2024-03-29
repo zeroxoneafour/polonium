@@ -25,6 +25,9 @@ export const enum EngineCapability {
     UntiledByDefault = 4,
 }
 
+// custom engine settings if the engine wants to use them
+export type EngineSettings = object;
+
 export interface Client {
     name: string;
     minSize: QSize;
@@ -145,7 +148,7 @@ export class Tile implements ITile {
         }
         this.tiles = [];
     }
-    
+
     // should be auto ran by driver but can be ran by engines too
     fixRelativeSizing(): void {
         let totalSize = 0;
@@ -169,6 +172,9 @@ export abstract class TilingEngine implements ITilingEngine {
     public constructor(config: EngineConfig) {
         this.config = config;
     }
+
+    public abstract get engineSettings(): EngineSettings;
+    public abstract set engineSettings(settings: EngineSettings | null);
 
     // overrideable method if more internal engine stuff needs to be constructed
     public initEngine(): void {}

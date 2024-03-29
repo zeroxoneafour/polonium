@@ -287,8 +287,12 @@ export class DriverManager {
 
     setEngineConfig(desktop: Desktop, config: EngineConfig) {
         this.logger.debug("Setting engine config for desktop", desktop);
-        this.drivers.get(desktop.toString())!.engineConfig = config;
-        this.ctrl.dbusManager.setSettings(desktop.toString(), config);
+        const driver = this.drivers.get(desktop.toString())!;
+        driver.engineConfig = config;
+        this.ctrl.dbusManager.setSettings(
+            desktop.toString(),
+            driver.engineConfig,
+        );
         this.rebuildLayout(desktop.output);
     }
 
@@ -298,6 +302,7 @@ export class DriverManager {
             engineType: this.config.engineType,
             insertionPoint: this.config.insertionPoint,
             rotateLayout: this.config.rotateLayout,
+            engineSettings: null,
         };
         this.drivers.get(desktop.toString())!.engineConfig = config;
         this.ctrl.dbusManager.removeSettings(desktop.toString());

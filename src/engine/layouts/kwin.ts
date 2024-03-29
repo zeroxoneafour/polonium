@@ -8,6 +8,7 @@ export default class KwinEngine extends TilingEngine {
     // tilesmutable moves all processing work to driver
     engineCapability =
         EngineCapability.TilesMutable | EngineCapability.UntiledByDefault;
+    engineSettings = {};
 
     buildLayout() {
         // literally nothing

@@ -41,6 +41,7 @@ export default class ThreeColumnEngine extends TilingEngine {
     engineCapability = EngineCapability.TranslateRotation;
     tileMap: Map<Tile, ClientBox> = new Map();
     rows: ClientBox[][] = [[], [], []];
+    engineSettings = {};
 
     buildLayout() {
         // set original tile direction based on rotating layout or not

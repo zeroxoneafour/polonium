@@ -6,6 +6,7 @@ import { LayoutDirection, Window } from "kwin-api";
 import { QSize } from "kwin-api/qt";
 import {
     EngineCapability,
+    EngineSettings,
     EngineConfig as InternalEngineConfig,
     Client as IClient,
 } from "./engine";
@@ -17,9 +18,10 @@ import KwinEngine from "./layouts/kwin";
 
 export interface EngineConfig extends InternalEngineConfig {
     engineType: EngineType;
+    engineSettings: EngineSettings | null;
 }
 
-export { EngineCapability };
+export { EngineCapability, EngineSettings };
 
 export const enum EngineType {
     BTree = 0,
@@ -63,7 +65,7 @@ export interface Tile {
     remove(batchRemove?: boolean): void;
 
     removeChildren(): void;
-    
+
     // fix possible relative size conflicts
     fixRelativeSizing(): void;
 }
@@ -72,6 +74,9 @@ export interface TilingEngine {
     rootTile: Tile;
     config: InternalEngineConfig;
     readonly engineCapability: EngineCapability;
+
+    get engineSettings(): EngineSettings;
+    set engineSettings(settings: EngineSettings | null);
 
     // initializes optional stuff in the engine if necessary
     initEngine(): void;

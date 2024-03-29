@@ -38,6 +38,7 @@ export class TilingDriver {
             engineType: this.engineType,
             insertionPoint: this.engine.config.insertionPoint,
             rotateLayout: this.engine.config.rotateLayout,
+            engineSettings: this.engine.engineSettings,
         };
     }
 
@@ -50,6 +51,15 @@ export class TilingDriver {
         }
         this.engine.config.insertionPoint = config.insertionPoint;
         this.engine.config.rotateLayout = config.rotateLayout;
+        // null is different meaning than undefined
+        if (config.engineSettings !== undefined) {
+            this.engine.engineSettings = config.engineSettings;
+        }
+        try {
+            this.engine.buildLayout();
+        } catch (e) {
+            this.logger.error(e);
+        }
     }
 
     constructor(
@@ -104,13 +114,16 @@ export class TilingDriver {
         this.tiles.set(rootTile, realRootTile);
         // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
         if (realRootTile.client != null && this.config.maximizeSingle) {
-            const window = this.clients.inverse.get(realRootTile.client);
-            if (window == undefined) {
-                return;
+            for (const client of realRootTile.clients) {
+                const window = this.clients.inverse.get(client);
+                if (window == undefined) {
+                    return;
+                }
+                window.tile = null;
+                this.ctrl.windowExtensions.get(window)!.isSingleMaximized =
+                    true;
+                window.setMaximize(true, true);
             }
-            window.tile = null;
-            this.ctrl.windowExtensions.get(window)!.isSingleMaximized = true;
-            window.setMaximize(true, true);
             return;
         }
         const queue: Queue<Tile> = new Queue();
@@ -141,13 +154,13 @@ export class TilingDriver {
                     // size based on relative size plus autosizing
                     // yeah whatever im just using relative size idc anymore and it works (?)
                     if (horizontal && i > 0) {
-                        kwinTile.tiles[i-1].relativeGeometry.width =
+                        kwinTile.tiles[i - 1].relativeGeometry.width =
                             kwinTile.relativeGeometry.width *
-                            tile.tiles[i-1].relativeSize;
+                            tile.tiles[i - 1].relativeSize;
                     } else if (i > 0) {
-                        kwinTile.tiles[i-1].relativeGeometry.height =
+                        kwinTile.tiles[i - 1].relativeGeometry.height =
                             kwinTile.relativeGeometry.height *
-                            tile.tiles[i-1].relativeSize;
+                            tile.tiles[i - 1].relativeSize;
                     }
                     queue.enqueue(childTile);
                 }
@@ -389,15 +402,25 @@ export class TilingDriver {
             }
             // because its a variable that should also be named tile... (keep the scopes clean!)
             for (const variableAlsoNamedTile of tilesToSetSize) {
-                variableAlsoNamedTile.requestedSize = GSize.fromRect(kwinTile.absoluteGeometry);
+                variableAlsoNamedTile.requestedSize = GSize.fromRect(
+                    kwinTile.absoluteGeometry,
+                );
                 variableAlsoNamedTile.relativeSize = 1;
             }
             // only properly set relativeSize for the highest tile (its the only one actually affected)
             const highestTile = tilesToSetSize[tilesToSetSize.length - 1];
-            if (kwinTile.parent != null && kwinTile.parent.layoutDirection == Kwin.LayoutDirection.Horizontal) {
-                highestTile.relativeSize = kwinTile.relativeGeometry.width / kwinTile.parent.relativeGeometry.width;
+            if (
+                kwinTile.parent != null &&
+                kwinTile.parent.layoutDirection ==
+                    Kwin.LayoutDirection.Horizontal
+            ) {
+                highestTile.relativeSize =
+                    kwinTile.relativeGeometry.width /
+                    kwinTile.parent.relativeGeometry.width;
             } else if (kwinTile.parent != null) {
-                highestTile.relativeSize = kwinTile.relativeGeometry.height / kwinTile.parent.relativeGeometry.height;
+                highestTile.relativeSize =
+                    kwinTile.relativeGeometry.height /
+                    kwinTile.parent.relativeGeometry.height;
             }
             // if the layout is mutable (tiles can be created/destroyed) then change it. really only for kwin layout
             if (

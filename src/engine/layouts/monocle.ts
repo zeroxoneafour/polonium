@@ -6,7 +6,8 @@ import { Direction } from "../../util/geometry";
 export default class MonocleEngine extends TilingEngine {
     engineCapability = EngineCapability.None;
     clients: Client[] = [];
-    
+    engineSettigns = {};
+
     buildLayout() {
         this.rootTile = new Tile();
         for (const client of this.clients) {

@@ -1,6 +1,12 @@
 // half.ts - Tiling engine for the half/split layout
 
-import { Tile, Client, TilingEngine, EngineCapability } from "../engine";
+import {
+    Tile,
+    Client,
+    TilingEngine,
+    EngineCapability,
+    EngineSettings,
+} from "../engine";
 import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 
@@ -39,6 +45,10 @@ class BoxIndex {
     }
 }
 
+interface HalfEngineSettings extends EngineSettings {
+    middleSplit: number;
+}
+
 export default class HalfEngine extends TilingEngine {
     engineCapability = EngineCapability.TranslateRotation;
     tileMap: Map<Tile, ClientBox> = new Map();
@@ -46,6 +56,21 @@ export default class HalfEngine extends TilingEngine {
     right: ClientBox[] = [];
     // the ratio of left side to total space
     middleSplit: number = 0.5;
+
+    get engineSettings(): HalfEngineSettings {
+        return {
+            middleSplit: this.middleSplit,
+        };
+    }
+
+    set engineSettings(settings: HalfEngineSettings | null) {
+        if (settings == null) {
+            this.middleSplit = 0.5;
+            return;
+        }
+        // hopefully settings save correctly
+        this.middleSplit = settings.middleSplit;
+    }
 
     buildLayout() {
         // set original tile direction based on rotating layout or not
