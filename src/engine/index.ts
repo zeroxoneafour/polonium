@@ -18,7 +18,8 @@ import KwinEngine from "./layouts/kwin";
 
 export interface EngineConfig extends InternalEngineConfig {
     engineType: EngineType;
-    engineSettings: EngineSettings | null;
+    // intentionally undefined when coming from settings dialog
+    engineSettings: EngineSettings | undefined;
 }
 
 export { EngineCapability, EngineSettings };
@@ -106,6 +107,7 @@ export class TilingEngineFactory {
                 engineType: this.config.engineType,
                 insertionPoint: this.config.insertionPoint,
                 rotateLayout: this.config.rotateLayout,
+                engineSettings: {},
             };
         }
         const t = config.engineType % EngineType._loop;
@@ -129,6 +131,7 @@ export class TilingEngineFactory {
                 throw new Error("Engine not found for engine type " + t);
         }
         engine.initEngine();
+        engine.engineSettings = config.engineSettings ?? {};
         return engine;
     }
 }

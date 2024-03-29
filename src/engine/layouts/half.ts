@@ -63,13 +63,8 @@ export default class HalfEngine extends TilingEngine {
         };
     }
 
-    set engineSettings(settings: HalfEngineSettings | null) {
-        if (settings == null) {
-            this.middleSplit = 0.5;
-            return;
-        }
-        // hopefully settings save correctly
-        this.middleSplit = settings.middleSplit;
+    set engineSettings(settings: HalfEngineSettings) {
+        this.middleSplit = settings.middleSplit ?? 0.5;
     }
 
     buildLayout() {

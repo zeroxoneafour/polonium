@@ -11,6 +11,7 @@
         <entry name="MaximizeSingle" type="bool"><default>false</default></entry>
         <entry name="ResizeAmount" type="int"><default>10</default></entry>
         <entry name="TimerDelay" type="int"><default>10</default></entry>
+        <entry name="SaveOnTileEdit" type="bool"><default>false</default></entry>
         <entry name="EngineType" type="int"><default>0</default></entry>
         <entry name="InsertionPoint" type="int"><default>0</default></entry>
         <entry name="RotateLayout" type="bool"><default>false</default></entry>

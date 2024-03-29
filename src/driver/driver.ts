@@ -51,8 +51,8 @@ export class TilingDriver {
         }
         this.engine.config.insertionPoint = config.insertionPoint;
         this.engine.config.rotateLayout = config.rotateLayout;
-        // null is different meaning than undefined
-        if (config.engineSettings !== undefined) {
+        // if it needs to be reset, enginesettings will be an empty object
+        if (config.engineSettings != undefined) {
             this.engine.engineSettings = config.engineSettings;
         }
         try {

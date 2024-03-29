@@ -2,14 +2,13 @@
 
 // half.ts - Tiling engine for the half/split layout
 
-import { Tile, Client, TilingEngine, EngineCapability } from "../engine";
+import { Tile, Client, TilingEngine, EngineCapability, EngineSettings } from "../engine";
 import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
-import { GSize } from "../../util/geometry";
+import { LayoutDirection } from "kwin-api";
 
 class ClientBox {
     client: Client;
-    size: GSize = new GSize();
 
     constructor(client: Client) {
         this.client = client;
@@ -37,17 +36,36 @@ class BoxIndex {
     }
 }
 
+interface ThreeColumnEngineSettings extends EngineSettings {
+    leftSize: number;
+    rightSize: number;
+}
+
 export default class ThreeColumnEngine extends TilingEngine {
     engineCapability = EngineCapability.TranslateRotation;
     tileMap: Map<Tile, ClientBox> = new Map();
     rows: ClientBox[][] = [[], [], []];
-    engineSettings = {};
+    leftSize: number = 0.25;
+    rightSize: number = 0.25;
 
+    get engineSettings(): ThreeColumnEngineSettings {
+        return {
+            leftSize: this.leftSize,
+            rightSize: this.rightSize,
+        };
+    }
+
+    set engineSettings(settings: ThreeColumnEngineSettings) {
+        this.leftSize = settings.leftSize ?? 0.25;
+        this.rightSize = settings.rightSize ?? 0.25;
+    }
+    
     buildLayout() {
         // set original tile direction based on rotating layout or not
         this.rootTile = new Tile();
         this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
-        for (const row of this.rows) {
+        for (let i = 0; i < this.rows.length; i += 1) {
+            const row = this.rows[i];
             if (row.length == 0) {
                 continue;
             }
@@ -55,9 +73,24 @@ export default class ThreeColumnEngine extends TilingEngine {
             for (const box of row) {
                 const tile = rowRoot.addChild();
                 tile.client = box.client;
-                tile.requestedSize = box.size;
                 this.tileMap.set(tile, box);
             }
+        }
+        if (this.rows[0].length > 0) {
+            this.rootTile.tiles[0].relativeSize = this.leftSize;
+        }
+        if (this.rows[2].length > 0) {
+            this.rootTile.tiles[this.rootTile.tiles.length - 1].relativeSize = this.rightSize;
+        }
+        let middleSize = 1;
+        if (this.rows[2].length != 0) {
+            middleSize -= this.rightSize;
+        }
+        if (this.rows[0].length != 0) {
+            middleSize -= this.leftSize;
+            this.rootTile.tiles[1].relativeSize = middleSize;
+        } else {
+            this.rootTile.tiles[0].relativeSize = middleSize;
         }
     }
 
@@ -113,12 +146,22 @@ export default class ThreeColumnEngine extends TilingEngine {
         }
     }
 
-    regenerateLayout() {
-        for (const tile of this.tileMap.keys()) {
-            if (tile.requestedSize == null) {
-                continue;
+    regenerateLayout(): void {
+        // only one column on the screen
+        if (this.rootTile.tiles.length < 2 || this.rootTile.layoutDirection == LayoutDirection.Vertical) {
+            return;
+        }
+        // assuming the middle row always has at least one client
+        if (this.rootTile.tiles.length == 2) {
+            if (this.rows[0].length == 0) {
+                // no left clients
+                this.rightSize = this.rootTile.tiles[1].relativeSize;
+            } else if (this.rows[2].length == 0) {
+                this.leftSize = this.rootTile.tiles[0].relativeSize;
             }
-            this.tileMap.get(tile)!.size = new GSize(tile.requestedSize);
+        } else if (this.rootTile.tiles.length == 3) {
+            this.rightSize = this.rootTile.tiles[2].relativeSize;
+            this.leftSize = this.rootTile.tiles[0].relativeSize;
         }
     }
 }

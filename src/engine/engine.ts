@@ -169,12 +169,12 @@ export abstract class TilingEngine implements ITilingEngine {
     config: EngineConfig;
     abstract readonly engineCapability: EngineCapability;
 
+    public abstract get engineSettings(): EngineSettings;
+    public abstract set engineSettings(settings: EngineSettings);
+
     public constructor(config: EngineConfig) {
         this.config = config;
     }
-
-    public abstract get engineSettings(): EngineSettings;
-    public abstract set engineSettings(settings: EngineSettings | null);
 
     // overrideable method if more internal engine stuff needs to be constructed
     public initEngine(): void {}

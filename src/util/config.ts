@@ -46,6 +46,7 @@ export class Config {
         this.borders = rc("Borders", Borders.NoTiled);
         this.maximizeSingle = rc("MaximizeSingle", false);
         this.resizeAmount = rc("ResizeAmount", 10);
+        this.saveOnTileEdit = rc("SaveOnTileEdit", false);
 
         this.engineType = rc("EngineType", EngineType.BTree);
         this.insertionPoint = rc("InsertionPoint", InsertionPoint.Left);
@@ -69,6 +70,7 @@ export class Config {
     borders: Borders = Borders.NoTiled;
     maximizeSingle: boolean = false;
     resizeAmount: number = 10;
+    saveOnTileEdit: boolean = false;
 
     engineType: EngineType = EngineType.BTree;
     insertionPoint: InsertionPoint = InsertionPoint.Left;

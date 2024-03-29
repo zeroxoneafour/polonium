@@ -57,6 +57,7 @@ export class DriverManager {
                     engineType: engineType,
                     insertionPoint: this.config.insertionPoint,
                     rotateLayout: this.config.rotateLayout,
+                    engineSettings: {},
                 };
                 const engine = this.engineFactory.newEngine(config);
                 const driver = new TilingDriver(
@@ -139,6 +140,9 @@ export class DriverManager {
         );
         const driver = this.drivers.get(desktop.toString())!;
         driver.regenerateLayout(tile);
+        if (this.config.saveOnTileEdit) {
+            this.ctrl.dbusManager.setSettings(desktop.toString(), driver.engineConfig);
+        }
     }
 
     private applyTiled(window: Window): void {
@@ -302,7 +306,7 @@ export class DriverManager {
             engineType: this.config.engineType,
             insertionPoint: this.config.insertionPoint,
             rotateLayout: this.config.rotateLayout,
-            engineSettings: null,
+            engineSettings: {},
         };
         this.drivers.get(desktop.toString())!.engineConfig = config;
         this.ctrl.dbusManager.removeSettings(desktop.toString());
