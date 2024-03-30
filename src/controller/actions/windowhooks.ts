@@ -165,10 +165,6 @@ export class WindowHooks {
             new GRect(this.window.tile.absoluteGeometry).contains(
                 this.window.frameGeometry,
             );
-        this.logger.debug(
-            this.window.tile?.absoluteGeometry,
-            this.window.frameGeometry,
-        );
         const inUnmanagedTile =
             this.window.tile != null &&
             !this.ctrl.managedTiles.has(this.window.tile);
