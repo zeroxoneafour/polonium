@@ -38,8 +38,8 @@ PlasmaCore.Dialog {
 
     mainItem: PC3.Label {
         id: main;
-        Layout.fillWidth: true;
-        Layout.alignment: Qt.AlignHCenter;
+        Layout.minimumWidth: Math.max(main.implicitWidth, PlasmaCore.Units.gridUnit * 10);
+        Layout.minimumHeight: PlasmaCore.Units.gridUnit * 1.35;
         font.pointSize: PlasmaCore.Theme.defaultFont.pointSize * 1.2;
         horizontalAlignment: Text.AlignHCenter;
 
