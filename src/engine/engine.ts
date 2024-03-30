@@ -55,12 +55,17 @@ export class Tile implements ITile {
         }
     }
 
-    constructor(parent?: Tile) {
+    constructor(parent?: Tile, alterSiblingRatios = true) {
         this.parent = parent ?? null;
         if (this.parent == null) {
             return;
         }
         this.parent.tiles.push(this);
+        // if we want to alter sibling ratios on construction we do that by default
+        // or you can turn this off to set ratios yourself in real time
+        if (!alterSiblingRatios) {
+            return;
+        }
         // sizing
         const childrenLen = this.parent.tiles.length;
         if (childrenLen <= 1) {
@@ -74,19 +79,19 @@ export class Tile implements ITile {
     }
 
     // adds a child that will split perpendicularly to the parent. Returns the child
-    addChild(): Tile {
+    addChild(alterSiblingRatios = true): Tile {
         let splitDirection: LayoutDirection = 1;
         if (this.layoutDirection == 1) {
             splitDirection = 2;
         }
-        const childTile = new Tile(this);
+        const childTile = new Tile(this, alterSiblingRatios);
         childTile.layoutDirection = splitDirection;
         return childTile;
     }
 
     // adds a child that will split parallel to the parent. Not really recommeneded
-    addChildParallel(): Tile {
-        const childTile = new Tile(this);
+    addChildParallel(alterSiblingRatios = true): Tile {
+        const childTile = new Tile(this, alterSiblingRatios);
         childTile.layoutDirection = this.layoutDirection;
         return childTile;
     }
