@@ -8,6 +8,7 @@ import {
     EngineSettings,
 } from "../engine";
 import { Direction } from "../../util/geometry";
+import { InsertionPoint } from "../../util/config";
 
 export default class MonocleEngine extends TilingEngine {
     engineCapability = EngineCapability.None;
@@ -26,7 +27,12 @@ export default class MonocleEngine extends TilingEngine {
 
     addClient(client: Client) {
         if (!this.clients.includes(client)) {
-            this.clients.push(client);
+            // push to back if insertion point is right, else push new clients to front
+            if (this.config.insertionPoint == InsertionPoint.Right) {
+                this.clients.push(client);
+            } else {
+                this.clients.splice(0, 0, client);
+            }
         }
         return;
     }
