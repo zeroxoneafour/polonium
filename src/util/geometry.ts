@@ -173,6 +173,19 @@ export class GRect implements QRect {
             y: this.y + this.height / 2,
         });
     }
+    
+    contains(rect: QRect): boolean {
+        if (rect.x < this.x || rect.y < this.y) {
+            return false;
+        }
+        if (
+            rect.x + rect.width > this.x + this.width ||
+            rect.y + rect.height > this.y + this.height
+        ) {
+            return false;
+        }
+        return true;
+    }
 }
 
 export class GSize implements QSize {
