@@ -1,8 +1,13 @@
 // layouts/btree.ts - Implementation of binary tree layout
 
-import { Tile, Client, TilingEngine, EngineCapability } from "../engine";
+import {
+    Tile,
+    Client,
+    TilingEngine,
+    EngineCapability,
+    EngineSettings,
+} from "../engine";
 import { Direction } from "../../util/geometry";
-import { GSize } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 import BiMap from "mnemonist/bi-map";
 import Queue from "mnemonist/queue";
@@ -12,7 +17,8 @@ class TreeNode {
     sibling: TreeNode | null = null;
     children: [TreeNode, TreeNode] | null = null;
     client: Client | null = null;
-    requestedSize: GSize = new GSize();
+    // ratio of child 1 to self
+    sizeRatio: number = 0.5;
     // splits tile
     split(): void {
         // cannot already have children
@@ -68,7 +74,11 @@ export default class BTreeEngine extends TilingEngine {
     private nodeMap: BiMap<TreeNode, Tile> = new BiMap();
 
     // no engine settings for btree
-    engineSettings = {};
+    // (we dont save resizings through dbus saver right now)
+    get engineSettings(): EngineSettings {
+        return {};
+    }
+    set engineSettings(_: EngineSettings) {}
 
     buildLayout() {
         // set original tile direction based on rotating layout or not
@@ -83,7 +93,6 @@ export default class BTreeEngine extends TilingEngine {
         while (queue.size > 0) {
             const node = queue.dequeue()!;
             const tile = this.nodeMap.get(node)!;
-            tile.requestedSize = node.requestedSize;
 
             if (node.client != null) {
                 tile.client = node.client;
@@ -93,6 +102,9 @@ export default class BTreeEngine extends TilingEngine {
 
                 this.nodeMap.set(node.children[0], tile.tiles[0]);
                 this.nodeMap.set(node.children[1], tile.tiles[1]);
+
+                tile.tiles[0].relativeSize = node.sizeRatio;
+                tile.tiles[1].relativeSize = 1 - node.sizeRatio;
 
                 queue.enqueue(node.children[0]);
                 queue.enqueue(node.children[1]);
@@ -191,8 +203,8 @@ export default class BTreeEngine extends TilingEngine {
         // just for checking resizing mostly
         for (const node of this.nodeMap.keys()) {
             const tile = this.nodeMap.get(node)!;
-            if (tile.requestedSize != null) {
-                node.requestedSize = new GSize(tile.requestedSize);
+            if (tile.tiles.length == 2) {
+                node.sizeRatio = tile.tiles[0].relativeSize;
             }
         }
     }

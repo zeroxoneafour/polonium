@@ -141,7 +141,10 @@ export class DriverManager {
         const driver = this.drivers.get(desktop.toString())!;
         driver.regenerateLayout(tile);
         if (this.config.saveOnTileEdit) {
-            this.ctrl.dbusManager.setSettings(desktop.toString(), driver.engineConfig);
+            this.ctrl.dbusManager.setSettings(
+                desktop.toString(),
+                driver.engineConfig,
+            );
         }
     }
 

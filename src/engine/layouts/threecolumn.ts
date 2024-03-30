@@ -2,7 +2,13 @@
 
 // half.ts - Tiling engine for the half/split layout
 
-import { Tile, Client, TilingEngine, EngineCapability, EngineSettings } from "../engine";
+import {
+    Tile,
+    Client,
+    TilingEngine,
+    EngineCapability,
+    EngineSettings,
+} from "../engine";
 import { Direction } from "../../util/geometry";
 import { InsertionPoint } from "../../util/config";
 import { LayoutDirection } from "kwin-api";
@@ -59,7 +65,7 @@ export default class ThreeColumnEngine extends TilingEngine {
         this.leftSize = settings.leftSize ?? 0.25;
         this.rightSize = settings.rightSize ?? 0.25;
     }
-    
+
     buildLayout() {
         // set original tile direction based on rotating layout or not
         this.rootTile = new Tile();
@@ -80,7 +86,8 @@ export default class ThreeColumnEngine extends TilingEngine {
             this.rootTile.tiles[0].relativeSize = this.leftSize;
         }
         if (this.rows[2].length > 0) {
-            this.rootTile.tiles[this.rootTile.tiles.length - 1].relativeSize = this.rightSize;
+            this.rootTile.tiles[this.rootTile.tiles.length - 1].relativeSize =
+                this.rightSize;
         }
         let middleSize = 1;
         if (this.rows[2].length != 0) {
@@ -148,7 +155,10 @@ export default class ThreeColumnEngine extends TilingEngine {
 
     regenerateLayout(): void {
         // only one column on the screen
-        if (this.rootTile.tiles.length < 2 || this.rootTile.layoutDirection == LayoutDirection.Vertical) {
+        if (
+            this.rootTile.tiles.length < 2 ||
+            this.rootTile.layoutDirection == LayoutDirection.Vertical
+        ) {
             return;
         }
         // assuming the middle row always has at least one client

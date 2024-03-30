@@ -8,7 +8,7 @@
 -   Pinned windows fix
 -   Fixed settings dialog and setting application
 -   Support relative sizing as determined by engines
--   Add relative sizing support to half and three column engines
+-   Add relative sizing support to half, btree and three column engines
 -   Add ability for engines to save special configs in the settings saver
 -   Added setting for auto saving configs when tiles are edited
 

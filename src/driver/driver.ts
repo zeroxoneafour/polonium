@@ -108,7 +108,10 @@ export class TilingDriver {
 
         // for maximizing single, sometimes engines can create overlapping root tiles so find the real root
         let realRootTile: Tile = this.engine.rootTile;
-        while (realRootTile.tiles.length == 1 && realRootTile.clients.length == 0) {
+        while (
+            realRootTile.tiles.length == 1 &&
+            realRootTile.clients.length == 0
+        ) {
             realRootTile = realRootTile.tiles[0];
         }
         this.tiles.set(rootTile, realRootTile);
