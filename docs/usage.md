@@ -5,8 +5,15 @@
 Do one of the following -
 
 - Go to [GitHub](https://github.com/zeroxoneafour/polonium/releases/) and download the `polonium.kwinscript` asset from a release of your choice, then install it in KWin Scripts in the settings menu
-- Go to the [KWin Store](https://store.kde.org/p/2042756) and download the latest `polonium.kwinscript`, then install it in KWin Scripts
+- Go to the [KWin Store](https://store.kde.org/p/2140417) and download the latest `polonium.kwinscript`, then install it in KWin Scripts
 - Go to KWin Scripts settings panel and Get New Scripts, then search for and select Polonium
+
+It is recommended to install dbus-saver if you have a complex layout. To do this, follow the instructions [on the repo](https://github.com/zeroxoneafour/dbus-saver).
+
+## Uninstallation
+
+To uninstall Polonium, simply uninstall it through KWin Scripts. If you want to remove old shortcuts, edit `~/.config/kglobalshortcutsrc` and remove all mentions of Polonium. To uninstall dbus-saver,
+do `cargo uninstall dbus-saver` and remove the systemd service.
 
 ## General usage
 
@@ -46,13 +53,15 @@ Polonium requires that KWin be restarted every time the configuration is changed
 - Filter window titles (line input) - Window titles to filter out (ie. not tile)
 - Filter processes (line input) - Processes to filter out
   - Invert (check box) - Whether to treat the filter processes input as a whitelist instead of a blacklist, and only tile things in the input
+
 - Border visibility (dropdown) - How to display borders on tiled, untiled, and selected windows
 - Tile popup windows (check box) - Whether to tile windows marked as popup windows
 - Keep tiled below (check box) - Whether to keep tiled windows below other windows
 - Maximize single windows (check box) - Whether to maximize solo windows on desktops. May be slightly buggy
-- Unfullscreen windows when new windows are tiled (check box) - Whether to temporarily reduce windows from fullscreen when a new window is tiled
+- Auto save settings after editing tiles (check box) - 
+
 - Resize amount (slider) - The amount to resize windows by, from 1 to 450 pixels at a time
-- Callback delay (slider) - The time in milliseconds to wait before callbacks to rebuild the layout or update the desktop, from 1 to 200. Slower computers want more time
+- Callback delay (slider) - The time in milliseconds to wait before certain callbacks, such as changing tile sizes, from 1 to 200. Slower computers want more time
 
 ### Engine options
 
@@ -62,31 +71,58 @@ Polonium requires that KWin be restarted every time the configuration is changed
 
 ### Debug options
 
-- Debug mode (check box) - Whether to spam your user journal with debug messages or not
+- Debug mode (check box) - Whether to spam your user journal with debug messages or not. Required for logs
 
 ## Engines
 
 The engines are specific to desktops and are cycled in this order by pressing the Polonium: Cycle layouts keybind -
 
-1. BTree - Breadth-first binary tree engine, sort of balances windows
-2. Half - Put one main window on the left and several on the right. Can also be the other way around
-3. Three Column - Put one main window in the center and some on the left and right
-4. Monocle - Place all of your windows in the center and stack them on top of each other
-5. KWin - Float windows, but keep the Kwin tiling system intact so you can place them as you want and preserve their locations
+1. BTree (default)
+2. Half
+3. Three Column
+4. Monocle
+5. KWin
 
 The default engine setting determines which engine desktops will start with.
 
+### BTree
+
+The Binary Tree (BTree) layout is the default layout. In this layout, windows are arranged in a binary tree with each node having 2 or 0 children.
+Resizing is supported on this layout, but it does not save settings when logged out through dbus-saver.
+
+### Half
+
+The Half layout is the simplest and best supported layout. In this layout, one side is designated as master and one side is the stack. New windows are pushed into the stack while keeping the master
+window intact. Resizing is supported for the middle separator only, but the middle separation amount is saved when logged out through dbus-saver.
+
+### Three Column
+
+Similar to the Half layout, but with stacks on both sides of a center master window. Resizing is supported for the stacks and therefore the middle window as well, but like Half it is not supported
+for individual windows. Settings are saved when logged out through dbus-saver.
+
+### Monocle
+
+The only layout with stacking windows, Monocle is different from all other managers in that it cannot really be manipulated without Polonium shortcuts. The insert above and right shortcuts cycle
+forward, and the insert below and left shortcuts cycle back through the windows. If you lose focus, all focus shortcuts focus the top window of the stack. No settings are saved.
+
+### KWin
+
+The floating layout. All windows will float when entering this layout by default. Tiles can be created and resized, and windows can be manually placed inside of them. No settings are saved.
+
 ### Engine settings
 
-Pressing the Polonium: Show Settings Dialog keybind will allow you to configure setting overrides per-desktop. All [engine options](#engine-options) are supported.
+Pressing the Polonium: Show Settings Dialog keybind will allow you to configure setting overrides per-desktop. All [engine options](#engine-options) are supported, and some individual engines
+save additional settings. See engine documentation for details.
 
 ### Setting preservation
 
 Installing and enabling the optional [Polonium Setting Saver Daemon](https://github.com/zeroxoneafour/dbus-saver) will allow you to preserve settings across KWin restarts on a per-desktop basis.
+Note that changes to default settings will not apply if custom settings are set for the desktop already. To remove custom settings, you can use the "Remove custom settings and close" button on the
+settings popup or you can remove `$XDG_CONFIG_HOME/SettingSaver/settings.txt` and logout to remove all custom settings. `$XDG_CONFIG_HOME` by default is `~/.config`.
 
 ## Getting a log
 
-Sometimes you may have to get a log. To do this, enable debug mode in the settings. Next, restart KWin. Then, execute the following command -
+Sometimes you may have to get a log. To do this, enable debug mode in the settings. Next, restart KWin by logging out and logging back in. Then, execute the following command -
 
 ```
 journalctl --user --no-pager -e | grep -i "polonium"

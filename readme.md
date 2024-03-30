@@ -17,15 +17,16 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 ## features
 
 -   Works in Wayland Plasma 6.0 and up
+  - Needs KWin 6.0.3.1 installed to drag tiles with the mouse
 -   Custom moddable tiling engine backend
 -   Edit tile sizes with the integrated KWin GUI
 -   Move and tile windows with your mouse and keyboard
 -   Set layouts independently of desktop, activity, and screen
--   DBus integration to save layouts and configurations
+-   [DBus integration](https://github.com/zeroxoneafour/dbus-saver) to save layouts and configurations after logging out
 
 ## X11
 
-X11 has been briefly tested but is not officially supported. If you encounter an issue running the script on X11, make sure it is reproducible in Wayland before submitting a bug report.
+X11 has been briefly tested but is not supported. If you encounter an issue running the script on X11, make sure it is reproducible in Wayland before submitting a bug report.
 
 ## building
 
@@ -41,7 +42,7 @@ Commands -
 
 ## license
 
--   Majority of this project is [MIT licensed](https://github.com/zeroxoneafour/polonium/blob/master/license.txt), please bum my code if you can use to make something better. Make sure to give credit though!
+Majority of this project is [MIT licensed](https://github.com/zeroxoneafour/polonium/blob/master/license.txt), please bum my code if you can use to make something better. Make sure to give credit though!
 
 ## name
 

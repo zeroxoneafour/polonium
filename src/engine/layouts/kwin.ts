@@ -9,6 +9,7 @@ import {
     EngineSettings,
 } from "../engine";
 import { Direction } from "../../util/geometry";
+import Queue from "mnemonist/queue";
 
 export default class KwinEngine extends TilingEngine {
     // tilesmutable moves all processing work to driver
@@ -28,12 +29,26 @@ export default class KwinEngine extends TilingEngine {
         return;
     }
 
-    removeClient() {
-        return;
+    removeClient(client: Client) {
+        const queue = new Queue<Tile>();
+        let tile: Tile | undefined = this.rootTile;
+        while (tile != undefined) {
+            const index = tile.clients.indexOf(client);
+            if (index >= -1) {
+                tile.clients.splice(index, 1);
+                return;
+            }
+            for (const child of tile.tiles) {
+                queue.enqueue(child);
+            }
+            tile = queue.dequeue();
+        }
     }
 
     putClientInTile(client: Client, tile: Tile, _direction?: Direction) {
-        tile.client = client;
+        if (!tile.clients.includes(client)) {
+            tile.clients.push(client);
+        }
     }
 
     regenerateLayout() {

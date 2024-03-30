@@ -5,6 +5,7 @@ import { Controller } from "../";
 import { GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
 import { WindowExtensions } from "../extensions";
+import { QTimer } from "kwin-api/qt";
 
 export class WindowHooks {
     private ctrl: Controller;
@@ -12,6 +13,7 @@ export class WindowHooks {
     //private config: Config;
     private window: Window;
     private extensions: WindowExtensions;
+    private rebuildLayoutTimer: QTimer;
 
     constructor(ctrl: Controller, window: Window) {
         this.ctrl = ctrl;
@@ -19,6 +21,12 @@ export class WindowHooks {
         //this.config = ctrl.config;
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
+        
+        this.rebuildLayoutTimer = ctrl.qmlObjects.root.createTimer();
+        this.rebuildLayoutTimer.triggeredOnStart = false;
+        this.rebuildLayoutTimer.repeat = false;
+        this.rebuildLayoutTimer.interval = this.ctrl.config.timerDelay;
+        this.rebuildLayoutTimer.triggered.connect((() => this.ctrl.driverManager.rebuildLayout(this.window.output)).bind(this));
 
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
@@ -84,15 +92,13 @@ export class WindowHooks {
     // have to use moveresized and tilechanged
     // move resized handles moving out of tiles, tilechanged handles moving into tiles
     tileChanged(_tile: Tile) {
-        if (this.ctrl.driverManager.buildingLayout) return;
-        const inUnmanagedTile =
-            this.window.tile != null &&
-            !this.ctrl.managedTiles.has(this.window.tile);
+        if (this.ctrl.driverManager.buildingLayout || this.window.tile == null) {
+            return;
+        }
         // client is moved into managed tile from outside
         if (
             !this.extensions.isTiled &&
-            !inUnmanagedTile &&
-            this.window.tile != null
+            this.ctrl.managedTiles.has(this.window.tile)
         ) {
             this.logger.debug(
                 "Putting window",
@@ -111,7 +117,7 @@ export class WindowHooks {
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
         // client is in a non-managed tile (move it to a managed one)
-        else if (inUnmanagedTile && this.window.tile != null) {
+        else if (!this.ctrl.managedTiles.has(this.window.tile)) {
             const center = new GRect(this.window.frameGeometry).center;
             let tile = this.ctrl.workspace
                 .tilingForScreen(this.window.output)
@@ -137,8 +143,10 @@ export class WindowHooks {
     }
     // should be fine if i just leave this here without a timer
     frameGeometryChanged() {
-        if (this.ctrl.driverManager.buildingLayout || !this.extensions.isTiled)
+        if (this.ctrl.driverManager.buildingLayout || !this.extensions.isTiled) {
             return;
+        }
+        this.rebuildLayoutTimer.restart();
         // need to use this to check if still in tile because kwin doesnt update it for us anymore
         const inOldTile =
             this.window.tile != null &&
@@ -163,6 +171,7 @@ export class WindowHooks {
             this.ctrl.driverManager.untileWindow(this.window, [
                 this.ctrl.desktopFactory.createDefaultDesktop(),
             ]);
+            this.rebuildLayoutTimer.stop();
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
     }
