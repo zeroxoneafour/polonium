@@ -12,6 +12,7 @@
 -   Add ability for engines to save special configs in the settings saver
 -   Added setting for auto saving configs when tiles are edited
 -   Fixed tile dragging
+-   Update docs
 
 ### 1.0b2
 
