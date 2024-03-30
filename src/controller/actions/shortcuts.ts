@@ -277,20 +277,45 @@ export class ShortcutManager {
         }
         const tile = window.tile;
         const resizeAmount = this.config.resizeAmount;
+        // dont change size for root tile
+        if (tile.parent == null) {
+            return;
+        }
+        // kwin shouldnt nest tiles so no need to bubble up hopefully
+        const siblingCount = tile.parent.tiles.length;
+        const indexOfTile = tile.parent.tiles.indexOf(tile);
         // should auto trigger the resize callback
         this.logger.debug("Changing size of", tile.absoluteGeometry);
         switch (direction) {
+            // have to put special cases for each of these if at top/bottom of layout
             case Direction.Above:
-                tile.resizeByPixels(-resizeAmount, Edge.TopEdge);
+                if (indexOfTile == 0) {
+                    tile.resizeByPixels(-resizeAmount, Edge.BottomEdge);
+                } else {
+                    tile.resizeByPixels(-resizeAmount, Edge.TopEdge);
+                }
                 break;
             case Direction.Below:
-                tile.resizeByPixels(resizeAmount, Edge.BottomEdge);
+                if (indexOfTile == siblingCount - 1) {
+                    tile.resizeByPixels(resizeAmount, Edge.TopEdge);
+                } else {
+                    tile.resizeByPixels(resizeAmount, Edge.BottomEdge)
+                }
                 break;
             case Direction.Left:
-                tile.resizeByPixels(-resizeAmount, Edge.LeftEdge);
+                if (indexOfTile == 0) {
+                    tile.resizeByPixels(-resizeAmount, Edge.RightEdge);
+                } else {
+                    tile.resizeByPixels(-resizeAmount, Edge.LeftEdge);
+                }
                 break;
             case Direction.Right:
-                tile.resizeByPixels(resizeAmount, Edge.RightEdge);
+                if (indexOfTile == siblingCount - 1) {
+                    tile.resizeByPixels(resizeAmount, Edge.LeftEdge);
+                } else {
+                    tile.resizeByPixels(resizeAmount, Edge.RightEdge)
+                }
+                break;
         }
     }
 
