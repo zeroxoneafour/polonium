@@ -2,7 +2,7 @@
 
 ## 1.0
 
-### 1.0b3
+### 1.0rc1
 
 -   Monocle layout
 -   Pinned windows fix
