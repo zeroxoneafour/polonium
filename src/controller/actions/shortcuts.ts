@@ -299,7 +299,7 @@ export class ShortcutManager {
                 if (indexOfTile == siblingCount - 1) {
                     tile.resizeByPixels(resizeAmount, Edge.TopEdge);
                 } else {
-                    tile.resizeByPixels(resizeAmount, Edge.BottomEdge)
+                    tile.resizeByPixels(resizeAmount, Edge.BottomEdge);
                 }
                 break;
             case Direction.Left:
@@ -313,7 +313,7 @@ export class ShortcutManager {
                 if (indexOfTile == siblingCount - 1) {
                     tile.resizeByPixels(resizeAmount, Edge.LeftEdge);
                 } else {
-                    tile.resizeByPixels(resizeAmount, Edge.RightEdge)
+                    tile.resizeByPixels(resizeAmount, Edge.RightEdge);
                 }
                 break;
         }

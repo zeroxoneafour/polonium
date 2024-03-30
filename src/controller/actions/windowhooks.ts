@@ -5,7 +5,6 @@ import { Controller } from "../";
 import { GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
 import { WindowExtensions } from "../extensions";
-import { QTimer } from "kwin-api/qt";
 
 export class WindowHooks {
     private ctrl: Controller;
@@ -13,7 +12,6 @@ export class WindowHooks {
     //private config: Config;
     private window: Window;
     private extensions: WindowExtensions;
-    private frameGeometryTimer: QTimer;
 
     constructor(ctrl: Controller, window: Window) {
         this.ctrl = ctrl;
@@ -22,16 +20,12 @@ export class WindowHooks {
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
 
-        this.frameGeometryTimer = this.ctrl.qmlObjects.root.createTimer();
-        this.frameGeometryTimer.triggeredOnStart = false;
-        this.frameGeometryTimer.repeat = false;
-        this.frameGeometryTimer.interval = this.ctrl.config.timerDelay;
-        this.frameGeometryTimer.triggered.connect(this.frameGeometryChangedCallback.bind(this));
-
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
         window.outputChanged.connect(this.desktopChanged.bind(this));
-        window.frameGeometryChanged.connect(this.frameGeometryChanged.bind(this));
+        window.frameGeometryChanged.connect(
+            this.frameGeometryChanged.bind(this),
+        );
         window.tileChanged.connect(this.tileChanged.bind(this));
         window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
         window.minimizedChanged.connect(this.minimizedChanged.bind(this));
@@ -129,7 +123,9 @@ export class WindowHooks {
                 ).rootTile;
             }
             if (this.extensions.isTiled) {
-                this.ctrl.driverManager.untileWindow(this.window, [this.ctrl.desktopFactory.createDefaultDesktop()]);
+                this.ctrl.driverManager.untileWindow(this.window, [
+                    this.ctrl.desktopFactory.createDefaultDesktop(),
+                ]);
             }
             this.ctrl.driverManager.putWindowInTile(
                 this.window,
@@ -139,19 +135,19 @@ export class WindowHooks {
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
     }
+    // should be fine if i just leave this here without a timer
     frameGeometryChanged() {
-        if (this.ctrl.driverManager.buildingLayout) return;
-        if (!this.frameGeometryTimer.running) {
-            this.frameGeometryTimer.start();
-        }
-    }
-    frameGeometryChangedCallback() {
+        if (this.ctrl.driverManager.buildingLayout || !this.extensions.isTiled)
+            return;
         // need to use this to check if still in tile because kwin doesnt update it for us anymore
-        const inOldTile = this.window.tile != null && new GRect(this.window.tile.absoluteGeometry).contains(this.window.frameGeometry);
+        const inOldTile =
+            this.window.tile != null &&
+            new GRect(this.window.tile.absoluteGeometry).contains(
+                this.window.frameGeometry,
+            );
         const inUnmanagedTile =
             this.window.tile != null &&
             !this.ctrl.managedTiles.has(this.window.tile);
-        this.logger.debug(this.window.frameGeometry, this.window.tile?.absoluteGeometry);
         // client is moved out of a managed tile and into no tile
         if (
             this.extensions.isTiled &&
@@ -164,7 +160,9 @@ export class WindowHooks {
                 this.window.resourceClass,
                 "was moved out of a tile",
             );
-            this.ctrl.driverManager.untileWindow(this.window, [this.ctrl.desktopFactory.createDefaultDesktop()]);
+            this.ctrl.driverManager.untileWindow(this.window, [
+                this.ctrl.desktopFactory.createDefaultDesktop(),
+            ]);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
     }

@@ -173,7 +173,7 @@ export class GRect implements QRect {
             y: this.y + this.height / 2,
         });
     }
-    
+
     contains(rect: QRect): boolean {
         if (rect.x < this.x || rect.y < this.y) {
             return false;
