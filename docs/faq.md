@@ -26,4 +26,4 @@ See [the monocle usage page](usage.html#monocle) for help with the monocle layou
 
 ### I want to move windows using my mouse while keeping them tiled
 
-When moving a window, KWin untiles it. I could circumvent this issue by constantly forcing the window back into the nearest available tile, but it would be unoptimized, messy, and would not integrate well with the KWin tiling system. This script tries to work instead of against the builtin tiling system whenever possible, and therefore supports moving floated windows into tiles when using the shift key (just as our founding fathers intended).
+When moving a window, KWin untiles it. I could circumvent this issue by constantly forcing the window back into the nearest available tile, but it would be unoptimized, messy, and would not integrate well with the KWin tiling system. This script tries to work with instead of against the builtin tiling system whenever possible, and therefore supports moving floated windows into tiles when using the shift key (just as our founding fathers intended).

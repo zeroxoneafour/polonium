@@ -21,12 +21,17 @@ export class WindowHooks {
         //this.config = ctrl.config;
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
-        
+
         this.rebuildLayoutTimer = ctrl.qmlObjects.root.createTimer();
         this.rebuildLayoutTimer.triggeredOnStart = false;
         this.rebuildLayoutTimer.repeat = false;
         this.rebuildLayoutTimer.interval = this.ctrl.config.timerDelay;
-        this.rebuildLayoutTimer.triggered.connect((() => this.ctrl.driverManager.rebuildLayout(this.window.output)).bind(this));
+        this.rebuildLayoutTimer.triggered.connect(
+            (() =>
+                this.ctrl.driverManager.rebuildLayout(this.window.output)).bind(
+                this,
+            ),
+        );
 
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
@@ -92,7 +97,10 @@ export class WindowHooks {
     // have to use moveresized and tilechanged
     // move resized handles moving out of tiles, tilechanged handles moving into tiles
     tileChanged(_tile: Tile) {
-        if (this.ctrl.driverManager.buildingLayout || this.window.tile == null) {
+        if (
+            this.ctrl.driverManager.buildingLayout ||
+            this.window.tile == null
+        ) {
             return;
         }
         // client is moved into managed tile from outside
@@ -143,7 +151,11 @@ export class WindowHooks {
     }
     // should be fine if i just leave this here without a timer
     frameGeometryChanged() {
-        if (this.ctrl.driverManager.buildingLayout || !this.extensions.isTiled) {
+        if (
+            this.ctrl.driverManager.buildingLayout ||
+            this.ctrl.driverManager.resizingLayout ||
+            !this.extensions.isTiled
+        ) {
             return;
         }
         this.rebuildLayoutTimer.restart();
@@ -153,6 +165,10 @@ export class WindowHooks {
             new GRect(this.window.tile.absoluteGeometry).contains(
                 this.window.frameGeometry,
             );
+        this.logger.debug(
+            this.window.tile?.absoluteGeometry,
+            this.window.frameGeometry,
+        );
         const inUnmanagedTile =
             this.window.tile != null &&
             !this.ctrl.managedTiles.has(this.window.tile);

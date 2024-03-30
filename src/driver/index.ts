@@ -20,6 +20,7 @@ export class DriverManager {
     private config: Config;
 
     buildingLayout: boolean = false;
+    resizingLayout: boolean = false;
 
     constructor(c: Controller) {
         this.ctrl = c;
@@ -120,6 +121,8 @@ export class DriverManager {
         if (this.buildingLayout) {
             return;
         }
+        this.resizingLayout = true;
+        this.logger.debug("resizing layout");
         const timer = this.rootTileCallbacks.get(tile);
         if (timer == undefined) {
             this.logger.error(
@@ -146,6 +149,7 @@ export class DriverManager {
                 driver.engineConfig,
             );
         }
+        this.resizingLayout = false;
     }
 
     private applyTiled(window: Window): void {
