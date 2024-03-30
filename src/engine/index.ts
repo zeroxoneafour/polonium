@@ -124,6 +124,7 @@ export class TilingEngineFactory {
                 break;
             case EngineType.Monocle:
                 engine = new MonocleEngine(config);
+                break;
             case EngineType.Kwin:
                 engine = new KwinEngine(config);
                 break;

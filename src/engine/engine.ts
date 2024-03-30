@@ -44,11 +44,10 @@ export class Tile implements ITile {
     clients: IClient[] = [];
 
     // getter/setter for backwards compatibility
-
-    public get client(): Client | null {
+    public get client(): IClient | null {
         return this.clients.length > 0 ? this.clients[0] : null;
     }
-    public set client(value: Client | null) {
+    public set client(value: IClient | null) {
         if (value != null) {
             this.clients[0] = value;
         } else {

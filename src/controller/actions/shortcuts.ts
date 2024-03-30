@@ -227,11 +227,17 @@ export class ShortcutManager {
         if (window == null) {
             return;
         }
-        const tile = this.tileInDirection(
+        let tile = this.tileInDirection(
             window,
             pointInDirection(window, direction),
         );
-        if (tile == null || tile.windows.length == 0) {
+        if (tile == null) {
+            tile = this.ctrl.workspace.tilingForScreen(window.output).rootTile;
+            while (tile.tiles.length == 1) {
+                tile = tile.tiles[0];
+            }
+        }
+        if (tile.windows.length == 0) {
             return;
         }
         let newWindow = tile.windows[0];
@@ -245,9 +251,6 @@ export class ShortcutManager {
             return;
         }
         const point = pointInDirection(window, direction);
-        if (point == null) {
-            return;
-        }
         this.logger.debug("Moving", window.resourceClass);
         this.ctrl.driverManager.untileWindow(window);
         this.ctrl.driverManager.rebuildLayout(window.output);

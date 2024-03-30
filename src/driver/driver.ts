@@ -108,21 +108,24 @@ export class TilingDriver {
 
         // for maximizing single, sometimes engines can create overlapping root tiles so find the real root
         let realRootTile: Tile = this.engine.rootTile;
-        while (realRootTile.tiles.length == 1 && realRootTile.client == null) {
+        while (realRootTile.tiles.length == 1 && realRootTile.clients.length == 0) {
             realRootTile = realRootTile.tiles[0];
         }
         this.tiles.set(rootTile, realRootTile);
         // if a root tile client exists, just maximize it. there shouldnt be one if roottile has children
-        if (realRootTile.client != null && this.config.maximizeSingle) {
-            for (const client of realRootTile.clients) {
+        if (realRootTile.clients.length != 0 && this.config.maximizeSingle) {
+            for (let i = realRootTile.clients.length - 1; i >= 0; i -= 1) {
+                const client = realRootTile.clients[i];
                 const window = this.clients.inverse.get(client);
                 if (window == undefined) {
-                    return;
+                    this.logger.error("Window undefined");
+                    continue;
                 }
                 window.tile = null;
                 this.ctrl.windowExtensions.get(window)!.isSingleMaximized =
                     true;
                 window.setMaximize(true, true);
+                this.ctrl.workspace.raiseWindow(window);
             }
             return;
         }
