@@ -5,6 +5,7 @@ import QtQuick.Layouts;
 import org.kde.kwin;
 import org.kde.plasma.components as PC3;
 import org.kde.plasma.core as PlasmaCore;
+import org.kde.kirigami as Kirigami;
 
 PlasmaCore.Dialog {
     id: osd;
@@ -38,9 +39,9 @@ PlasmaCore.Dialog {
 
     mainItem: PC3.Label {
         id: main;
-        Layout.minimumWidth: Math.max(main.implicitWidth, PlasmaCore.Units.gridUnit * 10);
-        Layout.minimumHeight: PlasmaCore.Units.gridUnit * 1.35;
-        font.pointSize: PlasmaCore.Theme.defaultFont.pointSize * 1.2;
+        Layout.minimumWidth: Math.max(main.implicitWidth, Kirigami.Units.gridUnit * 10);
+        Layout.minimumHeight: Kirigami.Units.gridUnit * 1.35;
+        font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.2;
         horizontalAlignment: Text.AlignHCenter;
 
         // Hides the popup window when triggered

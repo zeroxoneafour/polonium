@@ -21,12 +21,21 @@ export class DriverManager {
 
     buildingLayout: boolean = false;
     resizingLayout: boolean = false;
+    
+    // have to use a timer to set buildingLayout back to false to stop kwin from moving too fast and setting off signals
+    private buildingLayoutTimer: QTimer;
 
     constructor(c: Controller) {
         this.ctrl = c;
         this.engineFactory = new TilingEngineFactory(this.ctrl.config);
         this.logger = c.logger;
         this.config = c.config;
+        this.buildingLayoutTimer = c.qmlObjects.root.createTimer();
+        this.buildingLayoutTimer.interval = c.config.timerDelay;
+        this.buildingLayoutTimer.repeat = false;
+        this.buildingLayoutTimer.triggeredOnStart = false;
+        this.buildingLayoutTimer.triggered.connect((() => this.buildingLayout = false).bind(this));
+        
     }
 
     init(): void {
@@ -202,18 +211,19 @@ export class DriverManager {
         this.logger.debug("Rebuilding layout for desktops", desktops);
         for (const desktop of desktops) {
             const driver = this.drivers.get(desktop.toString())!;
-            driver.buildLayout(
-                this.ctrl.workspace.tilingForScreen(desktop.output).rootTile,
-            );
+            // move this above to correctly set isTiled
             for (const window of driver.clients.keys()) {
                 if (!driver.untiledWindows.includes(window)) {
                     this.applyTiled(window);
                 }
             }
+            driver.buildLayout(
+                this.ctrl.workspace.tilingForScreen(desktop.output).rootTile,
+            );
             // make registered "untiled" clients appear untiled
             for (const window of driver.untiledWindows) {
-                window.tile = null;
                 this.applyUntiled(window);
+                window.tile = null;
                 // sometimes effects on untiled windows dont properly apply
                 if (window.fullScreen) {
                     this.logger.debug("fullscreen");
@@ -222,7 +232,7 @@ export class DriverManager {
                 }
             }
         }
-        this.buildingLayout = false;
+        this.buildingLayoutTimer.restart();
     }
 
     untileWindow(window: Window, desktops?: Desktop[]): void {

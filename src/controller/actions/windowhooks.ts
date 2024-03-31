@@ -94,8 +94,8 @@ export class WindowHooks {
     }
     */
 
-    // have to use moveresized and tilechanged
-    // move resized handles moving out of tiles, tilechanged handles moving into tiles
+    // have to use fg and tilechanged
+    // frame geometry handles moving out of tiles, tilechanged handles moving into tiles
     tileChanged(_tile: Tile) {
         if (
             this.ctrl.driverManager.buildingLayout ||
@@ -126,6 +126,7 @@ export class WindowHooks {
         }
         // client is in a non-managed tile (move it to a managed one)
         else if (!this.ctrl.managedTiles.has(this.window.tile)) {
+            this.logger.debug("Window", this.window.resourceClass, "moved into an unmanaged tile");
             const center = new GRect(this.window.frameGeometry).center;
             let tile = this.ctrl.workspace
                 .tilingForScreen(this.window.output)
@@ -158,7 +159,6 @@ export class WindowHooks {
         ) {
             return;
         }
-        this.rebuildLayoutTimer.restart();
         // need to use this to check if still in tile because kwin doesnt update it for us anymore
         const inOldTile =
             this.window.tile != null &&
@@ -173,18 +173,22 @@ export class WindowHooks {
             this.extensions.isTiled &&
             !inUnmanagedTile &&
             !inOldTile &&
-            !this.extensions.isSingleMaximized // single maximized windows are basically tiled
+            !this.window.fullScreen &&
+            !this.extensions.maximized &&
+            !this.window.minimized
         ) {
             this.logger.debug(
                 "Window",
                 this.window.resourceClass,
                 "was moved out of a tile",
             );
+            this.rebuildLayoutTimer.stop();
             this.ctrl.driverManager.untileWindow(this.window, [
                 this.ctrl.desktopFactory.createDefaultDesktop(),
             ]);
-            this.rebuildLayoutTimer.stop();
             this.ctrl.driverManager.rebuildLayout(this.window.output);
+        } else if (inOldTile || this.extensions.isSingleMaximized) {
+            this.rebuildLayoutTimer.restart();
         }
     }
 
