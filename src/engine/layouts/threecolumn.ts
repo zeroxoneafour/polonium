@@ -70,34 +70,31 @@ export default class ThreeColumnEngine extends TilingEngine {
         // set original tile direction based on rotating layout or not
         this.rootTile = new Tile();
         this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
-        for (let i = 0; i < this.rows.length; i += 1) {
-            const row = this.rows[i];
-            if (row.length == 0) {
-                continue;
-            }
-            const rowRoot = this.rootTile.addChild();
-            for (const box of row) {
-                const tile = rowRoot.addChild();
-                tile.client = box.client;
-                this.tileMap.set(tile, box);
-            }
-        }
-        if (this.rows[0].length > 0) {
-            this.rootTile.tiles[0].relativeSize = this.leftSize;
-        }
-        if (this.rows[2].length > 0) {
-            this.rootTile.tiles[this.rootTile.tiles.length - 1].relativeSize =
-                this.rightSize;
-        }
         let middleSize = 1;
         if (this.rows[2].length != 0) {
             middleSize -= this.rightSize;
         }
         if (this.rows[0].length != 0) {
             middleSize -= this.leftSize;
-            this.rootTile.tiles[1].relativeSize = middleSize;
-        } else {
-            this.rootTile.tiles[0].relativeSize = middleSize;
+        }
+        for (let i = 0; i < this.rows.length; i += 1) {
+            const row = this.rows[i];
+            if (row.length == 0) {
+                continue;
+            }
+            const rowRoot = this.rootTile.addChild(false);
+            if (i == 0) {
+                rowRoot.relativeSize = this.leftSize;
+            } else if (i == 1) {
+                rowRoot.relativeSize = middleSize;
+            } else {
+                rowRoot.relativeSize = this.rightSize;
+            }
+            for (const box of row) {
+                const tile = rowRoot.addChild();
+                tile.client = box.client;
+                this.tileMap.set(tile, box);
+            }
         }
     }
 

@@ -5,33 +5,18 @@ import { Controller } from "../";
 import { GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
 import { WindowExtensions } from "../extensions";
-import { QTimer } from "kwin-api/qt";
 
 export class WindowHooks {
     private ctrl: Controller;
     private logger: Log;
-    //private config: Config;
     private window: Window;
     private extensions: WindowExtensions;
-    private rebuildLayoutTimer: QTimer;
 
     constructor(ctrl: Controller, window: Window) {
         this.ctrl = ctrl;
         this.logger = ctrl.logger;
-        //this.config = ctrl.config;
         this.window = window;
         this.extensions = ctrl.windowExtensions.get(window)!;
-
-        this.rebuildLayoutTimer = ctrl.qmlObjects.root.createTimer();
-        this.rebuildLayoutTimer.triggeredOnStart = false;
-        this.rebuildLayoutTimer.repeat = false;
-        this.rebuildLayoutTimer.interval = this.ctrl.config.timerDelay;
-        this.rebuildLayoutTimer.triggered.connect(
-            (() =>
-                this.ctrl.driverManager.rebuildLayout(this.window.output)).bind(
-                this,
-            ),
-        );
 
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
@@ -78,24 +63,8 @@ export class WindowHooks {
         this.ctrl.driverManager.rebuildLayout();
     }
 
-    /*
-    tileChanged(_inputTile: Tile): void {
-        // dont react to geometry changes while the layout is rebuilding
-        if (this.ctrl.driverManager.buildingLayout) return;
-        this.tileChangedTimer.start();
-    }*/
-
-    // have to use moveresizedchanged because kwin doesnt update on tile change anymore?????
-    /*
-    moveResizedChanged(): void {
-        if (this.ctrl.driverManager.buildingLayout) return;
-        this.logger.debug("frame geometry changed on window", this.window.resourceClass);
-        this.tileChangedTimer.restart();
-    }
-    */
-
-    // have to use fg and tilechanged
-    // frame geometry handles moving out of tiles, tilechanged handles moving into tiles
+    // have to use imrs and tilechanged
+    // interactive mr handles moving out of tiles, tilechanged handles moving into tiles
     tileChanged(_tile: Tile) {
         if (
             this.ctrl.driverManager.buildingLayout ||
@@ -183,16 +152,13 @@ export class WindowHooks {
                 this.window.resourceClass,
                 "was moved out of a tile",
             );
-            this.rebuildLayoutTimer.stop();
             this.ctrl.driverManager.untileWindow(this.window, [
                 this.ctrl.desktopFactory.createDefaultDesktop(),
             ]);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
-        } else if (inOldTile || this.extensions.isSingleMaximized) {
-            this.rebuildLayoutTimer.restart();
         }
     }
-
+    
     putWindowInBestTile(): void {
         if (this.extensions.lastTiledLocation != null) {
             // fancy and illegally long code to place tile in a similar position from when it was untiled

@@ -71,22 +71,13 @@ export class WindowExtensions {
             (m: MaximizeMode) =>
                 (this.maximized = m == MaximizeMode.MaximizeFull),
         );
-        window.tileChanged.connect(this.tileChanged.bind(this));
         window.desktopsChanged.connect(this.previousDesktopsChanged.bind(this));
         window.activitiesChanged.connect(
             this.previousDesktopsChanged.bind(this),
         );
         window.outputChanged.connect(this.previousDesktopsChanged.bind(this));
 
-        this.tileChanged();
         this.previousDesktopsChanged();
-    }
-
-    private tileChanged(): void {
-        this.lastTiledLocation =
-            this.window.tile != null
-                ? new GRect(this.window.tile.absoluteGeometry).center
-                : null;
     }
 
     private previousDesktopsChanged(): void {

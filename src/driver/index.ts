@@ -226,7 +226,6 @@ export class DriverManager {
                 window.tile = null;
                 // sometimes effects on untiled windows dont properly apply
                 if (window.fullScreen) {
-                    this.logger.debug("fullscreen");
                     window.fullScreen = false;
                     window.fullScreen = true;
                 }

@@ -54,9 +54,9 @@ export interface Tile {
     get client(): Client | null;
     set client(value: Client | null);
 
-    addChild(): Tile;
+    addChild(alterSiblingRatios?: boolean): Tile;
 
-    addChildParallel(): Tile;
+    addChildParallel(alterSiblingRatios?: boolean): Tile;
 
     split(): void;
 

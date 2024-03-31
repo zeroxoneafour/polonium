@@ -189,9 +189,7 @@ export class TilingDriver {
                 // set some properties before setting tile to make sure client shows up
                 window.minimized = false;
                 window.fullScreen = false;
-                if (extensions.maximized) {
-                    window.setMaximize(false, false);
-                }
+                window.setMaximize(false, false);
                 extensions.isSingleMaximized = false;
                 window.tile = kwinTile;
                 extensions.lastTiledLocation = GPoint.centerOfRect(
