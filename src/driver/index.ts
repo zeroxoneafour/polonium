@@ -122,7 +122,6 @@ export class DriverManager {
             return;
         }
         this.resizingLayout = true;
-        this.logger.debug("resizing layout");
         const timer = this.rootTileCallbacks.get(tile);
         if (timer == undefined) {
             this.logger.error(
