@@ -36,8 +36,8 @@ export class WindowHooks {
         window.desktopsChanged.connect(this.desktopChanged.bind(this));
         window.activitiesChanged.connect(this.desktopChanged.bind(this));
         window.outputChanged.connect(this.desktopChanged.bind(this));
-        window.frameGeometryChanged.connect(
-            this.frameGeometryChanged.bind(this),
+        window.interactiveMoveResizeStepped.connect(
+            this.interactiveMoveResizeStepped.bind(this),
         );
         window.tileChanged.connect(this.tileChanged.bind(this));
         window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
@@ -150,8 +150,9 @@ export class WindowHooks {
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
     }
+    
     // should be fine if i just leave this here without a timer
-    frameGeometryChanged() {
+    interactiveMoveResizeStepped() {
         if (
             this.ctrl.driverManager.buildingLayout ||
             this.ctrl.driverManager.resizingLayout ||
