@@ -76,9 +76,11 @@ export class WorkspaceActions {
 
     windowRemoved(window: Window): void {
         this.logger.debug("Window", window.resourceClass, "removed");
-        this.ctrl.windowExtensions.delete(window);
         this.ctrl.driverManager.removeWindow(window);
-        this.ctrl.driverManager.rebuildLayout();
+        if (this.ctrl.windowExtensions.get(window)!.isTiled) {
+            this.ctrl.driverManager.rebuildLayout();
+        }
+        this.ctrl.windowExtensions.delete(window);
     }
 
     currentDesktopChange(): void {

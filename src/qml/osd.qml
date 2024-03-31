@@ -33,9 +33,6 @@ PlasmaCore.Dialog {
     x: (screenGeometry.x + screenGeometry.width / 2) - width / 2;
     y: (screenGeometry.y + screenGeometry.height * 2 / 3) - height / 2;
     visible: false;
-    Component.onCompleted: {
-        KWin.registerWindow(this);
-    }
 
     mainItem: PC3.Label {
         id: main;

@@ -65,44 +65,44 @@ export class WindowHooks {
 
     // have to use imrs and tilechanged
     // interactive mr handles moving out of tiles, tilechanged handles moving into tiles
-    tileChanged(_tile: Tile) {
+    tileChanged(tile: Tile) {
         if (
             this.ctrl.driverManager.buildingLayout ||
-            this.window.tile == null
+            tile == null
         ) {
             return;
         }
         // client is moved into managed tile from outside
         if (
             !this.extensions.isTiled &&
-            this.ctrl.managedTiles.has(this.window.tile)
+            this.ctrl.managedTiles.has(tile)
         ) {
             this.logger.debug(
                 "Putting window",
                 this.window.resourceClass,
                 "in tile",
-                this.window.tile!.absoluteGeometry,
+                tile!.absoluteGeometry,
             );
             const direction = new GRect(
-                this.window.tile.absoluteGeometry,
+                tile.absoluteGeometry,
             ).directionFromPoint(this.ctrl.workspace.cursorPos);
             this.ctrl.driverManager.putWindowInTile(
                 this.window,
-                this.window.tile,
+                tile,
                 direction,
             );
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
         // client is in a non-managed tile (move it to a managed one)
-        else if (!this.ctrl.managedTiles.has(this.window.tile)) {
+        else if (!this.ctrl.managedTiles.has(tile)) {
             this.logger.debug("Window", this.window.resourceClass, "moved into an unmanaged tile");
             const center = new GRect(this.window.frameGeometry).center;
-            let tile = this.ctrl.workspace
+            let newTile = this.ctrl.workspace
                 .tilingForScreen(this.window.output)
                 .bestTileForPosition(center.x, center.y);
             // if its null then its root tile (usually)
-            if (tile == null) {
-                tile = this.ctrl.workspace.tilingForScreen(
+            if (newTile == null) {
+                newTile = this.ctrl.workspace.tilingForScreen(
                     this.window.output,
                 ).rootTile;
             }
@@ -113,8 +113,8 @@ export class WindowHooks {
             }
             this.ctrl.driverManager.putWindowInTile(
                 this.window,
-                tile,
-                new GRect(tile.absoluteGeometry).directionFromPoint(center),
+                newTile,
+                new GRect(newTile.absoluteGeometry).directionFromPoint(center),
             );
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
