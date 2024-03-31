@@ -152,7 +152,8 @@ export default class HalfEngine extends TilingEngine {
         let targetBox: BoxIndex;
         const box = this.tileMap.get(tile);
         if (box == undefined) {
-            throw new Error("Box not found for tile");
+            this.addClient(client);
+            return;
         }
         targetBox = new BoxIndex(this, box.client);
 

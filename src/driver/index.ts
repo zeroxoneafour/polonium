@@ -22,20 +22,11 @@ export class DriverManager {
     buildingLayout: boolean = false;
     resizingLayout: boolean = false;
     
-    // have to use a timer to set buildingLayout back to false to stop kwin from moving too fast and setting off signals
-    private buildingLayoutTimer: QTimer;
-
     constructor(c: Controller) {
         this.ctrl = c;
         this.engineFactory = new TilingEngineFactory(this.ctrl.config);
         this.logger = c.logger;
-        this.config = c.config;
-        this.buildingLayoutTimer = c.qmlObjects.root.createTimer();
-        this.buildingLayoutTimer.interval = c.config.timerDelay;
-        this.buildingLayoutTimer.repeat = false;
-        this.buildingLayoutTimer.triggeredOnStart = false;
-        this.buildingLayoutTimer.triggered.connect((() => this.buildingLayout = false).bind(this));
-        
+        this.config = c.config;        
     }
 
     init(): void {
@@ -231,7 +222,7 @@ export class DriverManager {
                 }
             }
         }
-        this.buildingLayoutTimer.restart();
+        this.buildingLayout = false;
     }
 
     untileWindow(window: Window, desktops?: Desktop[]): void {

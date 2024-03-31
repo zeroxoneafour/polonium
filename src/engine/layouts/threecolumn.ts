@@ -132,16 +132,12 @@ export default class ThreeColumnEngine extends TilingEngine {
     putClientInTile(client: Client, tile: Tile, direction?: Direction) {
         const clientBox = new ClientBox(client);
         let targetBox: BoxIndex;
-        try {
-            const box = this.tileMap.get(tile);
-            if (box == undefined) {
-                throw new Error("Box not found for tile");
-            }
-            targetBox = new BoxIndex(this, box.client);
-        } catch (e) {
-            throw e;
+        const box = this.tileMap.get(tile);
+        if (box == undefined) {
+            this.addClient(client);
+            return;
         }
-
+        targetBox = new BoxIndex(this, box.client);
         const targetArr = this.rows[targetBox.row];
         if (direction == null || direction & Direction.Up) {
             targetArr.splice(targetBox.index, 0, clientBox);

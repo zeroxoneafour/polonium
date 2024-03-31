@@ -167,7 +167,9 @@ export default class BTreeEngine extends TilingEngine {
     putClientInTile(client: Client, tile: Tile, direction?: Direction) {
         const node = this.nodeMap.inverse.get(tile);
         if (node == undefined) {
-            throw new Error("Node not found for tile");
+            // usually means there are no other tiles in the layout
+            this.addClient(client);
+            return;
         }
         if (node.client == null) {
             node.client = client;
