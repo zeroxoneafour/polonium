@@ -2,6 +2,10 @@
 
 ## 1.0
 
+### 1.0
+
+-   Various bugfixes
+
 ### 1.0rc1
 
 -   Monocle layout

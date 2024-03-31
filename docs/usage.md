@@ -117,8 +117,10 @@ save additional settings. See engine documentation for details.
 ### Setting preservation
 
 Installing and enabling the optional [Polonium Setting Saver Daemon](https://github.com/zeroxoneafour/dbus-saver) will allow you to preserve settings across KWin restarts on a per-desktop basis.
-Note that changes to default settings will not apply if custom settings are set for the desktop already. To remove custom settings, you can use the "Remove custom settings and close" button on the
-settings popup or you can remove `$XDG_CONFIG_HOME/SettingSaver/settings.txt` and logout to remove all custom settings. `$XDG_CONFIG_HOME` by default is `~/.config`.
+Note that changes to default settings will not apply if custom settings are set for the desktop already. To remove custom settings on a specific desktop, you can use the "Remove custom
+settings and close" button on the settings popup.
+
+To remove all settings and reset all desktops to the default settings, stop the systemd user service and then delete `$XDG_CONFIG_HOME/SettingSaver/settings.txt`. `$XDG_CONFIG_HOME` by default is `~/.config`.
 
 ## Getting a log
 
