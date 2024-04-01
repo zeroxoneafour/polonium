@@ -254,21 +254,21 @@ export class TilingDriver {
             if (!horizontal) {
                 if (index == 0) {
                     // first tile in sequence, shift border down
-                    kwinTile.resizeByPixels(-diff, Kwin.Edge.TopEdge);
+                    kwinTile.resizeByPixels(diff, Kwin.Edge.BottomEdge);
                 } else {
                     // shift border up
                     kwinTile.resizeByPixels(
-                        diff,
-                        Kwin.Edge.BottomEdge,
+                        -diff,
+                        Kwin.Edge.TopEdge,
                     );
                 }
             } else if (parentIndex != null) {
                 if (parentIndex == 0) {
                     // first tile in sequence, shift border down
-                    kwinTile.resizeByPixels(-diff, Kwin.Edge.TopEdge);
+                    kwinTile.resizeByPixels(diff, Kwin.Edge.BottomEdge);
                 } else {
                     // shift border up
-                    kwinTile.resizeByPixels(diff, Kwin.Edge.BottomEdge);
+                    kwinTile.resizeByPixels(-diff, Kwin.Edge.TopEdge);
                 }
             }
         }
