@@ -238,10 +238,10 @@ export class TilingDriver {
                 // evaluate here if the tile is laid out vertically but needs to be expanded horizontally
                 if (parentIndex == 0) {
                     // first tile in sequence, shift border right
-                    kwinTile.resizeByPixels(diff, Kwin.Edge.RightEdge);
+                    kwinTile.parent.resizeByPixels(diff, Kwin.Edge.RightEdge);
                 } else {
                     // shift border left
-                    kwinTile.resizeByPixels(-diff, Kwin.Edge.LeftEdge);
+                    kwinTile.parent.resizeByPixels(-diff, Kwin.Edge.LeftEdge);
                 }
             }
         }
@@ -265,10 +265,10 @@ export class TilingDriver {
             } else if (parentIndex != null) {
                 if (parentIndex == 0) {
                     // first tile in sequence, shift border down
-                    kwinTile.resizeByPixels(diff, Kwin.Edge.BottomEdge);
+                    kwinTile.parent.resizeByPixels(diff, Kwin.Edge.BottomEdge);
                 } else {
                     // shift border up
-                    kwinTile.resizeByPixels(-diff, Kwin.Edge.TopEdge);
+                    kwinTile.parent.resizeByPixels(-diff, Kwin.Edge.TopEdge);
                 }
             }
         }
