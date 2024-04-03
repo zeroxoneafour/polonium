@@ -8,9 +8,23 @@ Do one of the following -
 - Go to the [KWin Store](https://store.kde.org/p/2140417) and download the latest `polonium.kwinscript`, then install it in KWin Scripts
 - Go to KWin Scripts settings panel and Get New Scripts, then search for and select Polonium
 
-It is recommended to install dbus-saver if you have a complex layout. To do this, follow the instructions [on the repo](https://github.com/zeroxoneafour/dbus-saver).
+### Extras
 
-## Uninstallation
+Unlike Bismuth, Polonium is just a KWin Script and is not a comprehensive set of packages capable of emulating a window manager. Here are some packages and config settings I suggest for a more fluid feel.
+
+Config settings -
+
+* Window activation - Focus follows mouse (mouse precedence)
+* Delay focus - 0ms
+* Window actions modifier key - Meta
+
+Additional (completely optional) components -
+
+* [dbus-saver](https://github.com/zeroxoneafour/dbus-saver) - A systemd service for saving settings after logging out. **Officially supported.**
+* [Active accent borders](https://github.com/nclarius/Plasma-window-decorations) - Bismuth-like borders for tiled windows. [KDE store](https://store.kde.org/p/1678088) and [AUR](https://aur.archlinux.org/packages/plasma-active-accent-decorations) packages available. **NOT officially supported.**
+* [Geometry Change](https://github.com/peterfajdiga/kwin4_effect_geometry_change) - Fluid tiling animations. Available on the [KDE store](https://store.kde.org/p/2136283).
+
+### Uninstallation
 
 To uninstall Polonium, simply uninstall it through KWin Scripts. If you want to remove old shortcuts, edit `~/.config/kglobalshortcutsrc` and remove all mentions of Polonium. To uninstall dbus-saver,
 do `cargo uninstall dbus-saver` and remove the systemd service.
@@ -23,7 +37,7 @@ Windows will be automatically tiled unless the whitelist option is enabled. Wind
 
 ### Removing windows
 
-Windows will be removed from the tiling manager automatically as well
+Windows will be removed from the tiling manager automatically as well. Windows can be added or removed manually with the Retile Window shortcut (default `Meta+Shift+Space`).
 
 ### Resizing tiled windows with your keyboard
 
@@ -31,7 +45,7 @@ The default keybinds to resize tiled windows with your keyboard are `Meta+Ctrl+<
 
 ### Resizing tiled windows with your mouse
 
-By pressing the KWin tiles key (default - `Meta+T`) a tile configuration menu will appear. Adding or removing tiles will not have a lasting effect, but resizing tiles will for engines that support it. The clients of these tiles will be automatically resized as well.
+By pressing the KWin tiles key (default - `Meta+T`) a tile configuration menu will appear. Adding or removing tiles will not have a lasting effect, but resizing tiles will for engines that support it. The clients of these tiles will be automatically resized as well. In this menu, you can also adjust gaps and padding by editing the setting in the top right corner.
 
 ### Moving windows with your keyboard
 

@@ -172,7 +172,9 @@ export class DriverManager {
     }
 
     private applyUntiled(window: Window): void {
-        this.ctrl.windowExtensions.get(window)!.isTiled = false;
+        const extensions = this.ctrl.windowExtensions.get(window)!;
+        extensions.isTiled = false;
+        extensions.isSingleMaximized = false;
         if (this.config.keepTiledBelow) {
             window.keepBelow = false;
         }
@@ -212,12 +214,18 @@ export class DriverManager {
             );
             // make registered "untiled" clients appear untiled
             for (const window of driver.untiledWindows) {
-                this.applyUntiled(window);
-                window.tile = null;
                 // sometimes effects on untiled windows dont properly apply
                 if (window.fullScreen) {
                     window.fullScreen = false;
                     window.fullScreen = true;
+                }
+                // maxmimized
+                const extensions = this.ctrl.windowExtensions.get(window)!;
+                const wasSingleMaximized = extensions.isSingleMaximized;
+                this.applyUntiled(window);
+                window.tile = null;
+                if (wasSingleMaximized) {
+                    window.setMaximize(false, false);
                 }
             }
         }

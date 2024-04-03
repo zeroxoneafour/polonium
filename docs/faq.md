@@ -4,9 +4,16 @@
 
 Follow the instructions [here](usage.html#getting-a-log).
 
+### Why isn't <feature> from Bismuth/Sway/other WM in Polonium?
+
+Other window managers, including Bismuth, have a much finer degree of control over how tiles are managed. Polonium works with the KWin tiling API instead of against it, which both simplifies
+it and makes it less configurable. This is a delibrate design choice made to make Polonium feel more integrated with Plasma.
+
+If you are looking for a more configurable tiling approach, I suggest [Hyprland](https://hyprland.org).
+
 ### How do I move windows with my mouse?
 
-You can drag windows using, by default, `Meta+LMB`. Dragging windows will untile them. Holding `Shift` will allow you to place windows into tiles. Note that you cannot move windows into the root tile by using the mouse.
+You can drag windows using, by default, `Meta+LMB`. Dragging windows will untile them. Holding `Shift` will allow you to place windows into tiles. Note that you cannot move windows into the root tile by using the mouse. You can also "quick tile" windows by dragging them into borders of screens, which will place them into the root tile if it is the only tile available.
 
 ### How do I move windows with my keyboard / shortcuts not working?
 
@@ -14,7 +21,7 @@ Make sure the shortcuts are set under the KWin tab of the Shortcuts setting. Aft
 
 ### This works on Wayland but not X11
 
-X11 is not officially supported, but you can drop an issue and I can see if I can fix it. Include a log! If I personally don't encounter the error, there is a good chance it will not be fixed.
+Plasma 6 has moved to Wayland by default. Support will not be provided for X11.
 
 ### Windows appear in strange places but go back to normal after I switch desktops/rebuild the layout
 

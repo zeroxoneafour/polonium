@@ -232,28 +232,25 @@ export class WindowHooks {
     }
 
     maximizedChanged(mode: MaximizeMode) {
+        const maximized = mode == MaximizeMode.MaximizeFull;
+        this.extensions.maximized = maximized;
         // ignore if the driver is making windows maximized
         if (this.ctrl.driverManager.buildingLayout) {
             return;
         }
-        // dont interfere with single maximized windows
+        // just dont handle maximizing for these
         if (this.extensions.isSingleMaximized) {
             return;
         }
-        let maximized = mode == MaximizeMode.MaximizeFull;
         this.logger.debug(
             "Maximized on window",
             this.window.resourceClass,
             "set to",
             maximized,
         );
-        // root tile applies with "maximize single windows" and should be completely discarded
-        /*
-        if (this.ctrl.workspace.tilingForScreen(this.window.output).rootTile == this.window.tile) {
-            return;
-        }
-        */
-        if (maximized && this.extensions.isTiled) {
+        if (
+            (maximized && this.extensions.isTiled)
+        ) {
             this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;
