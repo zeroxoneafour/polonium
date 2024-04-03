@@ -96,7 +96,7 @@ export class WindowHooks {
         // client is in a non-managed tile (move it to a managed one)
         else if (!this.ctrl.managedTiles.has(tile)) {
             this.logger.debug("Window", this.window.resourceClass, "moved into an unmanaged tile");
-            const center = new GRect(this.window.frameGeometry).center;
+            const center = new GRect(tile.absoluteGeometryInScreen).center;
             let newTile = this.ctrl.workspace
                 .tilingForScreen(this.window.output)
                 .bestTileForPosition(center.x, center.y);
@@ -114,7 +114,7 @@ export class WindowHooks {
             this.ctrl.driverManager.putWindowInTile(
                 this.window,
                 newTile,
-                new GRect(newTile.absoluteGeometry).directionFromPoint(center),
+                new GRect(newTile.absoluteGeometryInScreen).directionFromPoint(center),
             );
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
