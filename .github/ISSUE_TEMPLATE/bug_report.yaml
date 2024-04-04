@@ -42,8 +42,8 @@ body:
     - type: textarea
       id: logs
       attributes:
-          label: Relevant log output
-          description: See the [usage instructions](https://zeroxoneafour.github.io/polonium/usage.html#getting-a-log) for how to get a log on systemd-based distributions
+          label: Log output
+          description: See the [usage instructions](https://zeroxoneafour.github.io/polonium/usage.html#getting-a-log) for how to get a log on systemd-based distributions. Your log _must_ contain everything from `Polonium Started!` to the output associated with your issue.
           render: shell
       validations:
           required: true
