@@ -7,7 +7,7 @@ function include(file) {
 }
 
 include("./scripts/themeToggle.js");
-include("./scripts/header.js");
+// include("./scripts/header.js");
 include("./scripts/footer.js");
 include("./scripts/navbar.js");
 include("https://cdn.jsdelivr.net/npm/marked/marked.min.js");

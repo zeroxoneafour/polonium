@@ -2,11 +2,16 @@
 
 # polonium
 
+An autotile manager for Plasma 6.
+
 An (unofficial) spiritual successor to [Bismuth](https://github.com/Bismuth-Forge/bismuth) built on KWin 6.
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ![hot icon](https://raw.githubusercontent.com/zeroxoneafour/polonium/master/docs/logo.svg)
+
+[![KDE Store](https://img.shields.io/badge/KDE%20Store-Install-blue?style=for-the-badge&logo=KDE&logoColor=white&labelColor=blue)](https://store.kde.org/p/2140417)
+[![GitHub](https://img.shields.io/badge/GitHub-Source%20Code-grey?style=for-the-badge&logo=GitHub&logoColor=white&labelColor=grey)](https://github.com/zeroxoneafour/polonium)
 
 [![wayland: supported](https://img.shields.io/badge/Wayland-Ready-blue?logo=kde)](https://community.kde.org/KWin/Wayland)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
