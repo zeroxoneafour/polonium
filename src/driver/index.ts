@@ -214,18 +214,26 @@ export class DriverManager {
             );
             // make registered "untiled" clients appear untiled
             for (const window of driver.untiledWindows) {
+                const extensions = this.ctrl.windowExtensions.get(window)!;
+                // shouldve already done this if isTiled is already false?
+                if (!extensions.isTiled) {
+                    continue;
+                }
                 // sometimes effects on untiled windows dont properly apply
-                if (window.fullScreen) {
+                let fullscreen: boolean = false;
+                if (window.fullScreen && extensions.isTiled) {
                     window.fullScreen = false;
-                    window.fullScreen = true;
+                    fullscreen = true;
                 }
                 // maxmimized
-                const extensions = this.ctrl.windowExtensions.get(window)!;
                 const wasSingleMaximized = extensions.isSingleMaximized;
                 this.applyUntiled(window);
                 window.tile = null;
                 if (wasSingleMaximized) {
                     window.setMaximize(false, false);
+                }
+                if (fullscreen) {
+                    window.fullScreen = true;
                 }
             }
         }

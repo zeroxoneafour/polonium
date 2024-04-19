@@ -204,7 +204,9 @@ export class WindowHooks {
         } else if (
             !this.window.fullScreen &&
             this.extensions.wasTiled &&
-            !this.extensions.isTiled
+            !this.extensions.isTiled &&
+            !this.window.minimized &&
+            !(this.extensions.maximized && this.extensions.isSingleMaximized)
         ) {
             this.putWindowInBestTile();
         }
@@ -225,7 +227,9 @@ export class WindowHooks {
         } else if (
             !this.window.minimized &&
             this.extensions.wasTiled &&
-            !this.extensions.isTiled
+            !this.extensions.isTiled &&
+            !this.window.fullScreen &&
+            !(this.extensions.maximized && this.extensions.isSingleMaximized)
         ) {
             this.putWindowInBestTile();
         }
@@ -257,7 +261,9 @@ export class WindowHooks {
         } else if (
             !maximized &&
             this.extensions.wasTiled &&
-            !this.extensions.isTiled
+            !this.extensions.isTiled &&
+            !this.window.fullScreen &&
+            !this.window.minimized
         ) {
             this.putWindowInBestTile();
         }

@@ -21,7 +21,7 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ## features
 
--   Works in Wayland Plasma 6.0 and up (needs KWin 6.0.3 installed to drag tiles with the mouse)
+-   Works in Wayland Plasma 6.0.4 and up
 -   Custom moddable tiling engine backend
 -   Edit tile sizes with the integrated KWin GUI
 -   Move and tile windows with your mouse and keyboard
