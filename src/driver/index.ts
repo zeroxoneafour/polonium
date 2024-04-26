@@ -21,12 +21,12 @@ export class DriverManager {
 
     buildingLayout: boolean = false;
     resizingLayout: boolean = false;
-    
+
     constructor(c: Controller) {
         this.ctrl = c;
         this.engineFactory = new TilingEngineFactory(this.ctrl.config);
         this.logger = c.logger;
-        this.config = c.config;        
+        this.config = c.config;
     }
 
     init(): void {
