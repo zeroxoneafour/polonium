@@ -54,16 +54,16 @@ export class DriverManager {
                     desktopString,
                 );
                 let engineType = this.config.engineType;
-                let rotate = this.config.rotateLayout;
+                let rotateLayout = this.config.rotateLayout;
                 if (this.config.autoRotateLayout &&
                     desktop.output.geometry.width < desktop.output.geometry.height) {
                     this.logger.debug("Auto rotate layout for desktop", desktopString);
-                    rotate = !rotate;
+                    rotateLayout = !rotateLayout;
                 }
                 const config: EngineConfig = {
                     engineType: engineType,
                     insertionPoint: this.config.insertionPoint,
-                    rotateLayout: rotate,
+                    rotateLayout: rotateLayout,
                     engineSettings: {},
                 };
                 const engine = this.engineFactory.newEngine(config);
