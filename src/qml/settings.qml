@@ -13,7 +13,6 @@ PlasmaCore.Dialog {
         // 0 - left side, 1 - right side, 2 - active
         insertionPoint: 1,
         rotateLayout: false,
-        autoRotateLayout: true,
     })
     
     property var desktop: ({
@@ -35,7 +34,6 @@ PlasmaCore.Dialog {
         this.settings.engineType = s.engineType;
         this.settings.insertionPoint = s.insertionPoint;
         this.settings.rotateLayout = s.rotateLayout;
-        this.settings.autoRotateLayout = s.autoRotateLayout;
     }
     
     function show() {
@@ -48,7 +46,6 @@ PlasmaCore.Dialog {
         engine.currentIndex = this.settings.engineType;
         insertionPoint.currentIndex = this.settings.insertionPoint;
         rotateLayout.checkState = this.settings.rotateLayout ? Qt.Checked : Qt.Unchecked;
-        autoRotateLayout.checkState = this.settings.autoRotateLayout ? Qt.Checked : Qt.Unchecked;
         
         // Update current screen information
         this.screenGeometry = Workspace.clientArea(KWin.FullScreenArea, Workspace.activeScreen, Workspace.currentDesktop);
@@ -68,7 +65,6 @@ PlasmaCore.Dialog {
         this.settings.engineType = engine.currentIndex;
         this.settings.insertionPoint = insertionPoint.currentIndex;
         this.settings.rotateLayout = (rotateLayout.checkState == Qt.Checked);
-        this.settings.autoRotateLayout = (autoRotateLayout.checkState == Qt.Checked);
         this.saveSettingsInternal(this.settings, this.desktop);
     }
     
@@ -117,11 +113,6 @@ PlasmaCore.Dialog {
             PC3.CheckBox {
                 id: rotateLayout;
                 text: "Rotate Layout"
-            }
-            
-            PC3.CheckBox {
-                id: autoRotateLayout;
-                text: "Auto Rotate Layout"
             }
         }
         
