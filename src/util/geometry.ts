@@ -90,7 +90,7 @@ export class GPoint implements QPoint {
             y: r.y + r.height / 2,
         });
     }
-    
+
     toString(): string {
         return "GPoint(" + this.x + ", " + this.y + ")";
     }
@@ -192,7 +192,17 @@ export class GRect implements QRect {
     }
 
     toString(): string {
-        return "GRect(" + this.x + ", " + this.y + + ", " + this.width + ", " + this.height + ")";
+        return (
+            "GRect(" +
+            this.x +
+            ", " +
+            this.y +
+            +", " +
+            this.width +
+            ", " +
+            this.height +
+            ")"
+        );
     }
 }
 

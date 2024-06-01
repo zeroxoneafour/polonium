@@ -66,17 +66,11 @@ export class WindowHooks {
     // have to use imrs and tilechanged
     // interactive mr handles moving out of tiles, tilechanged handles moving into tiles
     tileChanged(tile: Tile) {
-        if (
-            this.ctrl.driverManager.buildingLayout ||
-            tile == null
-        ) {
+        if (this.ctrl.driverManager.buildingLayout || tile == null) {
             return;
         }
         // client is moved into managed tile from outside
-        if (
-            !this.extensions.isTiled &&
-            this.ctrl.managedTiles.has(tile)
-        ) {
+        if (!this.extensions.isTiled && this.ctrl.managedTiles.has(tile)) {
             this.logger.debug(
                 "Putting window",
                 this.window.resourceClass,
@@ -95,7 +89,11 @@ export class WindowHooks {
         }
         // client is in a non-managed tile (move it to a managed one)
         else if (!this.ctrl.managedTiles.has(tile)) {
-            this.logger.debug("Window", this.window.resourceClass, "moved into an unmanaged tile");
+            this.logger.debug(
+                "Window",
+                this.window.resourceClass,
+                "moved into an unmanaged tile",
+            );
             const center = new GRect(tile.absoluteGeometryInScreen).center;
             let newTile = this.ctrl.workspace
                 .tilingForScreen(this.window.output)
@@ -114,12 +112,14 @@ export class WindowHooks {
             this.ctrl.driverManager.putWindowInTile(
                 this.window,
                 newTile,
-                new GRect(newTile.absoluteGeometryInScreen).directionFromPoint(center),
+                new GRect(newTile.absoluteGeometryInScreen).directionFromPoint(
+                    center,
+                ),
             );
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
     }
-    
+
     // should be fine if i just leave this here without a timer
     interactiveMoveResizeStepped() {
         if (
@@ -158,7 +158,7 @@ export class WindowHooks {
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
     }
-    
+
     putWindowInBestTile(): void {
         if (this.extensions.lastTiledLocation != null) {
             // fancy and illegally long code to place tile in a similar position from when it was untiled
@@ -252,9 +252,7 @@ export class WindowHooks {
             "set to",
             maximized,
         );
-        if (
-            (maximized && this.extensions.isTiled)
-        ) {
+        if (maximized && this.extensions.isTiled) {
             this.ctrl.driverManager.untileWindow(this.window);
             this.ctrl.driverManager.rebuildLayout(this.window.output);
             this.extensions.wasTiled = true;

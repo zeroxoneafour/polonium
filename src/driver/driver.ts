@@ -202,14 +202,17 @@ export class TilingDriver {
             this.fixSizing(tile, kwinTile);
         }
     }
-    
+
     fixSizing(tile: Tile, kwinTile: Kwin.Tile): void {
         // only resize if not root tile (obv)
         if (tile.parent == null || kwinTile.parent == null) {
             return;
         }
         let index = tile.parent.tiles.indexOf(tile);
-        let parentIndex = tile.parent.parent != null ? tile.parent.parent.tiles.indexOf(tile.parent) : null;
+        let parentIndex =
+            tile.parent.parent != null
+                ? tile.parent.parent.tiles.indexOf(tile.parent)
+                : null;
         const requestedSize = new GSize();
         requestedSize.fitSize(tile.requestedSize);
         for (const client of tile.clients) {
@@ -219,12 +222,12 @@ export class TilingDriver {
             }
             requestedSize.fitSize(window.minSize);
         }
-        const horizontal = kwinTile.parent.layoutDirection == Kwin.LayoutDirection.Horizontal;
+        const horizontal =
+            kwinTile.parent.layoutDirection == Kwin.LayoutDirection.Horizontal;
         // horiz resize
         if (requestedSize.width > kwinTile.absoluteGeometryInScreen.width) {
             let diff =
-                requestedSize.width -
-                kwinTile.absoluteGeometryInScreen.width;
+                requestedSize.width - kwinTile.absoluteGeometryInScreen.width;
             if (horizontal) {
                 // if the layout is horizontal already, width resizing should be easy
                 if (index == 0) {
@@ -249,18 +252,14 @@ export class TilingDriver {
         // vertical resize
         if (requestedSize.height > kwinTile.absoluteGeometryInScreen.height) {
             let diff =
-                requestedSize.height -
-                kwinTile.absoluteGeometryInScreen.height;
+                requestedSize.height - kwinTile.absoluteGeometryInScreen.height;
             if (!horizontal) {
                 if (index == 0) {
                     // first tile in sequence, shift border down
                     kwinTile.resizeByPixels(diff, Kwin.Edge.BottomEdge);
                 } else {
                     // shift border up
-                    kwinTile.resizeByPixels(
-                        -diff,
-                        Kwin.Edge.TopEdge,
-                    );
+                    kwinTile.resizeByPixels(-diff, Kwin.Edge.TopEdge);
                 }
             } else if (parentIndex != null) {
                 if (parentIndex == 0) {
