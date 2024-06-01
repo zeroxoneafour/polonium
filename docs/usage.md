@@ -82,6 +82,7 @@ Polonium requires that KWin be restarted every time the configuration is changed
 - Layout engine (dropdown) - The default tiling engine you want to use on new desktops
 - Insertion point (dropdown) - Select where new windows should be inserted into the layout
 - Rotate layout (check box) - Whether to rotate the layout 90 degrees (split horizontally instead of vertically)
+- Auto rotate layout (check box) - Automatically rotate layout if desktop/output width is less than its height (for example in case of vertical display)
 
 ### Debug options
 

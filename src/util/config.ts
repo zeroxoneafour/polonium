@@ -51,6 +51,7 @@ export class Config {
         this.engineType = rc("EngineType", EngineType.BTree);
         this.insertionPoint = rc("InsertionPoint", InsertionPoint.Left);
         this.rotateLayout = rc("RotateLayout", false);
+        this.autoRotateLayout = rc("AutoRotateLayout", true);
     }
 
     debug: boolean = false;
@@ -75,4 +76,5 @@ export class Config {
     engineType: EngineType = EngineType.BTree;
     insertionPoint: InsertionPoint = InsertionPoint.Left;
     rotateLayout: boolean = true;
+    autoRotateLayout: boolean = true;
 }
