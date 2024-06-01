@@ -1,0 +1,15 @@
+name: Lint
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    formatting:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Verify formatting
+              uses: creyD/prettier_action@v4.3
+              with:
+                  prettier_options: --check .
