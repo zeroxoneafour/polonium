@@ -56,6 +56,8 @@ export interface Shortcuts {
     getResizeLeft(): ShortcutHandler;
     getResizeRight(): ShortcutHandler;
 
+    getRotateLayout(): ShortcutHandler;
+
     getCycleEngine(): ShortcutHandler;
     getSwitchBTree(): ShortcutHandler;
     getSwitchHalf(): ShortcutHandler;
