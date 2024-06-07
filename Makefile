@@ -11,6 +11,8 @@ all: build install cleanall
 build: res src
 	zip -r $(PKGFILE) $(PKGDIR)
 
+$(PKGFILE): build
+
 install: $(PKGFILE)
 	kpackagetool6 -t KWin/Script -s $(NAME) \
 		&& kpackagetool6 -t KWin/Script -u $(PKGFILE) \
