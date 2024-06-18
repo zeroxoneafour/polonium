@@ -193,9 +193,11 @@ export class ShortcutManager {
             return;
         }
         if (this.ctrl.windowExtensions.get(window)!.isTiled) {
+            this.ctrl.windowExtensions.get(window)!.shouldTile = false;
             this.ctrl.driverManager.untileWindow(window);
         } else {
-            this.ctrl.driverManager.addWindow(window);
+            this.ctrl.windowExtensions.get(window)!.shouldTile = true;
+            this.ctrl.driverManager.addWindowToPosition(window, null);
         }
         this.ctrl.driverManager.rebuildLayout();
     }
