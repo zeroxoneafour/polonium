@@ -3,8 +3,8 @@
 import { TilingDriver } from "./driver";
 import { EngineConfig, TilingEngineFactory } from "../engine";
 import { Window, Tile, Output } from "kwin-api";
-import { QTimer } from "kwin-api/qt";
-import { Direction } from "../util/geometry";
+import { QPoint, QTimer } from "kwin-api/qt";
+import { Direction, GRect } from "../util/geometry";
 import { Controller } from "../controller";
 import { Log } from "../util/log";
 import { Config, Borders } from "../util/config";
@@ -260,6 +260,34 @@ export class DriverManager {
         for (const desktop of desktops) {
             this.drivers.get(desktop.toString())!.untileWindow(window);
         }
+    }
+
+    addWindowToPosition(window: Window, pos: QPoint|null, desktops?: Desktop[]): void {
+        // If no position is given, use the middle of the window.
+        if (pos == null) {
+            pos = {
+                x: window.pos.x + window.size.width / 2,
+                y: window.pos.y + window.size.height / 2
+            };
+        }
+
+        let tile = this.ctrl.workspace
+            .tilingForScreen(window.output)    
+            .bestTileForPosition(pos.x, pos.y);
+
+        // if its null then its root tile (usually)
+        if (tile == null) {
+            tile = this.ctrl.workspace.tilingForScreen(
+                window.output,
+            ).rootTile;
+        }
+        this.putWindowInTile(
+            window,
+            tile,
+            new GRect(tile.absoluteGeometry).directionFromPoint(
+                pos,
+            ),
+        );
     }
 
     addWindow(window: Window, desktops?: Desktop[]): void {
