@@ -161,6 +161,10 @@ export class ShortcutManager {
             .activated.connect(this.resize.bind(this, Direction.Right));
 
         shortcuts
+            .getRotateLayout()
+            .activated.connect(this.rotateLayout.bind(this));
+
+        shortcuts
             .getCycleEngine()
             .activated.connect(this.cycleEngine.bind(this));
 
@@ -335,6 +339,14 @@ export class ShortcutManager {
         engineType %= EngineType._loop;
         engineConfig.engineType = engineType;
         this.ctrl.qmlObjects.osd.show(engineName(engineType));
+        this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+    }
+
+    rotateLayout(): void {
+        const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
+        const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);
+        engineConfig.rotateLayout = !engineConfig.rotateLayout;
+        this.ctrl.qmlObjects.osd.show("Rotate Layout: " + engineConfig.rotateLayout);
         this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
     }
 }
