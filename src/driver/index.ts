@@ -340,4 +340,17 @@ export class DriverManager {
         this.ctrl.dbusManager.removeSettings(desktop.toString());
         this.rebuildLayout(desktop.output);
     }
+
+    quitFullScreen(output: Output): void {
+        this.ctrl.workspace.windows.forEach(window => {
+            if (window.output == output && window.fullScreen) {
+                window.fullScreen = false;
+            }
+            // not sure how to check for maximized so i just disable
+            // it for all in the same output.
+            if (window.output == output) {
+                window.setMaximize(false, false);
+            }
+        });
+    }
 }
