@@ -347,7 +347,14 @@ export class ShortcutManager {
         const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
         const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);
         let engineType = engineConfig.engineType;
-        this.ctrl.qmlObjects.osd.show("Restart: " + engineName(engineType));
+        if (EngineType.BTree == engineType) {
+            engineConfig.engineType = EngineType.Half;
+        } else {
+            engineConfig.engineType = EngineType.BTree;
+        }
         this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+        engineConfig.engineType = engineType;
+        this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+        this.ctrl.qmlObjects.osd.show("Restart: " + engineName(engineType));
     }
 }
