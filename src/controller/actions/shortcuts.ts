@@ -163,6 +163,9 @@ export class ShortcutManager {
         shortcuts
             .getCycleEngine()
             .activated.connect(this.cycleEngine.bind(this));
+        shortcuts
+            .getRestartEngine()
+            .activated.connect(this.restartEngine.bind(this));
 
         shortcuts
             .getSwitchBTree()
@@ -337,6 +340,14 @@ export class ShortcutManager {
         engineType %= EngineType._loop;
         engineConfig.engineType = engineType;
         this.ctrl.qmlObjects.osd.show(engineName(engineType));
+        this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+    }
+
+    restartEngine(): void {
+        const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
+        const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);
+        let engineType = engineConfig.engineType;
+        this.ctrl.qmlObjects.osd.show("Restart: " + engineName(engineType));
         this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
     }
 }
