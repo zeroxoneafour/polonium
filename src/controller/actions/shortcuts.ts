@@ -356,5 +356,13 @@ export class ShortcutManager {
         engineConfig.engineType = engineType;
         this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
         this.ctrl.qmlObjects.osd.show("Restart: " + engineName(engineType));
+        this.ctrl.workspace.windows.forEach(window => {
+            if (this.ctrl.windowExtensions.get(window)!.isTiled) {
+                this.ctrl.driverManager.untileWindow(window);
+                this.ctrl.driverManager.rebuildLayout();
+                this.ctrl.driverManager.addWindowToPosition(window, null);
+                this.ctrl.driverManager.rebuildLayout();
+            }
+        });
     }
 }
