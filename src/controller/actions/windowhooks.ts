@@ -2,7 +2,7 @@
 
 import { MaximizeMode, Tile, Window } from "kwin-api";
 import { Controller } from "../";
-import { GRect } from "../../util/geometry";
+import { GPoint, GRect } from "../../util/geometry";
 import { Log } from "../../util/log";
 import { WindowExtensions } from "../extensions";
 
@@ -23,6 +23,9 @@ export class WindowHooks {
         window.outputChanged.connect(this.desktopChanged.bind(this));
         window.interactiveMoveResizeStepped.connect(
             this.interactiveMoveResizeStepped.bind(this),
+        );
+        window.interactiveMoveResizeFinished.connect(
+            this.interactiveMoveResizeFinished.bind(this),
         );
         window.tileChanged.connect(this.tileChanged.bind(this));
         window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
@@ -158,32 +161,25 @@ export class WindowHooks {
             this.ctrl.driverManager.rebuildLayout(this.window.output);
         }
     }
-    
-    putWindowInBestTile(): void {
-        if (this.extensions.lastTiledLocation != null) {
-            // fancy and illegally long code to place tile in a similar position from when it was untiled
-            let tile = this.ctrl.workspace
-                .tilingForScreen(this.window.output)
-                .bestTileForPosition(
-                    this.extensions.lastTiledLocation.x,
-                    this.extensions.lastTiledLocation.y,
-                );
-            // if its null then its root tile (usually)
-            if (tile == null) {
-                tile = this.ctrl.workspace.tilingForScreen(
-                    this.window.output,
-                ).rootTile;
-            }
-            this.ctrl.driverManager.putWindowInTile(
-                this.window,
-                tile,
-                new GRect(tile.absoluteGeometry).directionFromPoint(
-                    this.extensions.lastTiledLocation,
-                ),
-            );
-        } else {
-            this.ctrl.driverManager.addWindow(this.window);
+
+    interactiveMoveResizeFinished() {
+        if (
+            this.ctrl.driverManager.buildingLayout ||
+            this.ctrl.driverManager.resizingLayout ||
+            !this.extensions.shouldTile
+        ) {
+            return;
         }
+        this.putWindowInBestTile(false)
+    }
+    
+    putWindowInBestTile(prefer_last: boolean = true): void {
+        let positionToMatch: GPoint|null = null;  // Null uses the middle of the window.
+        if (this.extensions.lastTiledLocation != null && prefer_last) {
+            positionToMatch = this.extensions.lastTiledLocation;
+        }
+
+        this.ctrl.driverManager.addWindowToPosition(this.window, positionToMatch);
         this.ctrl.driverManager.rebuildLayout(this.window.output);
     }
 
@@ -208,7 +204,7 @@ export class WindowHooks {
             !this.window.minimized &&
             !(this.extensions.maximized && this.extensions.isSingleMaximized)
         ) {
-            this.putWindowInBestTile();
+            this.putWindowInBestTile(true);
         }
     }
 

@@ -163,6 +163,9 @@ export class ShortcutManager {
         shortcuts
             .getCycleEngine()
             .activated.connect(this.cycleEngine.bind(this));
+        shortcuts
+            .getRestartEngine()
+            .activated.connect(this.restartEngine.bind(this));
 
         shortcuts
             .getSwitchBTree()
@@ -193,9 +196,11 @@ export class ShortcutManager {
             return;
         }
         if (this.ctrl.windowExtensions.get(window)!.isTiled) {
+            this.ctrl.windowExtensions.get(window)!.shouldTile = false;
             this.ctrl.driverManager.untileWindow(window);
         } else {
-            this.ctrl.driverManager.addWindow(window);
+            this.ctrl.windowExtensions.get(window)!.shouldTile = true;
+            this.ctrl.driverManager.addWindowToPosition(window, null);
         }
         this.ctrl.driverManager.rebuildLayout();
     }
@@ -336,5 +341,28 @@ export class ShortcutManager {
         engineConfig.engineType = engineType;
         this.ctrl.qmlObjects.osd.show(engineName(engineType));
         this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+    }
+
+    restartEngine(): void {
+        const desktop = this.ctrl.desktopFactory.createDefaultDesktop();
+        const engineConfig = this.ctrl.driverManager.getEngineConfig(desktop);
+        let engineType = engineConfig.engineType;
+        if (EngineType.BTree == engineType) {
+            engineConfig.engineType = EngineType.Half;
+        } else {
+            engineConfig.engineType = EngineType.BTree;
+        }
+        this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+        engineConfig.engineType = engineType;
+        this.ctrl.driverManager.setEngineConfig(desktop, engineConfig);
+        this.ctrl.qmlObjects.osd.show("Restart: " + engineName(engineType));
+        this.ctrl.workspace.windows.forEach(window => {
+            if (this.ctrl.windowExtensions.get(window)!.isTiled) {
+                this.ctrl.driverManager.untileWindow(window);
+                this.ctrl.driverManager.rebuildLayout();
+                this.ctrl.driverManager.addWindowToPosition(window, null);
+                this.ctrl.driverManager.rebuildLayout();
+            }
+        });
     }
 }

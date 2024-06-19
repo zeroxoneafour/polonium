@@ -160,6 +160,17 @@ Item {
         sequence: "Meta+Ctrl+L";
     }
     
+    function getRestartEngine() {
+        return restartEngine;
+    }
+    ShortcutHandler {
+        id: restartEngine;
+        
+        name: "PoloniumRestartEngine";
+        text: "Polonium: Restart Engine";
+        sequence: "Meta+Shift+R";
+    }
+    
     function getCycleEngine() {
         return cycleEngine;
     }
