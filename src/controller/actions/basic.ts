@@ -71,6 +71,7 @@ export class WorkspaceActions {
         }
         this.logger.debug("Window", window.resourceClass, "added");
         this.ctrl.driverManager.addWindow(window);
+        this.ctrl.driverManager.quitFullScreen(window.output);
         this.ctrl.driverManager.rebuildLayout();
     }
 
