@@ -159,6 +159,17 @@ Item {
         text: "Polonium: Resize Right";
         sequence: "Meta+Ctrl+L";
     }
+
+    function getRotateLayout() {
+        return rotateLayout;
+    }
+    ShortcutHandler {
+        id: rotateLayout;
+
+        name: "PoloniumRotateLayout";
+        text: "Polonium: Rotate Layout";
+        sequence: "";
+    }
     
     function getCycleEngine() {
         return cycleEngine;
