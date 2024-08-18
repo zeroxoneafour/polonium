@@ -3,7 +3,7 @@
     "exclude": ["*.*", "pkg/"],
     "compilerOptions": {
         "target": "es2016",
-        "module": "es6",
+        "module": "nodeNext",
         "moduleResolution": "nodeNext",
         "removeComments": true,
         "lib": ["es2016"],

@@ -15,7 +15,6 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 [![wayland: supported](https://img.shields.io/badge/Wayland-Ready-blue?logo=kde)](https://community.kde.org/KWin/Wayland)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
-[![ko-fi](https://img.shields.io/badge/-Support%20me%20on%20Ko--Fi-orange?logo=kofi&logoColor=white)](https://ko-fi.com/zeroxoneafour)
 
 </div>
 
