@@ -1,5 +1,7 @@
-NAME = $(shell npm pkg get name | tr -d '"')
-VERSION = $(shell npm pkg get version | tr -d '"')
+#NAME = $(shell npm pkg get name | tr -d '"')
+#VERSION = $(shell npm pkg get version | tr -d '"')
+NAME = polonium
+VERSION = 1.1.0
 
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
@@ -13,7 +15,7 @@ build: res src
 
 $(PKGFILE): build
 
-install: $(PKGFILE)
+install:
 	kpackagetool6 -t KWin/Script -s $(NAME) \
 		&& kpackagetool6 -t KWin/Script -u $(PKGFILE) \
 		|| kpackagetool6 -t KWin/Script -i $(PKGFILE)

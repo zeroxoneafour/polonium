@@ -6,13 +6,13 @@ import { Workspace, KWin, DBusCall, ShortcutHandler } from "kwin-api/qml";
 import { EngineConfig } from "../engine";
 import { StringDesktop } from "../controller/desktop";
 
-export interface Api {
+export interface QmlApi {
     workspace: Workspace;
     options: Options;
     kwin: KWin;
 }
 
-export interface Objects {
+export interface QmlObjects {
     root: Root;
     settings: Settings;
     shortcuts: Shortcuts;

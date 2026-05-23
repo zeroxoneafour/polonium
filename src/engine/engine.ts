@@ -1,107 +1,103 @@
-// engine.ts - Exposes things that the layouts need
+// engines/engine.ts - All the engine stuff except for the factory
 
-import { Direction, GSize } from "../util/geometry";
-import { InsertionPoint } from "../util/config";
 import { LayoutDirection } from "kwin-api";
-import { QSize } from "kwin-api/qt";
-import {
-    Client as IClient,
-    Tile as ITile,
-    TilingEngine as ITilingEngine,
-} from "./index";
+import { QPoint, QRect, QSize, QUuid } from "kwin-api/qt";
+import { GSize } from "../util/geometry";
 
-export interface EngineConfig {
-    insertionPoint: InsertionPoint;
-    rotateLayout: boolean;
+export class EngineParameters {
+    workingArea: QRect;
+    constructor(workingArea: QRect) {
+        this.workingArea = workingArea;
+    }
 }
 
-export const enum EngineCapability {
-    None = 0,
-    // whether the driver should translate the rotation for the engine when inserting clients
-    TranslateRotation = 1,
-    // whether the amount of tiles can be changed
-    TilesMutable = 2,
-    // whether tiles should be untiled or not by default when added
-    UntiledByDefault = 4,
+/**
+ * Tiling Engine interface 2.0
+ * Make sure to preserve the Tile returned from buildLayout if you want updateTiles to work
+ */
+export interface TilingEngineInterface {
+    get engineParameters(): EngineParameters;
+    set engineParameters(params: EngineParameters);
+    get customSettings(): object;
+    set customSettings(settings: object);
+
+    /**
+     * Builds the layout.
+     */
+    buildLayout(): Tile;
+    /**
+     * Adds a new window
+     * @param window The window, with a few extra info points
+     * @param insertionPoint The point where the window should be inserted, _relative to the workingArea defined in the engine parameters_.
+     */
+    addWindow(window: Window, insertionPoint?: QPoint): void;
+    /**
+     * Removes a window that is implied to be registered
+     * @param window The window to remove
+     */
+    removeWindow(window: Window): void;
+    /**
+     * Updates the tiles
+     * @param rootTile Root tile of the real layout
+     */
+    updateTiles(rootTile: Tile): void;
 }
 
-// custom engine settings if the engine wants to use them
-export type EngineSettings = object;
-
-export interface Client {
+export class Window {
+    id: QUuid;
     name: string;
     minSize: QSize;
+    constructor(id: QUuid, name: string, minSize: QSize) {
+        this.id = id;
+        this.name = name;
+   
+    /**
+     * Builds the layout.
+     */     this.minSize = minSize;
+    }
 }
 
-export class Tile implements ITile {
-    parent: ITile | null;
-    tiles: ITile[] = [];
+export class Tile {
+    parent: Tile | null;
+    children: Tile[] = [];
     layoutDirection: LayoutDirection = LayoutDirection.Horizontal;
-    // requested size in pixels, may not be honored
-    requestedSize: QSize = new GSize();
-    // requested relative size to screen, more likely to be honored
-    relativeSize: number = 1;
-    clients: IClient[] = [];
+    // relative size to other children of this tile
+    size: number = 1;
+    windows: Window[] = [];
 
-    // getter/setter for backwards compatibility
-    public get client(): IClient | null {
-        return this.clients.length > 0 ? this.clients[0] : null;
-    }
-    public set client(value: IClient | null) {
-        if (value != null) {
-            this.clients[0] = value;
-        } else {
-            this.clients = [];
-        }
-    }
-
-    constructor(parent?: Tile, alterSiblingRatios = true) {
+    constructor(parent?: Tile) {
         this.parent = parent ?? null;
         if (this.parent == null) {
             return;
         }
-        this.parent.tiles.push(this);
-        // if we want to alter sibling ratios on construction we do that by default
-        // or you can turn this off to set ratios yourself in real time
-        if (!alterSiblingRatios) {
-            return;
-        }
-        // sizing
-        const childrenLen = this.parent.tiles.length;
-        if (childrenLen <= 1) {
-            return;
-        }
-        // cancels out to be an even 1/childrenLen eventually
-        this.relativeSize = 1 / (childrenLen - 1);
-        for (const child of this.parent.tiles) {
-            child.relativeSize *= (childrenLen - 1) / childrenLen;
-        }
+        this.parent.children.push(this);
     }
 
     // adds a child that will split perpendicularly to the parent. Returns the child
-    addChild(alterSiblingRatios = true): Tile {
+    addChild(): Tile {
         let splitDirection: LayoutDirection = 1;
         if (this.layoutDirection == 1) {
             splitDirection = 2;
         }
-        const childTile = new Tile(this, alterSiblingRatios);
+        const childTile = new Tile(this);
         childTile.layoutDirection = splitDirection;
         return childTile;
     }
 
     // adds a child that will split parallel to the parent. Not really recommeneded
-    addChildParallel(alterSiblingRatios = true): Tile {
-        const childTile = new Tile(this, alterSiblingRatios);
+    addChildParallel(): Tile {
+        const childTile = new Tile(this);
         childTile.layoutDirection = this.layoutDirection;
         return childTile;
     }
 
-    // split a tile perpendicularly
+    // split a tile, aka add two children
     split(): void {
         this.addChild();
         this.addChild();
     }
 
+    /*
     // have a tile replace its parent, destroying its siblings
     secede(): void {
         const parent = this.parent;
@@ -118,79 +114,33 @@ export class Tile implements ITile {
                 }
             }
             parent.tiles = [];
-            parent.client = null;
+            parent.windows = [];
         } else {
             // special case for roottile because it cant be destroyed
-            parent.client = this.client;
+            parent.windows = this.windows;
             parent.tiles = this.tiles;
             this.tiles = [];
-            this.client = null;
+            this.windows = [];
         }
     }
+    */
 
     // removes a tile and all its children
-    remove(batchRemove: boolean = false): void {
+    remove(): void {
         const parent = this.parent;
         if (parent == null) {
             return;
         }
-        if (!batchRemove) {
-            parent.tiles.splice(parent.tiles.indexOf(this), 1);
-        }
-        const childrenLen = parent.tiles.length;
-        for (const child of parent.tiles) {
-            child.relativeSize *= (childrenLen + 1) / childrenLen;
-        }
-        this.tiles = [];
-        this.client = null;
+        parent.children.splice(parent.children.indexOf(this), 1);
+        this.children = [];
+        this.windows = [];
     }
 
     // remove child tiles
     removeChildren(): void {
-        for (const tile of this.tiles) {
-            tile.remove(true);
+        for (const tile of this.children) {
+            tile.remove();
         }
-        this.tiles = [];
+        this.children = [];
     }
-
-    // should be auto ran by driver but can be ran by engines too
-    fixRelativeSizing(): void {
-        let totalSize = 0;
-        for (const tile of this.tiles) {
-            totalSize += tile.relativeSize;
-        }
-        if (totalSize == 1) {
-            return;
-        }
-        for (const tile of this.tiles) {
-            tile.relativeSize /= totalSize;
-        }
-    }
-}
-
-export abstract class TilingEngine implements ITilingEngine {
-    rootTile: ITile = new Tile();
-    config: EngineConfig;
-    abstract readonly engineCapability: EngineCapability;
-
-    public abstract get engineSettings(): EngineSettings;
-    public abstract set engineSettings(settings: EngineSettings);
-
-    public constructor(config: EngineConfig) {
-        this.config = config;
-    }
-
-    // overrideable method if more internal engine stuff needs to be constructed
-    public initEngine(): void {}
-
-    // creates the root tile layout
-    public abstract buildLayout(): void;
-    // adds a new client to the engine
-    public abstract addClient(c: Client): void;
-    // removes a client
-    public abstract removeClient(c: Client): void;
-    // places a client in a specific tile, in the direction d
-    public abstract putClientInTile(c: Client, t: Tile, d?: Direction): void;
-    // called after subtiles are edited (ex. sizes) so the engine can update them internally if needed
-    public abstract regenerateLayout(): void;
 }

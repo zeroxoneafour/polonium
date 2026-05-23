@@ -7,7 +7,7 @@
                 "Name": "Vaughan Milliman"
             }
         ],
-        "Description": "Autotile using KWin 5.27 features",
+        "Description": "Autotile using KWin 6 features",
         "Icon": "preferences-system-windows-effect-presentwindows",
         "Id": "%NAME%",
         "License": "MIT",

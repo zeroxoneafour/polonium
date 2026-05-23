@@ -1,7 +1,6 @@
 // threecolumn.ts - Layout engine that splits 3 columns
 
-// half.ts - Tiling engine for the half/split layout
-
+/*
 import {
     Tile,
     Client,
@@ -168,3 +167,4 @@ export default class ThreeColumnEngine extends TilingEngine {
         }
     }
 }
+*/

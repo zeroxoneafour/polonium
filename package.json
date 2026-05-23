@@ -1,6 +1,6 @@
 {
     "name": "polonium",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "A tiling window manager for KWin",
     "main": "src/index.ts",
     "private": true,
@@ -26,9 +26,7 @@
         "@typescript-eslint/parser": "^6.7.5",
         "esbuild": "^0.19.4",
         "eslint": "^8.51.0",
-        "fast-copy": "^3.0.1",
-        "kwin-api": "^6.0.9",
-        "mnemonist": "^0.39.5",
+        "kwin-api": "file:kwin-api",
         "prettier": "3.2.5",
         "typescript": "^5.2.2"
     }

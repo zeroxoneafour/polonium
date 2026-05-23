@@ -1,100 +1,123 @@
-// controller.ts - Main controller object of the script
-
-import { Options, Tile, Window } from "kwin-api";
+import { Options, Output, VirtualDesktop, Console as QmlConsole } from "kwin-api";
+import Event from "./event";
+import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
-import * as Qml from "../extern/qml";
-
-import { Log } from "../util/log";
-import { Config } from "../util/config";
-
-import { DriverManager } from "../driver";
-
-import { DBusManager } from "./actions/dbus";
-import { DesktopFactory } from "./desktop";
-import { WindowExtensions, WorkspaceExtensions } from "./extensions";
-import { ShortcutManager } from "./actions/shortcuts";
-import { WindowHookManager } from "./actions/windowhooks";
-import { SettingsDialogManager } from "./actions/settingsdialog";
-import { WorkspaceActions } from "./actions/basic";
+import { WorkspaceHandler } from "./handlers";
+import { Queue } from "../util/queue";
+import { Console } from "./console";
+import { Driver } from "../driver";
 import { QTimer } from "kwin-api/qt";
 
-export class Controller {
+class Controller {
     workspace: Workspace;
     options: Options;
-    kwinApi: KWin;
-    qmlObjects: Qml.Objects;
+    kwin: KWin;
+    qmlObjects: QmlObjects;
 
-    desktopFactory: DesktopFactory;
+    eventQueue: Queue<Event> = new Queue();
+    eventTimer: QTimer;
+    processingEvents: boolean = false;
 
-    driverManager: DriverManager;
-    dbusManager: DBusManager;
-    shortcutManager: ShortcutManager;
-    windowHookManager: WindowHookManager;
-    settingsDialogManager: SettingsDialogManager;
-    workspaceActions: WorkspaceActions;
+    drivers: Map<DesktopIdentifier, Driver> = new Map();
 
-    logger: Log;
-    config: Config;
-
-    workspaceExtensions: WorkspaceExtensions;
-    windowExtensions: Map<Window, WindowExtensions> = new Map();
-    managedTiles: Set<Tile> = new Set();
-
-    initTimer: QTimer;
-
-    constructor(qmlApi: Qml.Api, qmlObjects: Qml.Objects) {
+    constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
         this.options = qmlApi.options;
-        this.kwinApi = qmlApi.kwin;
+        this.kwin = qmlApi.kwin;
         this.qmlObjects = qmlObjects;
 
-        this.desktopFactory = new DesktopFactory(this.workspace);
+        this.eventTimer = qmlObjects.root.createTimer();
+        this.eventTimer.interval = 10;
+        this.eventTimer.repeat = false;
+        this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
-        this.config = new Config(this.kwinApi);
-        this.logger = new Log(this.config, this.qmlObjects.root);
-        this.logger.info("Polonium started!");
-        if (!this.config.debug) {
-            this.logger.info(
-                "Polonium debug is DISABLED! Enable it and restart KWin before sending logs!",
-            );
+        new WorkspaceHandler(this.workspace);
+        this.updateDrivers();
+    }
+
+    queueEvent(ev: Event) {
+        // dont add events if processing because processing itself causes a lot of signals to trigger
+        if (this.processingEvents) return;
+        this.eventQueue.push(ev);
+        this.eventTimer.start();
+    }
+
+    processEvents() {
+        this.processingEvents = true;
+        while (!this.eventQueue.isEmpty) {
+            this.handleEvent(this.eventQueue.pop()!);
         }
-        this.logger.debug("Config is", JSON.stringify(this.config));
-
-        this.workspaceExtensions = new WorkspaceExtensions(this.workspace);
-
-        this.dbusManager = new DBusManager(this);
-        this.driverManager = new DriverManager(this);
-        this.shortcutManager = new ShortcutManager(this);
-        this.windowHookManager = new WindowHookManager(this);
-        this.settingsDialogManager = new SettingsDialogManager(this);
-        this.workspaceActions = new WorkspaceActions(this);
-
-        // delayed init will help with some stuff
-        this.initTimer = qmlObjects.root.createTimer();
-        this.initTimer.interval = this.config.timerDelay;
-        this.initTimer.triggered.connect(this.initCallback.bind(this));
-        this.initTimer.repeat = false;
-    }
-
-    init(): void {
-        this.initTimer.start();
-    }
-
-    private initCallback(): void {
-        // keep restarting the call until it actually initializes properly
-        if (
-            this.workspace.activities.length == 1 &&
-            this.workspace.activities[0] ==
-                "00000000-0000-0000-0000-000000000000"
-        ) {
-            this.logger.debug("Restarting init timer");
-            // gradually increase time between restart calls for slower systems
-            this.initTimer.interval += this.config.timerDelay;
-            this.initTimer.restart();
-            return;
+        for (const output of this.workspace.screens) {
+            this.drivers.get(desktopId(output, this.workspace.currentDesktop))?.buildLayout();
         }
-        // hook into kwin after everything loads nicely
-        this.workspaceActions.addHooks();
-        this.driverManager.init();
+        this.processingEvents = false;
     }
+
+    handleEvent(ev: Event) {
+        console.log("handling event:", ev.t);
+        switch(ev.t) {
+            case "tileWindow":
+                for (const desktop of ev.desktops) {
+                    this.drivers.get(desktopId(ev.output, desktop))?.addWindow(ev.window);
+                }
+                break;
+            case "untileWindow":
+                for (const desktop of ev.desktops) {
+                    console.log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", ev.output.name);
+                    this.drivers.get(desktopId(ev.output, desktop))?.removeWindow(ev.window);
+                }
+                break;
+            case "updateDrivers":
+                this.updateDrivers();
+                break;
+            case "rebuildDesktops":
+                // we rebuild them anyway after any event has been registered, this is a blank event that guarantees a rebuild
+                break;
+        }
+    }
+
+    parseDesktopId(id: DesktopIdentifier): [Output?, VirtualDesktop?] {
+        const parsed = JSON.parse(id);
+        const output = this.workspace.screens.find(s => s.name === parsed.o);
+        const desktop = this.workspace.desktops.find(d => d.id === parsed.d);
+        return [output, desktop];
+    }
+
+    updateDrivers() {
+        for (const id of this.drivers.keys()) {
+            const [output, desktop] = this.parseDesktopId(id);
+            if (!output || !desktop) {
+                this.drivers.delete(id);
+            }
+        }
+        for (const output of this.workspace.screens) {
+            for (const desktop of this.workspace.desktops) {
+                if (!this.drivers.has(desktopId(output, desktop))) {
+                    this.drivers.set(desktopId(output, desktop), new Driver(this.workspace.rootTile(output, desktop)));
+                }
+            }
+        }
+    }
+}
+
+let controller: Controller;
+export let console: Console;
+
+export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
+    controller = new Controller(qmlApi, qmlObjects);
+    console = new Console(qmlApi.console);
+    console.log("Controller initialized");
+}
+
+// controller should exist at all points other than right after initialization
+// also it creates everything that would call this, so logically it should exist(?)
+export function queueEvent(ev: Event): void {
+    controller.queueEvent(ev);
+}
+
+// js can only map off of concrete types (ex. strings)
+// this shouldn't be used outside of the controller file so no export
+type DesktopIdentifier = string;
+function desktopId(output: Output, desktop: VirtualDesktop): DesktopIdentifier {
+    return `{"o":"${output.name}","d":"${desktop.id}"}`;
 }

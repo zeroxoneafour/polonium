@@ -1,12 +1,15 @@
 // main.qml - Entry point into script
 
+import "../code/main.mjs" as Polonium;
 import QtQuick;
 import org.kde.kwin;
 
-import "../code/main.mjs" as Polonium;
-
 Item {
     id: root;
+
+    function printQml(string) {
+        print(string);
+    }
 
     function createTimer() {
         return Qt.createQmlObject("import QtQuick; Timer {}", root);
@@ -17,21 +20,17 @@ Item {
             "workspace": Workspace,
             "options": Options,
             "kwin": KWin,
-            "console": console,
         };
         const qmlObjects = {
             "root": root,
-            /*
             "settings": settings,
             "shortcuts": shortcutsLoader.item,
             "dbus": dbusLoader.item,
             "osd": osdLoader.item,
-            */
         };
         Polonium.main(api, qmlObjects);
     }
 
-    /*
     Loader {
         id: settings;
         
@@ -89,5 +88,4 @@ Item {
         
         source: "osd.qml";
     }
-    */
 }

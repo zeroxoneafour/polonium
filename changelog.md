@@ -1,5 +1,11 @@
 # changelog
 
+## 1.1
+
+### 1.1-a1
+-   Complete rewrite to event-based system using custom event loop
+-   Most features gutted, will be added back in future
+
 ## 1.0
 
 ### 1.0

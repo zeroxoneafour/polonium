@@ -1,0 +1,3 @@
+[submodule "kwin-api"]
+	path = kwin-api
+	url = https://github.com/zeroxoneafour/kwin-api

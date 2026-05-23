@@ -1,5 +1,6 @@
 // half.ts - Tiling engine for the half/split layout
 
+/*
 import {
     Tile,
     Client,
@@ -171,3 +172,4 @@ export default class HalfEngine extends TilingEngine {
         }
     }
 }
+*/

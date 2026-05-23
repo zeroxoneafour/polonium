@@ -1,213 +1,156 @@
-// layouts/btree.ts - Implementation of binary tree layout
+// engine/layouts/btree.ts - Implementation of binary tree layout
 
-import {
-    Tile,
-    Client,
-    TilingEngine,
-    EngineCapability,
-    EngineSettings,
-} from "../engine";
-import { Direction } from "../../util/geometry";
-import { InsertionPoint } from "../../util/config";
-import BiMap from "mnemonist/bi-map";
-import Queue from "mnemonist/queue";
+import { TilingEngineInterface, EngineParameters, Tile, Window } from "../engine";
+import { GRect } from "../../util/geometry";
+import { QPoint } from "kwin-api/qt";
+import { Queue } from "../../util/queue";
+import { LayoutDirection } from "kwin-api";
+import { console } from "../../controller";
 
-class TreeNode {
-    parent: TreeNode | null = null;
-    sibling: TreeNode | null = null;
-    children: [TreeNode, TreeNode] | null = null;
-    client: Client | null = null;
-    // ratio of child 1 to self
-    sizeRatio: number = 0.5;
-    // splits tile
-    split(): void {
-        // cannot already have children
-        if (this.children != null) return;
-        this.children = [new TreeNode(), new TreeNode()];
-        this.children[0].parent = this;
-        this.children[0].sibling = this.children[1];
-        this.children[1].parent = this;
-        this.children[1].sibling = this.children[0];
-    }
-    // removes self
-    remove(): void {
-        // cannot have children or be root
-        if (
-            this.children != null ||
-            this.sibling == null ||
-            this.parent == null
-        )
-            return;
-        // if sibling has children, move them to the parent and leave both siblings to be garbage collected
-        if (this.sibling.children != null) {
-            this.parent.children = this.sibling.children;
-            for (const child of this.parent.children) {
-                // help the adoption
-                child.parent = this.parent;
-            }
+class Node {
+    parent: Node | null = null;
+    children: [Node, Node] | null = null;
+    window: Window | null = null;
+
+    layoutDirectionRoot: LayoutDirection = LayoutDirection.Horizontal;
+    get layoutDirection(): LayoutDirection {
+        if (this.parent === null) {
+            return this.layoutDirectionRoot;
+        }
+        if (this.parent.layoutDirection == LayoutDirection.Horizontal) {
+            return LayoutDirection.Vertical;
         } else {
-            // otherwise just move windows over
-            this.parent.client = this.sibling.client;
-            this.parent.children = null;
+            return LayoutDirection.Horizontal;
         }
-        // say goodbye
+    }
+
+    constructor(parent?: Node) {
+        if (parent) {
+            this.parent = parent;
+        }
+    }
+
+    split(windowInheritor: 0 | 1): void {
+        if (this.children !== null) {
+            return;
+        }
+        this.children = [new Node(this), new Node(this)];
+        this.children[windowInheritor].window = this.window;
+        this.window = null;
+    }
+
+    // don't call this if a window exists in that tile
+    // or I guess you could call it but it would untile the window
+    destroy(): void {
+        // cannot destroy root node
+        if (this.parent === null || this.parent.children === null) {
+            return;
+        }
+        const sibling = this.parent.children[0] === this ? this.parent.children[1] : this.parent.children[0];
+        if (sibling.window !== null) {
+            this.parent.window = sibling.window;
+        }
+        this.parent.children = sibling.children === null ? null : [...sibling.children];
+        for (const child of this.parent.children ?? []) {
+            child.parent = this.parent;
+        }
+
+        // null everything so hopefully gc gets it
+        // never mind its got it probably
+        /*
+        sibling.window = null;
+        sibling.children = null;
+        sibling.parent = null;
         this.parent = null;
-        this.sibling.parent = null;
-        this.sibling.sibling = null;
-        this.sibling = null;
-    }
-}
-
-class RootNode extends TreeNode {
-    parent: null = null;
-    sibling: null = null;
-    remove(): void {
-        // for root node, if the node needs to be removed just reset it
         this.children = null;
-        this.client = null;
+        this.window = null;
+        */
     }
 }
 
-export default class BTreeEngine extends TilingEngine {
-    engineCapability = EngineCapability.None;
-    private rootNode: RootNode = new RootNode();
-    private nodeMap: BiMap<TreeNode, Tile> = new BiMap();
-
-    // no engine settings for btree
-    // (we dont save resizings through dbus saver right now)
-    get engineSettings(): EngineSettings {
-        return {};
+export default class BTreeEngine implements TilingEngineInterface {
+    // make up some bs idrk about ts rn
+    parameters: EngineParameters = new EngineParameters(new GRect({ x: 0, y: 0, width: 100, height: 100 }));
+    get engineParameters(): EngineParameters {
+        return this.parameters;
     }
-    set engineSettings(_: EngineSettings) {}
+    set engineParameters(params: EngineParameters) {
+        this.parameters = params;
+    }
 
-    buildLayout() {
-        // set original tile direction based on rotating layout or not
-        this.rootTile = new Tile();
-        this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
-        // set up
-        this.nodeMap = new BiMap();
-        // modify rootTile
-        let queue: Queue<TreeNode> = new Queue();
-        queue.enqueue(this.rootNode);
-        this.nodeMap.set(this.rootNode, this.rootTile);
-        while (queue.size > 0) {
-            const node = queue.dequeue()!;
-            const tile = this.nodeMap.get(node)!;
+    settings: object = {};
+    get customSettings(): object {
+        return this.settings;
+    }
+    set customSettings(settings: object) {
+        this.settings = settings;
+    }
+    root: Node = new Node();
+    tileMap: Map<Tile, Node> = new Map();
 
-            if (node.client != null) {
-                tile.client = node.client;
-            }
-            if (node.children != null) {
-                tile.split();
-
-                this.nodeMap.set(node.children[0], tile.tiles[0]);
-                this.nodeMap.set(node.children[1], tile.tiles[1]);
-
-                tile.tiles[0].relativeSize = node.sizeRatio;
-                tile.tiles[1].relativeSize = 1 - node.sizeRatio;
-
-                queue.enqueue(node.children[0]);
-                queue.enqueue(node.children[1]);
+    buildLayout(): Tile {
+        const queue = new Queue<[Node, Tile]>();
+        const rootTile = new Tile();
+        this.tileMap.clear();
+        queue.push([this.root, rootTile]);
+        while (!queue.isEmpty) {
+            const [node, tile] = queue.pop()!;
+            this.tileMap.set(tile, node);
+            if (node.window !== null) tile.windows.push(node.window);
+            tile.layoutDirection = node.layoutDirection;
+            if (node.children !== null) {
+                const [child1, child2] = node.children;
+                const tile1 = tile.addChild();
+                const tile2 = tile.addChild();
+                queue.push([child1, tile1]);
+                queue.push([child2, tile2]);
             }
         }
+        return rootTile;
     }
 
-    addClient(client: Client) {
-        let queue: Queue<TreeNode> = new Queue();
-        queue.enqueue(this.rootNode);
-        while (queue.size > 0) {
-            const node = queue.dequeue()!;
-            if (node.children == null) {
-                if (node.client != null) {
-                    node.split();
-                    if (this.config.insertionPoint == InsertionPoint.Left) {
-                        node.children![0].client = client;
-                        node.children![1].client = node.client;
-                    } else {
-                        node.children![0].client = node.client;
-                        node.children![1].client = client;
-                    }
-                    node.client = null;
-                } else {
-                    node.client = client;
-                }
+    addWindow(window: Window, insertionPoint?: QPoint): void {
+        // no windows case
+        if (this.root.window === null && this.root.children === null) {
+            this.root.window = window;
+            return;
+        }
+        const queue = new Queue<Node>();
+        queue.push(this.root);
+        while (!queue.isEmpty) {
+            const node = queue.pop()!;
+            if (node.window !== null) {
+                node.split(0);
+                node.children![1].window = window;
                 return;
             } else {
-                const children = Array.from(node.children);
-                if (this.config.insertionPoint == InsertionPoint.Right) {
-                    children.reverse();
-                }
-                for (const child of children) {
-                    queue.enqueue(child);
+                if (node.children !== null) {
+                    queue.multipush(node.children);
                 }
             }
         }
     }
 
-    removeClient(client: Client) {
-        let queue: Queue<TreeNode> = new Queue();
-        queue.enqueue(this.rootNode);
-        let deleteQueue: TreeNode[] = [];
-        while (queue.size > 0) {
-            const node = queue.dequeue()!;
-            if (node.client == client) {
-                deleteQueue.push(node);
-            }
-            if (node.children != null) {
-                for (const child of node.children) {
-                    queue.enqueue(child);
-                }
-            }
-        }
-        for (const node of deleteQueue) {
-            node.remove();
-        }
-    }
-
-    putClientInTile(client: Client, tile: Tile, direction?: Direction) {
-        const node = this.nodeMap.inverse.get(tile);
-        if (node == undefined) {
-            // usually means there are no other tiles in the layout
-            this.addClient(client);
+    removeWindow(window: Window): void {
+        if (this.root.window === window) {
+            this.root.window = null;
             return;
         }
-        if (node.client == null) {
-            node.client = client;
-        } else {
-            node.split();
-            // put new client in zeroth child, else put in first child
-            let putClientInZero = false;
-            if (direction != undefined) {
-                if (tile.layoutDirection == 1) {
-                    // horizontal
-                    if (!(direction & Direction.Right)) {
-                        putClientInZero = true;
-                    }
-                } // vertical hopefully
-                else {
-                    if (direction & Direction.Up) {
-                        putClientInZero = true;
-                    }
+        const queue = new Queue<Node>();
+        queue.push(this.root);
+        while (!queue.isEmpty) {
+            const node = queue.pop()!;
+            if (node.window === window) {
+                node.destroy();
+                return;
+            } else {
+                if (node.children !== null) {
+                    queue.multipush(node.children);
                 }
             }
-            if (putClientInZero) {
-                node.children![0].client = client;
-                node.children![1].client = node.client;
-            } else {
-                node.children![0].client = node.client;
-                node.children![1].client = client;
-            }
-            node.client = null;
         }
     }
 
-    regenerateLayout() {
-        // just for checking resizing mostly
-        for (const node of this.nodeMap.keys()) {
-            const tile = this.nodeMap.get(node)!;
-            if (tile.tiles.length == 2) {
-                node.sizeRatio = tile.tiles[0].relativeSize;
-            }
-        }
-    }
+    // I will do this later maybe
+    updateTiles(rootTile: Tile): void {}
 }
