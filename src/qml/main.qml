@@ -21,14 +21,20 @@ Item {
         };
         const qmlObjects = {
             "root": root,
+            "shortcuts": shortcutsLoader.item,
             /*
             "settings": settings,
-            "shortcuts": shortcutsLoader.item,
             "dbus": dbusLoader.item,
             "osd": osdLoader.item,
             */
         };
         Polonium.main(api, qmlObjects);
+    }
+
+    Loader {
+        id: shortcutsLoader;
+                
+        source: "shortcuts.qml";
     }
 
     /*
@@ -76,12 +82,6 @@ Item {
         id: dbusLoader;
         
         source: "dbus.qml";
-    }
-    
-    Loader {
-        id: shortcutsLoader;
-                
-        source: "shortcuts.qml";
     }
     
     Loader {

@@ -1,13 +1,14 @@
 import { Tile as KwinTile, Window as KwinWindow } from "kwin-api";
 import { Tile as EngineTile, Window as EngineWindow, TilingEngine, TilingEngineType } from "../engine";
 import { buildLayout } from "./buildlayout";
-import { console } from "../controller";
+import { console, getWindowHandler } from "../controller";
 
 export class Driver {
     rootTile: KwinTile;
 
     tileMap: Map<KwinTile, EngineTile> = new Map();
     windowMap: Map<KwinWindow, EngineWindow> = new Map();
+    windowsToUnmanage: KwinWindow[] = [];
 
     tilingEngine: TilingEngine;
 
@@ -25,7 +26,7 @@ export class Driver {
         for (const [kwinTile, engineTile] of this.tileMap) {
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
-                if (kwinWindow !== undefined) {
+                if (kwinWindow != undefined) {
                     kwinTile.manage(kwinWindow);
                     tiledWindowsList.push(kwinWindow);
                 }
@@ -34,11 +35,19 @@ export class Driver {
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindowsList.includes(kwinWindow)) {
-                if (kwinWindow.tile !== null) {
+                if (kwinWindow.tile != null) {
                     kwinWindow.tile.unmanage(kwinWindow);
                 }
             }
         }
+        // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
+        for (const kwinWindow of this.windowsToUnmanage) {
+            if (getWindowHandler(kwinWindow) == undefined) continue;
+            if (kwinWindow.tile != null) {
+                kwinWindow.tile.unmanage(kwinWindow);
+            }
+        }
+        this.windowsToUnmanage = [];
     }
 
     addWindow(kwinWindow: KwinWindow) {
@@ -47,13 +56,18 @@ export class Driver {
         this.tilingEngine.addWindow(engineWindow);
     }
     
-    removeWindow(kwinWindow: KwinWindow) {
-        console.log("removewindow called on driver")
+    /**
+     * 
+     * @param kwinWindow window to remove
+     * @returns 
+     */
+    removeWindow(kwinWindow: KwinWindow,) {
         const engineWindow = this.windowMap.get(kwinWindow);
         if (engineWindow === undefined) {
-            console.warn("Window", kwinWindow.caption, "not registered in windowMap");
+            console().log("Window", kwinWindow.resourceClass, "not registered in windowMap");
             return;
         }
+        this.windowsToUnmanage.push(kwinWindow);
         this.tilingEngine.removeWindow(engineWindow);
         this.windowMap.delete(kwinWindow);
     }

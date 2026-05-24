@@ -1,8 +1,8 @@
-import { Options, Output, VirtualDesktop, Console as QmlConsole } from "kwin-api";
+import { Options, Output, VirtualDesktop, Console as QmlConsole, Window } from "kwin-api";
 import Event from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
-import { WorkspaceHandler } from "./handlers";
+import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
 import { Queue } from "../util/queue";
 import { Console } from "./console";
 import { Driver } from "../driver";
@@ -19,6 +19,7 @@ class Controller {
     processingEvents: boolean = false;
 
     drivers: Map<DesktopIdentifier, Driver> = new Map();
+    windowHandlers: Map<Window, WindowHandler> = new Map();
 
     constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
@@ -32,6 +33,7 @@ class Controller {
         this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
         new WorkspaceHandler(this.workspace);
+        new ShortcutsHandler(this.workspace, this.qmlObjects.shortcuts);
         this.updateDrivers();
     }
 
@@ -44,6 +46,7 @@ class Controller {
 
     processEvents() {
         this.processingEvents = true;
+        console().log("Handling", this.eventQueue.size, "events");
         while (!this.eventQueue.isEmpty) {
             this.handleEvent(this.eventQueue.pop()!);
         }
@@ -54,16 +57,22 @@ class Controller {
     }
 
     handleEvent(ev: Event) {
-        console.log("handling event:", ev.t);
+        console().log("handling event", ev.t);
         switch(ev.t) {
             case "tileWindow":
+                ev.window.keepBelow = true;
                 for (const desktop of ev.desktops) {
+                    console().log("adding window", ev.window.resourceClass, "on desktop", desktop.name, "on output", ev.output.name);
                     this.drivers.get(desktopId(ev.output, desktop))?.addWindow(ev.window);
                 }
                 break;
             case "untileWindow":
+                // window can be destroyed but ref is still "valid" (not null) so we have to check for that
+                if (this.workspace.windows.includes(ev.window)) {
+                    ev.window.keepBelow = false;
+                }
                 for (const desktop of ev.desktops) {
-                    console.log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", ev.output.name);
+                    console().log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", ev.output.name);
                     this.drivers.get(desktopId(ev.output, desktop))?.removeWindow(ev.window);
                 }
                 break;
@@ -72,6 +81,12 @@ class Controller {
                 break;
             case "rebuildDesktops":
                 // we rebuild them anyway after any event has been registered, this is a blank event that guarantees a rebuild
+                break;
+            // call untileWindow before this
+            case "removeWindow":
+                // sometimes this may say "destroying window undefined" but thats ok
+                console().log("destroying window", ev.window.resourceClass);
+                this.windowHandlers.delete(ev.window);
                 break;
         }
     }
@@ -101,18 +116,33 @@ class Controller {
 }
 
 let controller: Controller;
-export let console: Console;
+let consoleObj: Console;
 
 export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
     controller = new Controller(qmlApi, qmlObjects);
-    console = new Console(qmlApi.console);
-    console.log("Controller initialized");
+    consoleObj = new Console(qmlApi.console);
+    console().log("Controller initialized");
+}
+
+export function console(): Console {
+    return consoleObj;
 }
 
 // controller should exist at all points other than right after initialization
 // also it creates everything that would call this, so logically it should exist(?)
 export function queueEvent(ev: Event): void {
     controller.queueEvent(ev);
+}
+
+export function getWindowHandler(window: Window): WindowHandler | undefined {
+    return controller.windowHandlers.get(window);
+}
+
+export function createWindowHandler(window: Window): WindowHandler {
+    console().log("registering window", window.resourceClass);
+    const handler = new WindowHandler(window);
+    controller.windowHandlers.set(window, handler);
+    return handler;
 }
 
 // js can only map off of concrete types (ex. strings)

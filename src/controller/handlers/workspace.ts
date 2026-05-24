@@ -1,6 +1,5 @@
 import { Workspace } from "kwin-api/qml";
-import { WindowHandler } from "./window";
-import { queueEvent } from "..";
+import { createWindowHandler, getWindowHandler, queueEvent } from "..";
 import { Output, VirtualDesktop, Window } from "kwin-api";
 
 export class WorkspaceHandler {
@@ -18,7 +17,8 @@ export class WorkspaceHandler {
 
     windowAdded(kwinWindow: Window) {
         // this _should_ not garbage collect I think while the window exists... no ref map needed?
-        const windowHandler = new WindowHandler(kwinWindow);
+        // never friggin mind we need a ref map to store "tiled" state across shortcut handler as well
+        const windowHandler = createWindowHandler(kwinWindow);
         if (!windowHandler.tiled) return;
         queueEvent({
             t: "tileWindow",
@@ -30,11 +30,16 @@ export class WorkspaceHandler {
     
     windowRemoved(kwinWindow: Window) {
         // it should just not untile the window if it was never tiled, so we dont need to track that here
-        queueEvent({
+        // jk ig we do sometimes
+        if (getWindowHandler(kwinWindow)?.tiled) queueEvent({
             t: "untileWindow",
             window: kwinWindow,
             desktops: kwinWindow.desktops,
             output: kwinWindow.output
+        });
+        queueEvent({
+            t: "removeWindow",
+            window: kwinWindow
         });
     }
 

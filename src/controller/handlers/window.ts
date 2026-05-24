@@ -7,6 +7,7 @@ const excludeClasses = [
     "kded",
     "polkit",
     "plasmashell",
+    "xwaylandvideobridge"
 ];
 
 export class WindowHandler {
@@ -14,19 +15,24 @@ export class WindowHandler {
     previousDesktops: VirtualDesktop[];
     previousOutput: Output;
     tiled: boolean;
+    wantsTiled: boolean;
     
     constructor(window: Window) {
         this.window = window;
         this.previousDesktops = [...window.desktops];
         this.previousOutput = window.output;
+
         this.tiled = !(
             excludeClasses.includes(window.resourceClass.toLowerCase())
             || window.fullScreen
             || window.specialWindow
+            || window.popupWindow
         );
+        this.wantsTiled = this.tiled;
 
         this.window.desktopsChanged.connect(this.desktopsChanged.bind(this));
         this.window.outputChanged.connect(this.outputChanged.bind(this));
+        this.window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
     }
 
     outputChanged() {
@@ -79,6 +85,26 @@ export class WindowHandler {
                 t: "tileWindow",
                 window: this.window,
                 desktops: desktopsToTile,
+                output: this.window.output
+            });
+        }
+    }
+
+    fullscreenChanged() {
+        if (this.window.fullScreen && this.tiled) {
+            this.tiled = false;
+            queueEvent({
+                t: "untileWindow",
+                window: this.window,
+                desktops: this.window.desktops,
+                output: this.window.output
+            });
+        } else if (!this.window.fullScreen && !this.tiled && this.wantsTiled) {
+            this.tiled = true;
+            queueEvent({
+                t: "tileWindow",
+                window: this.window,
+                desktops: this.window.desktops,
                 output: this.window.output
             });
         }
