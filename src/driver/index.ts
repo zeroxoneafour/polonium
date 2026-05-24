@@ -1,7 +1,7 @@
 import { Tile as KwinTile, Window as KwinWindow } from "kwin-api";
 import { Tile as EngineTile, Window as EngineWindow, TilingEngine, TilingEngineType } from "../engine";
 import { buildLayout } from "./buildlayout";
-import { console, getWindowHandler } from "../controller";
+import { console, windowExists } from "../controller";
 
 export class Driver {
     rootTile: KwinTile;
@@ -26,7 +26,7 @@ export class Driver {
         for (const [kwinTile, engineTile] of this.tileMap) {
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
-                if (kwinWindow != undefined) {
+                if (kwinWindow != undefined && windowExists(kwinWindow)) {
                     kwinTile.manage(kwinWindow);
                     tiledWindowsList.push(kwinWindow);
                 }
@@ -35,15 +35,14 @@ export class Driver {
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindowsList.includes(kwinWindow)) {
-                if (kwinWindow.tile != null) {
+                if (windowExists(kwinWindow) && kwinWindow.tile != null) {
                     kwinWindow.tile.unmanage(kwinWindow);
                 }
             }
         }
         // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
         for (const kwinWindow of this.windowsToUnmanage) {
-            if (getWindowHandler(kwinWindow) == undefined) continue;
-            if (kwinWindow.tile != null) {
+            if (windowExists(kwinWindow) && kwinWindow.tile != null) {
                 kwinWindow.tile.unmanage(kwinWindow);
             }
         }

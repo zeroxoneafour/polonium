@@ -67,13 +67,21 @@ class Controller {
                 }
                 break;
             case "untileWindow":
+                let desktops = ev.desktops;
+                let output = ev.output;
                 // window can be destroyed but ref is still "valid" (not null) so we have to check for that
-                if (this.workspace.windows.includes(ev.window)) {
+                if (windowExists(ev.window)) {
                     ev.window.keepBelow = false;
+                } else {
+                    // have to get the desktops another way if the window is destroyed
+                    const handler = getWindowHandler(ev.window);
+                    // if the handler is null then dont remove it from anything idek how this would happen
+                    desktops = handler?.previousDesktops ?? [];
+                    output = handler!.previousOutput;
                 }
-                for (const desktop of ev.desktops) {
-                    console().log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", ev.output.name);
-                    this.drivers.get(desktopId(ev.output, desktop))?.removeWindow(ev.window);
+                for (const desktop of desktops) {
+                    console().log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", output.name);
+                    this.drivers.get(desktopId(output, desktop))?.removeWindow(ev.window);
                 }
                 break;
             case "updateDrivers":
@@ -143,6 +151,11 @@ export function createWindowHandler(window: Window): WindowHandler {
     const handler = new WindowHandler(window);
     controller.windowHandlers.set(window, handler);
     return handler;
+}
+
+// sometimes the window can be destroyed before rebuild but the ref will still exist, so make sure it exists before calling stuff on it
+export function windowExists(window: Window): boolean {
+    return controller.workspace.windows.includes(window);
 }
 
 // js can only map off of concrete types (ex. strings)
