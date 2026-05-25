@@ -1,5 +1,5 @@
 import { Options, Output, VirtualDesktop, Console as QmlConsole, Window } from "kwin-api";
-import Event from "./event";
+import { Event, eventsAreParallel } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
 import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
@@ -47,8 +47,10 @@ class Controller {
     processEvents() {
         this.processingEvents = true;
         console().log("Handling", this.eventQueue.size, "events");
-        while (!this.eventQueue.isEmpty) {
-            this.handleEvent(this.eventQueue.pop()!);
+        const queue = this.simplifyEventQueue();
+        this.eventQueue = new Queue<Event>();
+        while (!queue.isEmpty) {
+            this.handleEvent(queue.pop()!);
         }
         for (const output of this.workspace.screens) {
             this.drivers.get(desktopId(output, this.workspace.currentDesktop))?.buildLayout();
@@ -56,11 +58,38 @@ class Controller {
         this.processingEvents = false;
     }
 
+    simplifyEventQueue(): Queue<Event> {
+        // ultra simple simplifier - only cut out events that directly cancel each other out
+        // todo in future - simplify events on a per-desktop, per-output basis
+        const events = [];
+        while (!this.eventQueue.isEmpty) {
+            events.push(this.eventQueue.pop()!);
+        }
+        const eventsRet = [...events];
+        for (const ev of events) {
+            switch (ev.t) {
+                case "tileWindow":
+                    const parallelEvent = events.find(e => (e.t === "untileWindow" && eventsAreParallel(ev, e)));
+                    if (parallelEvent === undefined) break;
+                    eventsRet.splice(eventsRet.indexOf(parallelEvent), 1);
+                    eventsRet.splice(eventsRet.indexOf(ev), 1);
+                    break;
+                default: break;
+            }
+        }
+        const queue = new Queue<Event>();
+        queue.multipush(eventsRet);
+        return queue;
+    }
+
     handleEvent(ev: Event) {
         console().log("handling event", ev.t);
         switch(ev.t) {
             case "tileWindow":
-                ev.window.keepBelow = true;
+                // very rarely the window can be queued for tiling but destroyed before the event is processed
+                if (windowExists(ev.window)) {
+                    ev.window.keepBelow = true;
+                }
                 for (const desktop of ev.desktops) {
                     console().log("adding window", ev.window.resourceClass, "on desktop", desktop.name, "on output", ev.output.name);
                     this.drivers.get(desktopId(ev.output, desktop))?.addWindow(ev.window);

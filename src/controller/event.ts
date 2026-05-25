@@ -30,5 +30,16 @@ interface WindowActivatedEvent {
     previousWindow: Window
 }
 
-type Event = TileWindowEvent | UntileWindowEvent | UpdateDriversEvent | RebuildDesktopsEvent | RemoveWindowEvent | WindowActivatedEvent;
-export default Event;
+export type Event = TileWindowEvent | UntileWindowEvent | UpdateDriversEvent | RebuildDesktopsEvent | RemoveWindowEvent | WindowActivatedEvent;
+
+// check if two events operate on the same widnow, desktops, and output
+// ev1 must be a tileWindow event and ev2 must be an untileWindow event
+export function eventsAreParallel(ev1: TileWindowEvent, ev2: UntileWindowEvent): boolean {
+    if (ev1.window !== ev2.window) return false;
+    if (ev1.output !== ev2.output) return false;
+    if (ev1.desktops.length !== ev2.desktops.length) return false;
+    for (let i = 0; i < ev1.desktops.length; i++) {
+        if (ev1.desktops[i] !== ev2.desktops[i]) return false;
+    }
+    return true;
+}
