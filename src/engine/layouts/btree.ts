@@ -1,11 +1,19 @@
 // engine/layouts/btree.ts - Implementation of binary tree layout
 
-import { TilingEngineInterface, EngineParameters, Tile, Window } from "../engine";
-import { GRect } from "../../util/geometry";
-import { QPoint } from "kwin-api/qt";
+import { TilingEngineInterface, Tile, Window, Direction } from "../engine";
 import { Queue } from "../../util/queue";
 import { LayoutDirection } from "kwin-api";
 import { console } from "../../controller";
+
+class BTreeSettings {
+    insertOnRight: boolean = false;
+
+    constructor(obj: any) {
+        for (const key in this) {
+            if (obj.hasOwnProperty(key)) this[key] = obj[key]; 
+        }
+    } 
+}
 
 class Node {
     parent: Node | null = null;
@@ -69,22 +77,14 @@ class Node {
 }
 
 export default class BTreeEngine implements TilingEngineInterface {
-    // make up some bs idrk about ts rn
-    parameters: EngineParameters = new EngineParameters(new GRect({ x: 0, y: 0, width: 100, height: 100 }));
-    get engineParameters(): EngineParameters {
-        return this.parameters;
-    }
-    set engineParameters(params: EngineParameters) {
-        this.parameters = params;
-    }
-
-    settings: object = {};
-    get customSettings(): object {
+    settings: BTreeSettings = new BTreeSettings({});
+    get engineSettings(): object {
         return this.settings;
     }
-    set customSettings(settings: object) {
-        this.settings = settings;
+    set engineSettings(settings: object) {
+        this.settings = new BTreeSettings(settings);
     }
+
     root: Node = new Node();
     tileMap: Map<Tile, Node> = new Map();
 
@@ -109,7 +109,7 @@ export default class BTreeEngine implements TilingEngineInterface {
         return rootTile;
     }
 
-    addWindow(window: Window, insertionPoint?: QPoint): void {
+    addWindow(window: Window): void {
         // no windows case
         if (this.root.window === null && this.root.children === null) {
             this.root.window = window;
@@ -120,8 +120,8 @@ export default class BTreeEngine implements TilingEngineInterface {
         while (!queue.isEmpty) {
             const node = queue.pop()!;
             if (node.window !== null) {
-                node.split(0);
-                node.children![1].window = window;
+                node.split(this.settings.insertOnRight ? 1 : 0);
+                node.children![this.settings.insertOnRight ? 0 : 1].window = window;
                 return;
             } else {
                 if (node.children !== null) {
@@ -129,6 +129,23 @@ export default class BTreeEngine implements TilingEngineInterface {
                 }
             }
         }
+    }
+
+    placeWindow(window: Window, tile: Tile, direction?: Direction) {
+        const node = this.tileMap.get(tile);
+        if (node == undefined) return;
+        if (node.window === null) {
+            node.window = window;
+            return;
+        }
+        let insertPoint = this.settings.insertOnRight ? 0 : 1;
+        if (direction !== undefined) {
+            insertPoint = node.layoutDirection === LayoutDirection.Horizontal ?
+                direction & Direction.Right ? 1 : 0 :
+                direction & Direction.Up ? 0 : 1;
+        }
+        node.split(insertPoint === 0 ? 1 : 0);
+        node.children![insertPoint].window = window;
     }
 
     removeWindow(window: Window): void {

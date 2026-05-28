@@ -1,36 +1,35 @@
-// engines/engine.ts - All the engine stuff except for the factory
+// engines/engine.ts - All the stuff that layouts should be concerned with
 
 import { LayoutDirection } from "kwin-api";
-import { QPoint, QRect, QSize, QUuid } from "kwin-api/qt";
-import { GSize } from "../util/geometry";
+import { QSize, QUuid } from "kwin-api/qt";
 
-export class EngineParameters {
-    workingArea: QRect;
-    constructor(workingArea: QRect) {
-        this.workingArea = workingArea;
-    }
-}
+import { Direction } from "../util/geometry";
+export { Direction };
 
 /**
  * Tiling Engine interface 2.0
- * Make sure to preserve the Tile returned from buildLayout if you want updateTiles to work
  */
 export interface TilingEngineInterface {
-    get engineParameters(): EngineParameters;
-    set engineParameters(params: EngineParameters);
-    get customSettings(): object;
-    set customSettings(settings: object);
+    get engineSettings(): object;
+    set engineSettings(settings: object);
 
     /**
      * Builds the layout.
+     * @returns The root tile of the layout, driver should keep this for referencing in updateTiles()
      */
     buildLayout(): Tile;
     /**
      * Adds a new window
-     * @param window The window, with a few extra info points
-     * @param insertionPoint The point where the window should be inserted, _relative to the workingArea defined in the engine parameters_.
+     * @param window The window
      */
-    addWindow(window: Window, insertionPoint?: QPoint): void;
+    addWindow(window: Window): void;
+    /**
+     * Places a window into a specific tile. The window is new, ie. it should have been removed beforehand by the driver
+     * @param window The window
+     * @param tile The tile to insert the window into
+     * @param direction The direction within the aforementioned tile in which to insert the window (optional)
+     */
+    placeWindow(window: Window, tile: Tile, direction?: Direction): void;
     /**
      * Removes a window that is implied to be registered
      * @param window The window to remove
@@ -38,7 +37,7 @@ export interface TilingEngineInterface {
     removeWindow(window: Window): void;
     /**
      * Updates the tiles
-     * @param rootTile Root tile of the real layout
+     * @param rootTile Root tile given by most recent call to buildLayout()
      */
     updateTiles(rootTile: Tile): void;
 }
@@ -144,3 +143,4 @@ export class Tile {
         this.children = [];
     }
 }
+

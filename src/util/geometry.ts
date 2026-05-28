@@ -9,7 +9,6 @@ export const enum Direction {
     Right = 1 << 1,
     Vertical = 1 << 2,
 }
-
 export class DirectionTools {
     private d: Direction;
 
@@ -82,13 +81,6 @@ export class GPoint implements QPoint {
         }
         this.x = p.x;
         this.y = p.y;
-    }
-
-    static centerOfRect(r: QRect): GPoint {
-        return new GPoint({
-            x: r.x + r.width / 2,
-            y: r.y + r.height / 2,
-        });
     }
 
     toString(): string {
@@ -204,6 +196,21 @@ export class GRect implements QRect {
             ")"
         );
     }
+
+    writeTo(r: QRect) {
+        if (r.width != this.width) {
+            r.width = this.width;
+        }
+        if (r.height != this.height) {
+            r.height = this.height;
+        }
+        if (r.x != this.x) {
+            r.x = this.x;
+        }
+        if (r.y != this.y) {
+            r.y = this.y;
+        }
+    }
 }
 
 export class GSize implements QSize {
@@ -239,7 +246,7 @@ export class GSize implements QSize {
         }
     }
 
-    write(s: QSize) {
+    writeTo(s: QSize) {
         if (s.width != this.width) {
             s.width = this.width;
         }

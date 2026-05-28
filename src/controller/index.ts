@@ -86,10 +86,6 @@ class Controller {
         console().log("handling event", ev.t);
         switch(ev.t) {
             case "tileWindow":
-                // very rarely the window can be queued for tiling but destroyed before the event is processed
-                if (windowExists(ev.window)) {
-                    ev.window.keepBelow = true;
-                }
                 for (const desktop of ev.desktops) {
                     console().log("adding window", ev.window.resourceClass, "on desktop", desktop.name, "on output", ev.output.name);
                     this.drivers.get(desktopId(ev.output, desktop))?.addWindow(ev.window);
@@ -99,9 +95,7 @@ class Controller {
                 let desktops = ev.desktops;
                 let output = ev.output;
                 // window can be destroyed but ref is still "valid" (not null) so we have to check for that
-                if (windowExists(ev.window)) {
-                    ev.window.keepBelow = false;
-                } else {
+                if (!windowExists(ev.window)) {
                     // have to get the desktops another way if the window is destroyed
                     const handler = getWindowHandler(ev.window);
                     // if the handler is null then dont remove it from anything idek how this would happen
@@ -124,6 +118,12 @@ class Controller {
                 // sometimes this may say "destroying window undefined" but thats ok
                 console().log("destroying window", ev.window.resourceClass);
                 this.windowHandlers.delete(ev.window);
+                break;
+            case "windowActivated":
+                break;
+            case "placeWindow":
+                console().log("placing window", ev.window.resourceClass, "in tile at", ev.tile.absoluteGeometry);
+                this.drivers.get(desktopId(ev.output, ev.desktop))?.placeWindow(ev.window, ev.tile, ev.direction);
                 break;
         }
     }
@@ -152,6 +152,7 @@ class Controller {
     }
 }
 
+
 let controller: Controller;
 let consoleObj: Console;
 
@@ -177,7 +178,7 @@ export function getWindowHandler(window: Window): WindowHandler | undefined {
 
 export function createWindowHandler(window: Window): WindowHandler {
     console().log("registering window", window.resourceClass);
-    const handler = new WindowHandler(window);
+    const handler = new WindowHandler(window, controller.workspace, controller.qmlObjects.root.createTimer());
     controller.windowHandlers.set(window, handler);
     return handler;
 }

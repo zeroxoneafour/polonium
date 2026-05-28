@@ -1,4 +1,5 @@
-import { Output, VirtualDesktop, Window } from "kwin-api";
+import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
+import { Direction } from "../util/geometry";
 
 interface TileWindowEvent {
     t: "tileWindow";
@@ -29,8 +30,16 @@ interface WindowActivatedEvent {
     window: Window,
     previousWindow: Window
 }
+interface PlaceWindowEvent {
+    t: "placeWindow",
+    window: Window,
+    desktop: VirtualDesktop,
+    output: Output,
+    tile: Tile,
+    direction?: Direction
+}
 
-export type Event = TileWindowEvent | UntileWindowEvent | UpdateDriversEvent | RebuildDesktopsEvent | RemoveWindowEvent | WindowActivatedEvent;
+export type Event = TileWindowEvent | UntileWindowEvent | UpdateDriversEvent | RebuildDesktopsEvent | RemoveWindowEvent | WindowActivatedEvent | PlaceWindowEvent;
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event

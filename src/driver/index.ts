@@ -2,6 +2,7 @@ import { Tile as KwinTile, Window as KwinWindow } from "kwin-api";
 import { Tile as EngineTile, Window as EngineWindow, TilingEngine, TilingEngineType } from "../engine";
 import { buildLayout } from "./buildlayout";
 import { console, windowExists } from "../controller";
+import { Direction, GRect } from "../util/geometry";
 
 export class Driver {
     rootTile: KwinTile;
@@ -17,7 +18,7 @@ export class Driver {
         this.tilingEngine = new TilingEngine(TilingEngineType.BTree);
     }
 
-    buildLayout() {
+    buildLayout(): void {
         const engineRootTile = this.tilingEngine.buildLayout();
         this.tileMap = buildLayout(this.rootTile, engineRootTile);
         
@@ -27,7 +28,9 @@ export class Driver {
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
                 if (kwinWindow != undefined && windowExists(kwinWindow)) {
-                    kwinTile.manage(kwinWindow);
+                    setTiledProps(kwinWindow);
+                    if (kwinWindow.tile !== kwinTile) kwinTile.manage(kwinWindow);
+                    //setWindowSize(kwinWindow, kwinTile);
                     tiledWindowsList.push(kwinWindow);
                 }
             }
@@ -36,6 +39,7 @@ export class Driver {
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindowsList.includes(kwinWindow)) {
                 if (windowExists(kwinWindow) && kwinWindow.tile != null) {
+                    setUntiledProps(kwinWindow);
                     kwinWindow.tile.unmanage(kwinWindow);
                 }
             }
@@ -43,24 +47,44 @@ export class Driver {
         // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
         for (const kwinWindow of this.windowsToUnmanage) {
             if (windowExists(kwinWindow) && kwinWindow.tile != null) {
+                setUntiledProps(kwinWindow);
                 kwinWindow.tile.unmanage(kwinWindow);
             }
         }
         this.windowsToUnmanage = [];
     }
 
-    addWindow(kwinWindow: KwinWindow) {
+    // returns undefined if the window already exists
+    private initializeWindow(kwinWindow: KwinWindow): EngineWindow | undefined {
+        if (this.windowMap.has(kwinWindow)) {
+            console().warn("initializeWindow error - window already exists in map");
+            return undefined;
+        }
         const engineWindow = new EngineWindow(kwinWindow.internalId, kwinWindow.caption, kwinWindow.minSize);
         this.windowMap.set(kwinWindow, engineWindow);
-        this.tilingEngine.addWindow(engineWindow);
+        return engineWindow;
+    }
+
+    addWindow(kwinWindow: KwinWindow): void {
+        const window = this.initializeWindow(kwinWindow);
+        if (window === undefined) return;
+        this.tilingEngine.addWindow(window);
+    }
+
+    placeWindow(kwinWindow: KwinWindow, kwinTile: KwinTile, direction?: Direction): void {
+        const window = this.initializeWindow(kwinWindow);
+        if (window === undefined) return;
+        const tile = this.tileMap.get(kwinTile);
+        if (tile == undefined) {
+            console().warn("tile undefined during window placement");
+            // place like normal if no tile
+            this.tilingEngine.addWindow(window);
+            return;
+        }
+        this.tilingEngine.placeWindow(window, tile, direction);
     }
     
-    /**
-     * 
-     * @param kwinWindow window to remove
-     * @returns 
-     */
-    removeWindow(kwinWindow: KwinWindow,) {
+    removeWindow(kwinWindow: KwinWindow): void {
         const engineWindow = this.windowMap.get(kwinWindow);
         if (engineWindow === undefined) {
             console().log("Window", kwinWindow.resourceClass, "not registered in windowMap");
@@ -70,4 +94,24 @@ export class Driver {
         this.tilingEngine.removeWindow(engineWindow);
         this.windowMap.delete(kwinWindow);
     }
+}
+
+// sometimes windows (FIREFOX) dont set their size properly so we force them to
+// we will do this after kwin removes the artificial 0.15 relative size limit on tiles
+// nvm I guess we will probably never do this because its glitchy ash
+function setWindowSize(window: KwinWindow, tile: KwinTile) {
+    const rect = new GRect(tile.absoluteGeometry);
+    rect.x += tile.padding;
+    rect.y += tile.padding;
+    rect.width -= tile.padding * 2;
+    rect.height -= tile.padding * 2;
+    rect.writeTo(window.frameGeometry);
+}
+
+function setTiledProps(window: KwinWindow) {
+    window.keepBelow = true;
+}
+
+function setUntiledProps(window: KwinWindow) {
+    window.keepBelow = false;
 }
