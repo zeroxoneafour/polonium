@@ -107,9 +107,10 @@ class Controller {
                 if (!windowExists(ev.window)) {
                     // have to get the desktops another way if the window is destroyed
                     const handler = getWindowHandler(ev.window);
-                    // if the handler is null then dont remove it from anything idek how this would happen
-                    desktops = handler?.previousDesktops ?? [];
-                    output = handler!.previousOutput;
+                    // if the handler is undefined then dont remove it from anything idek how this would happen
+                    if (handler == undefined) break;
+                    desktops = handler.previousDesktops ?? [];
+                    output = handler.previousOutput;
                 }
                 for (const desktop of desktops) {
                     console().log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", output.name);
