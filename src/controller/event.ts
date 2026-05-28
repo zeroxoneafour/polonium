@@ -26,11 +26,6 @@ interface RemoveWindowEvent {
     t: "removeWindow",
     window: Window,
 }
-interface WindowActivatedEvent {
-    t: "windowActivated",
-    window: Window,
-    previousWindow: Window
-}
 interface PlaceWindowEvent {
     t: "placeWindow",
     window: Window,
@@ -51,16 +46,25 @@ interface ChangeEngineEvent {
     engineType?: TilingEngineType,
     engineSettings?: object,
 }
+interface SetWindowPropertiesEvent {
+    t: "setWindowProperties",
+    window: Window,
+    fullscreen?: boolean,
+    noBorder?: boolean,
+}
 
 export type Event = TileWindowEvent
     | UntileWindowEvent
     | UpdateDriversEvent
     | RebuildDesktopsEvent
     | RemoveWindowEvent
-    | WindowActivatedEvent
     | PlaceWindowEvent
     | UpdateTilesEvent
-    | ChangeEngineEvent;
+    | ChangeEngineEvent
+    | SetWindowPropertiesEvent;
+
+// these events must be done after rebuild instead of before
+export const lateEvents = new Set(["setWindowProperties"]);
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event

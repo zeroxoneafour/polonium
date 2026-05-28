@@ -1,8 +1,9 @@
 import { Tile as KwinTile, Window as KwinWindow, LayoutDirection, Output, VirtualDesktop } from "kwin-api";
 import { Tile as EngineTile, Window as EngineWindow, TilingEngine, TilingEngineType } from "../engine";
 import { buildLayout } from "./buildlayout";
-import { console, queueEvent, windowExists } from "../controller";
+import { config, console, queueEvent, windowExists } from "../controller";
 import { Direction, GRect } from "../util/geometry";
+import { BorderSetting } from "../controller/config";
 
 export class Driver {
     rootTile: KwinTile;
@@ -61,7 +62,9 @@ export class Driver {
             if (!tiledWindowsList.includes(kwinWindow)) {
                 if (windowExists(kwinWindow)) {
                     setUntiledProps(kwinWindow);
-                    if (kwinWindow.tile != null) kwinWindow.tile.unmanage(kwinWindow);
+                    if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
+                        kwinWindow.tile.unmanage(kwinWindow);
+                    }
                 }
             }
         }
@@ -69,7 +72,9 @@ export class Driver {
         for (const kwinWindow of this.windowsToUnmanage) {
             if (windowExists(kwinWindow)) {
                 setUntiledProps(kwinWindow);
-                if (kwinWindow.tile != null) kwinWindow.tile.unmanage(kwinWindow);
+                if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
+                    kwinWindow.tile.unmanage(kwinWindow);
+                }
             }
         }
         this.windowsToUnmanage = [];
@@ -159,8 +164,14 @@ function setWindowSize(window: KwinWindow, tile: KwinTile) {
 
 function setTiledProps(window: KwinWindow) {
     window.keepBelow = true;
+    if (config.borders != BorderSetting.BorderAll) {
+        window.noBorder = true;
+    }
 }
 
 function setUntiledProps(window: KwinWindow) {
     window.keepBelow = false;
+    if (config.borders != BorderSetting.NoBorders && config.borders != BorderSetting.BorderActive) {
+        window.noBorder = false;
+    }
 }

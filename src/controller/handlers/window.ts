@@ -103,6 +103,11 @@ export class WindowHandler {
                 desktops: this.window.desktops,
                 output: this.window.output
             });
+            queueEvent({
+                t: "setWindowProperties",
+                window: this.window,
+                fullscreen: true,
+            });
         } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
             this.tiled = true;
             queueEvent({

@@ -1,5 +1,5 @@
 import { Options, Output, VirtualDesktop, Console as QmlConsole, Window } from "kwin-api";
-import { Event, eventsAreParallel } from "./event";
+import { Event, eventsAreParallel, lateEvents } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
 import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
@@ -50,11 +50,20 @@ class Controller {
         const queue = this.simplifyEventQueue();
         console().debug("Handling", queue.size, "event(s)");
         this.eventQueue = new Queue<Event>();
+        const lateEvQueue = new Queue<Event>();
         while (!queue.isEmpty) {
-            this.handleEvent(queue.pop()!);
+            const ev = queue.pop()!;
+            if (lateEvents.has(ev.t)) {
+                lateEvQueue.push(ev);
+            } else {
+                this.handleEvent(ev);
+            }
         }
         for (const output of this.workspace.screens) {
             this.drivers.get(desktopId(output, this.workspace.currentDesktop))?.buildLayout();
+        }
+        while (!lateEvQueue.isEmpty) {
+            this.handleEvent(lateEvQueue.pop()!);
         }
         this.processingEvents = false;
     }
@@ -139,8 +148,6 @@ class Controller {
                 console().log("destroying window", ev.window.resourceClass);
                 this.windowHandlers.delete(ev.window);
                 break;
-            case "windowActivated":
-                break;
             case "placeWindow":
                 console().log("placing window", ev.window.resourceClass, "in tile at", ev.tile.absoluteGeometry);
                 this.drivers.get(desktopId(ev.output, ev.desktop))?.placeWindow(ev.window, ev.tile, ev.direction);
@@ -153,6 +160,11 @@ class Controller {
                 console().log("changing engine type/settings for desktop", ev.desktop.name, "on output", ev.output.name);
                 this.drivers.get(desktopId(ev.output, ev.desktop))?.changeTilingEngine(ev.engineType, ev.engineSettings);
                 break;
+            case "setWindowProperties":
+                if (!windowExists(ev.window)) break;
+                console().log("setting properties for window", ev.window.resourceClass);
+                if (ev.fullscreen !== undefined) ev.window.fullScreen = ev.fullscreen;
+                if (ev.noBorder !== undefined) ev.window.noBorder = ev.noBorder;
         }
     }
 
