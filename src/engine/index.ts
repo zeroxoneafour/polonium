@@ -7,18 +7,24 @@ export { Window, Tile, Direction };
 
 export enum TilingEngineType {
     BTree = 0,
+    Half = 1,
 }
 
 export class TilingEngine {
     private engine: TilingEngineInterface;
     private engineRootTile: Tile;
 
-    constructor(type: TilingEngineType) {
+    constructor(type: TilingEngineType, settings?: object) {
         switch (type) {
             case TilingEngineType.BTree:
                 this.engine = new BTreeEngine();
                 break;
+            case TilingEngineType.Half:
+                // coming soon
+                this.engine = new BTreeEngine();
+                break;
         }
+        if (settings !== undefined) this.engine.engineSettings = settings;
         this.engineRootTile = this.engine.buildLayout();
     }
 

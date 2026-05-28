@@ -7,6 +7,7 @@ import { Queue } from "../util/queue";
 import { Console } from "./console";
 import { Driver } from "../driver";
 import { QTimer } from "kwin-api/qt";
+import { Config } from "./config";
 
 class Controller {
     workspace: Workspace;
@@ -28,7 +29,7 @@ class Controller {
         this.qmlObjects = qmlObjects;
 
         this.eventTimer = qmlObjects.root.createTimer();
-        this.eventTimer.interval = 10;
+        this.eventTimer.interval = config.rebuildDelay;
         this.eventTimer.repeat = false;
         this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
@@ -158,9 +159,11 @@ class Controller {
         }
         for (const output of this.workspace.screens) {
             for (const desktop of this.workspace.desktops) {
-                if (!this.drivers.has(desktopId(output, desktop))) {
+                const id = desktopId(output, desktop);
+                if (!this.drivers.has(id)) {
                     const rootTile = this.workspace.rootTile(output, desktop);
-                    this.drivers.set(desktopId(output, desktop), new Driver(rootTile, desktop, output));
+                    const driver = new Driver(rootTile, desktop, output, config.defaultEngine);
+                    this.drivers.set(id, driver);
                 }
             }
         }
@@ -170,10 +173,12 @@ class Controller {
 
 let controller: Controller;
 let consoleObj: Console;
+export let config: Config;
 
 export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
-    controller = new Controller(qmlApi, qmlObjects);
     consoleObj = new Console(qmlApi.console);
+    config = new Config(qmlApi.kwin);
+    controller = new Controller(qmlApi, qmlObjects);
     console().log("Controller initialized");
 }
 
@@ -193,7 +198,7 @@ export function getWindowHandler(window: Window): WindowHandler | undefined {
 
 export function createWindowHandler(window: Window): WindowHandler {
     console().log("registering window", window.resourceClass);
-    const handler = new WindowHandler(window, controller.workspace, controller.qmlObjects.root.createTimer());
+    const handler = new WindowHandler(window, controller.workspace);
     controller.windowHandlers.set(window, handler);
     return handler;
 }

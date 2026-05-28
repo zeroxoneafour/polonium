@@ -1,17 +1,7 @@
 import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
-import { queueEvent } from "..";
-import { QRect, QTimer } from "kwin-api/qt";
+import { config, queueEvent } from "..";
 import { Workspace } from "kwin-api/qml";
 import { GRect } from "../../util/geometry";
-
-const excludeClasses = [
-    "krunner",
-    "yakuake",
-    "kded",
-    "polkit",
-    "plasmashell",
-    "xwaylandvideobridge"
-];
 
 export class WindowHandler {
     window: Window;
@@ -19,25 +9,18 @@ export class WindowHandler {
     previousOutput: Output;
     tiled: boolean;
     wantsTiled: boolean;
-    //frameGeometryChangedTimer: QTimer;
 
     workspace: Workspace;
     
-    constructor(window: Window, workspace: Workspace, fgcTimer: QTimer) {
+    constructor(window: Window, workspace: Workspace) {
         this.window = window;
         this.workspace = workspace;
-
-        /*
-        this.frameGeometryChangedTimer = fgcTimer;
-        this.frameGeometryChangedTimer.interval = 50;
-        this.frameGeometryChangedTimer.triggered.connect(this.frameGeometryChangedCallback.bind(this));
-        */
 
         this.previousDesktops = [...window.desktops];
         this.previousOutput = window.output;
 
         this.tiled = !(
-            excludeClasses.includes(window.resourceClass.toLowerCase())
+            config.ignoreWindowClasses.includes(window.resourceClass.toLowerCase())
             || window.fullScreen
             || window.specialWindow
             || window.popupWindow
@@ -143,7 +126,9 @@ export class WindowHandler {
             const cursorPos = this.workspace.cursorPos;
             this.tiled = true;
             for (const desktop of this.window.desktops) {
-                const tile = this.workspace.rootTile(this.window.output, desktop).pick(cursorPos);
+                const rootTile = this.workspace.rootTile(this.window.output, desktop);
+                // bug where pick() returns null if there is only one tile (the root tile)
+                const tile = rootTile.tiles.length == 0 ? rootTile : rootTile.pick(cursorPos);
                 if (tile == null) {
                     queueEvent({
                         t: "tileWindow",

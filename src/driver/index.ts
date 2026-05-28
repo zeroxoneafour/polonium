@@ -15,12 +15,23 @@ export class Driver {
 
     tilingEngine: TilingEngine;
 
-    constructor(rootTile: KwinTile, desktop: VirtualDesktop, output: Output) {
+    constructor(rootTile: KwinTile, desktop: VirtualDesktop, output: Output, engineType: TilingEngineType, engineSettings?: object) {
         this.rootTile = rootTile;
         this.desktop = desktop;
         this.output = output;
 
-        this.tilingEngine = new TilingEngine(TilingEngineType.BTree);
+        this.tilingEngine = new TilingEngine(engineType, engineSettings);
+    }
+
+    changeTilingEngine(engineType: TilingEngineType, engineSettings?: object) {
+        this.tilingEngine = new TilingEngine(engineType, engineSettings);
+        for (const engineWindow of this.windowMap.values()) {
+            this.tilingEngine.addWindow(engineWindow);
+        }
+    }
+
+    changeEngineSettings(engineSettings: object) {
+        this.tilingEngine.engineSettings = engineSettings;
     }
 
     buildLayout(): void {
