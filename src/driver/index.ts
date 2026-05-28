@@ -1,11 +1,13 @@
-import { Tile as KwinTile, Window as KwinWindow } from "kwin-api";
+import { Tile as KwinTile, Window as KwinWindow, LayoutDirection, Output, VirtualDesktop } from "kwin-api";
 import { Tile as EngineTile, Window as EngineWindow, TilingEngine, TilingEngineType } from "../engine";
 import { buildLayout } from "./buildlayout";
-import { console, windowExists } from "../controller";
+import { console, queueEvent, windowExists } from "../controller";
 import { Direction, GRect } from "../util/geometry";
 
 export class Driver {
     rootTile: KwinTile;
+    desktop: VirtualDesktop;
+    output: Output;
 
     tileMap: Map<KwinTile, EngineTile> = new Map();
     windowMap: Map<KwinWindow, EngineWindow> = new Map();
@@ -13,18 +15,26 @@ export class Driver {
 
     tilingEngine: TilingEngine;
 
-    constructor(rootTile: KwinTile) {
+    constructor(rootTile: KwinTile, desktop: VirtualDesktop, output: Output) {
         this.rootTile = rootTile;
+        this.desktop = desktop;
+        this.output = output;
+
         this.tilingEngine = new TilingEngine(TilingEngineType.BTree);
     }
 
     buildLayout(): void {
         const engineRootTile = this.tilingEngine.buildLayout();
+        const previousTileSet = new Set(this.tileMap.keys());
         this.tileMap = buildLayout(this.rootTile, engineRootTile);
         
         const invertedWindowMap = new Map(Array.from(this.windowMap, a => [a[1], a[0]]));
         const tiledWindowsList: KwinWindow[] = [];
         for (const [kwinTile, engineTile] of this.tileMap) {
+            // set callbacks on tiles that do not have callbacks set
+            if (!previousTileSet.has(kwinTile)) {
+                kwinTile.relativeGeometryChanged.connect(this.updateTilesCallback.bind(this));
+            }
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
                 if (kwinWindow != undefined && windowExists(kwinWindow)) {
@@ -38,17 +48,17 @@ export class Driver {
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindowsList.includes(kwinWindow)) {
-                if (windowExists(kwinWindow) && kwinWindow.tile != null) {
+                if (windowExists(kwinWindow)) {
                     setUntiledProps(kwinWindow);
-                    kwinWindow.tile.unmanage(kwinWindow);
+                    if (kwinWindow.tile != null) kwinWindow.tile.unmanage(kwinWindow);
                 }
             }
         }
         // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
         for (const kwinWindow of this.windowsToUnmanage) {
-            if (windowExists(kwinWindow) && kwinWindow.tile != null) {
+            if (windowExists(kwinWindow)) {
                 setUntiledProps(kwinWindow);
-                kwinWindow.tile.unmanage(kwinWindow);
+                if (kwinWindow.tile != null) kwinWindow.tile.unmanage(kwinWindow);
             }
         }
         this.windowsToUnmanage = [];
@@ -93,6 +103,34 @@ export class Driver {
         this.windowsToUnmanage.push(kwinWindow);
         this.tilingEngine.removeWindow(engineWindow);
         this.windowMap.delete(kwinWindow);
+    }
+
+    // as of right now, can only update sizes (ie cannot add/remove tiles)
+    updateTiles(): void {
+        const oldTotalChildrenSizes = new Map<EngineTile, number>();
+        for (const engineTile of this.tileMap.values()) {
+            oldTotalChildrenSizes.set(engineTile, engineTile.totalChildrenSize());
+        }
+        for (const [kwinTile, engineTile] of this.tileMap) {
+            if (kwinTile.parent == null || engineTile.parent == null) continue;
+            let size: number;
+            if (engineTile.parent.layoutDirection === LayoutDirection.Horizontal) {
+                size = kwinTile.relativeGeometry.width /= kwinTile.parent.relativeGeometry.width;
+            } else {
+                size = kwinTile.relativeGeometry.height /= kwinTile.parent.relativeGeometry.height;
+            }
+            size *= oldTotalChildrenSizes.get(engineTile.parent)!;
+            engineTile.size = size;
+        }
+        this.tilingEngine.updateTiles(this.tileMap.get(this.rootTile)!);
+    }
+
+    updateTilesCallback() {
+        queueEvent({
+            t: "updateTiles",
+            desktop: this.desktop,
+            output: this.output
+        });
     }
 }
 

@@ -38,8 +38,20 @@ interface PlaceWindowEvent {
     tile: Tile,
     direction?: Direction
 }
+interface UpdateTilesEvent {
+    t: "updateTiles",
+    desktop: VirtualDesktop,
+    output: Output
+}
 
-export type Event = TileWindowEvent | UntileWindowEvent | UpdateDriversEvent | RebuildDesktopsEvent | RemoveWindowEvent | WindowActivatedEvent | PlaceWindowEvent;
+export type Event = TileWindowEvent
+    | UntileWindowEvent
+    | UpdateDriversEvent
+    | RebuildDesktopsEvent
+    | RemoveWindowEvent
+    | WindowActivatedEvent
+    | PlaceWindowEvent
+    | UpdateTilesEvent;
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event

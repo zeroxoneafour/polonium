@@ -142,5 +142,9 @@ export class Tile {
         }
         this.children = [];
     }
+    
+    totalChildrenSize(): number {
+        return this.children.reduce((s, t) => s + t.size, 0);
+    }
 }
 

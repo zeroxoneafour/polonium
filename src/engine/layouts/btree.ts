@@ -19,6 +19,7 @@ class Node {
     parent: Node | null = null;
     children: [Node, Node] | null = null;
     window: Window | null = null;
+    size: number = 1;
 
     layoutDirectionRoot: LayoutDirection = LayoutDirection.Horizontal;
     get layoutDirection(): LayoutDirection {
@@ -97,6 +98,7 @@ export default class BTreeEngine implements TilingEngineInterface {
             const [node, tile] = queue.pop()!;
             this.tileMap.set(tile, node);
             if (node.window !== null) tile.windows.push(node.window);
+            tile.size = node.size;
             tile.layoutDirection = node.layoutDirection;
             if (node.children !== null) {
                 const [child1, child2] = node.children;
@@ -168,6 +170,9 @@ export default class BTreeEngine implements TilingEngineInterface {
         }
     }
 
-    // I will do this later maybe
-    updateTiles(rootTile: Tile): void {}
+    updateTiles(_rootTile: Tile): void {
+        for (const [tile, node] of this.tileMap) {
+            node.size = tile.size;
+        }
+    }
 }

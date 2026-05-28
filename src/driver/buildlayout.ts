@@ -56,7 +56,7 @@ function matchChildrenCount(kwinTile: KwinTile, engineTile: EngineTile): void {
 
 function matchChildrenSizes(kwinTile: KwinTile, engineTile: EngineTile): void {
     const layoutDirection = engineTile.layoutDirection;
-    const totalSize = engineTile.children.reduce((a, b) => a + b.size, 0);
+    const totalSize = engineTile.totalChildrenSize();
     for (let i = 0; i < kwinTile.tiles.length; i += 1) {
         const kwinChild = kwinTile.tiles[i];
         const engineChild = engineTile.children[i];

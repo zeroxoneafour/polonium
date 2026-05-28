@@ -46,8 +46,8 @@ class Controller {
 
     processEvents() {
         this.processingEvents = true;
-        console().log("Handling", this.eventQueue.size, "events");
         const queue = this.simplifyEventQueue();
+        console().log("Handling", queue.size, "event(s)");
         this.eventQueue = new Queue<Event>();
         while (!queue.isEmpty) {
             this.handleEvent(queue.pop()!);
@@ -60,12 +60,14 @@ class Controller {
 
     simplifyEventQueue(): Queue<Event> {
         // ultra simple simplifier - only cut out events that directly cancel each other out
+        // also simplifies duplicate events for updateTiles as this typically generates mass duplicates
         // todo in future - simplify events on a per-desktop, per-output basis
         const events = [];
         while (!this.eventQueue.isEmpty) {
             events.push(this.eventQueue.pop()!);
         }
         const eventsRet = [...events];
+        const updateTilesEventSet = new Set<string>();
         for (const ev of events) {
             switch (ev.t) {
                 case "tileWindow":
@@ -74,6 +76,13 @@ class Controller {
                     eventsRet.splice(eventsRet.indexOf(parallelEvent), 1);
                     eventsRet.splice(eventsRet.indexOf(ev), 1);
                     break;
+                case "updateTiles":
+                    const id = desktopId(ev.output, ev.desktop);
+                    if (updateTilesEventSet.has(id)) {
+                        eventsRet.splice(eventsRet.indexOf(ev), 1);
+                    } else {
+                        updateTilesEventSet.add(id);
+                    }
                 default: break;
             }
         }
@@ -125,6 +134,10 @@ class Controller {
                 console().log("placing window", ev.window.resourceClass, "in tile at", ev.tile.absoluteGeometry);
                 this.drivers.get(desktopId(ev.output, ev.desktop))?.placeWindow(ev.window, ev.tile, ev.direction);
                 break;
+            case "updateTiles":
+                console().log("updating tiles for desktop", ev.desktop.name, "on output", ev.output.name);
+                this.drivers.get(desktopId(ev.output, ev.desktop))?.updateTiles();
+                break;
         }
     }
 
@@ -145,7 +158,8 @@ class Controller {
         for (const output of this.workspace.screens) {
             for (const desktop of this.workspace.desktops) {
                 if (!this.drivers.has(desktopId(output, desktop))) {
-                    this.drivers.set(desktopId(output, desktop), new Driver(this.workspace.rootTile(output, desktop)));
+                    const rootTile = this.workspace.rootTile(output, desktop);
+                    this.drivers.set(desktopId(output, desktop), new Driver(rootTile, desktop, output));
                 }
             }
         }
