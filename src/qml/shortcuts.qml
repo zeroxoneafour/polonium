@@ -4,18 +4,42 @@ import QtQuick;
 import org.kde.kwin;
 
 Item {
-    id: dbus;
+    id: shortcuts;
     
-    function getRetileWindow() {
-        return retileWindow;
+    function getToggleActiveTiling() {
+        return toggleActiveTiling;
     }
     ShortcutHandler {
-        id: retileWindow;
+        id: toggleActiveTiling;
         
-        name: "PoloniumRetileWindow";
-        text: "Polonium: Retile Window";
+        name: "PoloniumToggleActiveTiling";
+        text: "Polonium: Toggle Tiling on Active Window";
         sequence: "Meta+Shift+Space";
     }
+    // no default shortcuts for specific engines
+    function getSetEngineBTree() {
+        return setEngineBTree;
+    }
+    ShortcutHandler {
+        id: setEngineBTree;
+        
+        name: "PoloniumSetEngineBTree";
+        text: "Polonium: Use Binary Tree Engine";
+        sequence: "";
+    }
+
+    function getSetEngineHalf() {
+        return setEngineHalf;
+    }
+    ShortcutHandler {
+        id: setEngineHalf;
+        
+        name: "PoloniumSetEngineHalf";
+        text: "Polonium: Use Half Engine";
+        sequence: "";
+    }
+
+    /*
     
     function getOpenSettings() {
         return openSettings;
@@ -182,29 +206,6 @@ Item {
         sequence: "Meta+|";
     }
     
-    // no default shortcuts for specific engines
-    function getSwitchBTree() {
-        return switchBTree;
-    }
-    ShortcutHandler {
-        id: switchBTree;
-        
-        name: "PoloniumSwitchBTree";
-        text: "Polonium: Use Binary Tree Engine";
-        sequence: "";
-    }
-
-    function getSwitchHalf() {
-        return switchHalf;
-    }
-    ShortcutHandler {
-        id: switchHalf;
-        
-        name: "PoloniumSwitchHalf";
-        text: "Polonium: Use Half Engine";
-        sequence: "";
-    }
-    
     function getSwitchThreeColumn() {
         return switchThreeColumn;
     }
@@ -237,4 +238,5 @@ Item {
         text: "Polonium: Use KWin Engine";
         sequence: "";
     }
+    */
 }

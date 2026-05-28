@@ -1,100 +1,229 @@
-// controller.ts - Main controller object of the script
-
-import { Options, Tile, Window } from "kwin-api";
+import { Options, Output, VirtualDesktop, Console as QmlConsole, Window } from "kwin-api";
+import { Event, eventsAreParallel } from "./event";
+import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
-import * as Qml from "../extern/qml";
-
-import { Log } from "../util/log";
-import { Config } from "../util/config";
-
-import { DriverManager } from "../driver";
-
-import { DBusManager } from "./actions/dbus";
-import { DesktopFactory } from "./desktop";
-import { WindowExtensions, WorkspaceExtensions } from "./extensions";
-import { ShortcutManager } from "./actions/shortcuts";
-import { WindowHookManager } from "./actions/windowhooks";
-import { SettingsDialogManager } from "./actions/settingsdialog";
-import { WorkspaceActions } from "./actions/basic";
+import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
+import { Queue } from "../util/queue";
+import { Console } from "./console";
+import { Driver } from "../driver";
 import { QTimer } from "kwin-api/qt";
+import { Config } from "./config";
 
-export class Controller {
+class Controller {
     workspace: Workspace;
     options: Options;
-    kwinApi: KWin;
-    qmlObjects: Qml.Objects;
+    kwin: KWin;
+    qmlObjects: QmlObjects;
 
-    desktopFactory: DesktopFactory;
+    eventQueue: Queue<Event> = new Queue();
+    eventTimer: QTimer;
+    processingEvents: boolean = false;
 
-    driverManager: DriverManager;
-    dbusManager: DBusManager;
-    shortcutManager: ShortcutManager;
-    windowHookManager: WindowHookManager;
-    settingsDialogManager: SettingsDialogManager;
-    workspaceActions: WorkspaceActions;
+    drivers: Map<DesktopIdentifier, Driver> = new Map();
+    windowHandlers: Map<Window, WindowHandler> = new Map();
 
-    logger: Log;
-    config: Config;
-
-    workspaceExtensions: WorkspaceExtensions;
-    windowExtensions: Map<Window, WindowExtensions> = new Map();
-    managedTiles: Set<Tile> = new Set();
-
-    initTimer: QTimer;
-
-    constructor(qmlApi: Qml.Api, qmlObjects: Qml.Objects) {
+    constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
         this.options = qmlApi.options;
-        this.kwinApi = qmlApi.kwin;
+        this.kwin = qmlApi.kwin;
         this.qmlObjects = qmlObjects;
 
-        this.desktopFactory = new DesktopFactory(this.workspace);
+        this.eventTimer = qmlObjects.root.createTimer();
+        this.eventTimer.interval = config.rebuildDelay;
+        this.eventTimer.repeat = false;
+        this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
-        this.config = new Config(this.kwinApi);
-        this.logger = new Log(this.config, this.qmlObjects.root);
-        this.logger.info("Polonium started!");
-        if (!this.config.debug) {
-            this.logger.info(
-                "Polonium debug is DISABLED! Enable it and restart KWin before sending logs!",
-            );
+        new WorkspaceHandler(this.workspace);
+        new ShortcutsHandler(this.workspace, this.qmlObjects.shortcuts);
+        this.updateDrivers();
+    }
+
+    queueEvent(ev: Event) {
+        // dont add events if processing because processing itself causes a lot of signals to trigger
+        if (this.processingEvents) return;
+        this.eventQueue.push(ev);
+        this.eventTimer.start();
+    }
+
+    processEvents() {
+        this.processingEvents = true;
+        const queue = this.simplifyEventQueue();
+        console().debug("Handling", queue.size, "event(s)");
+        this.eventQueue = new Queue<Event>();
+        while (!queue.isEmpty) {
+            this.handleEvent(queue.pop()!);
         }
-        this.logger.debug("Config is", JSON.stringify(this.config));
-
-        this.workspaceExtensions = new WorkspaceExtensions(this.workspace);
-
-        this.dbusManager = new DBusManager(this);
-        this.driverManager = new DriverManager(this);
-        this.shortcutManager = new ShortcutManager(this);
-        this.windowHookManager = new WindowHookManager(this);
-        this.settingsDialogManager = new SettingsDialogManager(this);
-        this.workspaceActions = new WorkspaceActions(this);
-
-        // delayed init will help with some stuff
-        this.initTimer = qmlObjects.root.createTimer();
-        this.initTimer.interval = this.config.timerDelay;
-        this.initTimer.triggered.connect(this.initCallback.bind(this));
-        this.initTimer.repeat = false;
-    }
-
-    init(): void {
-        this.initTimer.start();
-    }
-
-    private initCallback(): void {
-        // keep restarting the call until it actually initializes properly
-        if (
-            this.workspace.activities.length == 1 &&
-            this.workspace.activities[0] ==
-                "00000000-0000-0000-0000-000000000000"
-        ) {
-            this.logger.debug("Restarting init timer");
-            // gradually increase time between restart calls for slower systems
-            this.initTimer.interval += this.config.timerDelay;
-            this.initTimer.restart();
-            return;
+        for (const output of this.workspace.screens) {
+            this.drivers.get(desktopId(output, this.workspace.currentDesktop))?.buildLayout();
         }
-        // hook into kwin after everything loads nicely
-        this.workspaceActions.addHooks();
-        this.driverManager.init();
+        this.processingEvents = false;
     }
+
+    simplifyEventQueue(): Queue<Event> {
+        // ultra simple simplifier - only cut out events that directly cancel each other out
+        // also simplifies duplicate events for updateTiles as this typically generates mass duplicates
+        // todo in future - simplify events on a per-desktop, per-output basis
+        const events = [];
+        while (!this.eventQueue.isEmpty) {
+            events.push(this.eventQueue.pop()!);
+        }
+        const eventsRet = [...events];
+        const updateTilesEventSet = new Set<string>();
+        for (const ev of events) {
+            switch (ev.t) {
+                case "tileWindow":
+                    const parallelEvent = events.find(e => (e.t === "untileWindow" && eventsAreParallel(ev, e)));
+                    if (parallelEvent === undefined) break;
+                    eventsRet.splice(eventsRet.indexOf(parallelEvent), 1);
+                    eventsRet.splice(eventsRet.indexOf(ev), 1);
+                    break;
+                case "updateTiles":
+                    const id = desktopId(ev.output, ev.desktop);
+                    if (updateTilesEventSet.has(id)) {
+                        eventsRet.splice(eventsRet.indexOf(ev), 1);
+                    } else {
+                        updateTilesEventSet.add(id);
+                    }
+                default: break;
+            }
+        }
+        const queue = new Queue<Event>();
+        queue.multipush(eventsRet);
+        return queue;
+    }
+
+    handleEvent(ev: Event) {
+        console().debug("handling event", ev.t);
+        switch(ev.t) {
+            case "tileWindow":
+                for (const desktop of ev.desktops) {
+                    console().log("adding window", ev.window.resourceClass, "on desktop", desktop.name, "on output", ev.output.name);
+                    this.drivers.get(desktopId(ev.output, desktop))?.addWindow(ev.window);
+                }
+                break;
+            case "untileWindow":
+                let desktops = ev.desktops;
+                let output = ev.output;
+                // window can be destroyed but ref is still "valid" (not null) so we have to check for that
+                if (!windowExists(ev.window)) {
+                    // have to get the desktops another way if the window is destroyed
+                    const handler = getWindowHandler(ev.window);
+                    // if the handler is undefined then dont remove it from anything idek how this would happen
+                    if (handler == undefined) {
+                        console().warn("handler undefined for removed window, attempting remove from all desktops")
+                        // in this case, window has been destroyed so attempt to remove it from all drivers
+                        for (const desktop of this.workspace.desktops) {
+                            for (const output of this.workspace.screens) {
+                                this.drivers.get(desktopId(output, desktop))?.removeWindow(ev.window);
+                            }
+                        }
+                        return;
+                    }
+                    desktops = handler.previousDesktops;
+                    output = handler.previousOutput;
+                }
+                for (const desktop of desktops) {
+                    console().log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", output.name);
+                    this.drivers.get(desktopId(output, desktop))?.removeWindow(ev.window);
+                }
+                break;
+            case "updateDrivers":
+                this.updateDrivers();
+                break;
+            case "rebuildDesktops":
+                // we rebuild them anyway after any event has been registered, this is a blank event that guarantees a rebuild
+                break;
+            // call untileWindow before this
+            case "removeWindow":
+                // sometimes this may say "destroying window undefined" but thats ok
+                console().log("destroying window", ev.window.resourceClass);
+                this.windowHandlers.delete(ev.window);
+                break;
+            case "windowActivated":
+                break;
+            case "placeWindow":
+                console().log("placing window", ev.window.resourceClass, "in tile at", ev.tile.absoluteGeometry);
+                this.drivers.get(desktopId(ev.output, ev.desktop))?.placeWindow(ev.window, ev.tile, ev.direction);
+                break;
+            case "updateTiles":
+                console().log("updating tiles for desktop", ev.desktop.name, "on output", ev.output.name);
+                this.drivers.get(desktopId(ev.output, ev.desktop))?.updateTiles();
+                break;
+            case "changeEngine":
+                console().log("changing engine type/settings for desktop", ev.desktop.name, "on output", ev.output.name);
+                this.drivers.get(desktopId(ev.output, ev.desktop))?.changeTilingEngine(ev.engineType, ev.engineSettings);
+                break;
+        }
+    }
+
+    parseDesktopId(id: DesktopIdentifier): [Output?, VirtualDesktop?] {
+        const parsed = JSON.parse(id);
+        const output = this.workspace.screens.find(s => s.name === parsed.o);
+        const desktop = this.workspace.desktops.find(d => d.id === parsed.d);
+        return [output, desktop];
+    }
+
+    updateDrivers() {
+        for (const id of this.drivers.keys()) {
+            const [output, desktop] = this.parseDesktopId(id);
+            if (!output || !desktop) {
+                this.drivers.delete(id);
+            }
+        }
+        for (const output of this.workspace.screens) {
+            for (const desktop of this.workspace.desktops) {
+                const id = desktopId(output, desktop);
+                if (!this.drivers.has(id)) {
+                    const rootTile = this.workspace.rootTile(output, desktop);
+                    const driver = new Driver(rootTile, desktop, output, config.defaultEngine);
+                    this.drivers.set(id, driver);
+                }
+            }
+        }
+    }
+}
+
+
+let controller: Controller;
+let consoleObj: Console;
+export let config: Config;
+
+export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
+    consoleObj = new Console(qmlApi.console);
+    config = new Config(qmlApi.kwin);
+    controller = new Controller(qmlApi, qmlObjects);
+    console().log("Controller initialized");
+}
+
+export function console(): Console {
+    return consoleObj;
+}
+
+// controller should exist at all points other than right after initialization
+// also it creates everything that would call this, so logically it should exist(?)
+export function queueEvent(ev: Event): void {
+    controller.queueEvent(ev);
+}
+
+export function getWindowHandler(window: Window): WindowHandler | undefined {
+    return controller.windowHandlers.get(window);
+}
+
+export function createWindowHandler(window: Window): WindowHandler {
+    console().log("registering window", window.resourceClass);
+    const handler = new WindowHandler(window, controller.workspace);
+    controller.windowHandlers.set(window, handler);
+    return handler;
+}
+
+// sometimes the window can be destroyed before rebuild but the ref will still exist, so make sure it exists before calling stuff on it
+export function windowExists(window: Window): boolean {
+    return controller.workspace.windows.includes(window);
+}
+
+// js can only map off of concrete types (ex. strings)
+// this shouldn't be used outside of the controller file so no export
+type DesktopIdentifier = string;
+function desktopId(output: Output, desktop: VirtualDesktop): DesktopIdentifier {
+    return `{"o":"${output.name}","d":"${desktop.id}"}`;
 }

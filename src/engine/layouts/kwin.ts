@@ -1,6 +1,7 @@
 // kwin.ts - Layout engine that mimics kwin default tiling
 // quite a bit smaller this time!
 
+/*
 import {
     TilingEngine,
     EngineCapability,
@@ -55,3 +56,4 @@ export default class KwinEngine extends TilingEngine {
         return;
     }
 }
+*/

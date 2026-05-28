@@ -1,5 +1,5 @@
 // monocle.ts - Monocle layout
-
+/*
 import {
     TilingEngine,
     EngineCapability,
@@ -78,3 +78,4 @@ export default class MonocleEngine extends TilingEngine {
         return;
     }
 }
+*/
