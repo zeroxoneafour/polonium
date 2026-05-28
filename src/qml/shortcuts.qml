@@ -16,6 +16,28 @@ Item {
         text: "Polonium: Toggle Tiling on Active Window";
         sequence: "Meta+Shift+Space";
     }
+    // no default shortcuts for specific engines
+    function getSetEngineBTree() {
+        return setEngineBTree;
+    }
+    ShortcutHandler {
+        id: setEngineBTree;
+        
+        name: "PoloniumSetEngineBTree";
+        text: "Polonium: Use Binary Tree Engine";
+        sequence: "";
+    }
+
+    function getSetEngineHalf() {
+        return setEngineHalf;
+    }
+    ShortcutHandler {
+        id: setEngineHalf;
+        
+        name: "PoloniumSetEngineHalf";
+        text: "Polonium: Use Half Engine";
+        sequence: "";
+    }
 
     /*
     
@@ -182,29 +204,6 @@ Item {
         name: "PoloniumCycleEngine";
         text: "Polonium: Cycle Engine";
         sequence: "Meta+|";
-    }
-    
-    // no default shortcuts for specific engines
-    function getSwitchBTree() {
-        return switchBTree;
-    }
-    ShortcutHandler {
-        id: switchBTree;
-        
-        name: "PoloniumSwitchBTree";
-        text: "Polonium: Use Binary Tree Engine";
-        sequence: "";
-    }
-
-    function getSwitchHalf() {
-        return switchHalf;
-    }
-    ShortcutHandler {
-        id: switchHalf;
-        
-        name: "PoloniumSwitchHalf";
-        text: "Polonium: Use Half Engine";
-        sequence: "";
     }
     
     function getSwitchThreeColumn() {

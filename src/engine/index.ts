@@ -1,7 +1,7 @@
 // engine/index.ts - Wrapper around the engines to interact with the driver
-import { QPoint } from "kwin-api/qt";
 import { TilingEngineInterface, Window, Tile, Direction } from "./engine";
 import BTreeEngine from "./layouts/btree";
+import HalfEngine from "./layouts/half";
 
 export { Window, Tile, Direction };
 
@@ -14,14 +14,16 @@ export class TilingEngine {
     private engine: TilingEngineInterface;
     private engineRootTile: Tile;
 
+    readonly engineType: TilingEngineType;
+
     constructor(type: TilingEngineType, settings?: object) {
+        this.engineType = type;
         switch (type) {
             case TilingEngineType.BTree:
                 this.engine = new BTreeEngine();
                 break;
             case TilingEngineType.Half:
-                // coming soon
-                this.engine = new BTreeEngine();
+                this.engine = new HalfEngine();
                 break;
         }
         if (settings !== undefined) this.engine.engineSettings = settings;

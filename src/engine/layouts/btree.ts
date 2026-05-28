@@ -3,7 +3,6 @@
 import { TilingEngineInterface, Tile, Window, Direction } from "../engine";
 import { Queue } from "../../util/queue";
 import { LayoutDirection } from "kwin-api";
-import { console } from "../../controller";
 
 class BTreeSettings {
     insertOnRight: boolean = false;
@@ -63,17 +62,6 @@ class Node {
         for (const child of this.parent.children ?? []) {
             child.parent = this.parent;
         }
-
-        // null everything so hopefully gc gets it
-        // never mind its got it probably
-        /*
-        sibling.window = null;
-        sibling.children = null;
-        sibling.parent = null;
-        this.parent = null;
-        this.children = null;
-        this.window = null;
-        */
     }
 }
 

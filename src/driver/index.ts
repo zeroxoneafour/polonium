@@ -23,15 +23,15 @@ export class Driver {
         this.tilingEngine = new TilingEngine(engineType, engineSettings);
     }
 
-    changeTilingEngine(engineType: TilingEngineType, engineSettings?: object) {
-        this.tilingEngine = new TilingEngine(engineType, engineSettings);
-        for (const engineWindow of this.windowMap.values()) {
-            this.tilingEngine.addWindow(engineWindow);
+    changeTilingEngine(engineType?: TilingEngineType, engineSettings?: object) {
+        if (engineType !== undefined && this.tilingEngine.engineType != engineType) {
+            this.tilingEngine = new TilingEngine(engineType, engineSettings);
+            for (const engineWindow of this.windowMap.values()) {
+                this.tilingEngine.addWindow(engineWindow);
+            }
+        } else if (engineSettings !== undefined) {
+            this.tilingEngine.engineSettings = engineSettings;
         }
-    }
-
-    changeEngineSettings(engineSettings: object) {
-        this.tilingEngine.engineSettings = engineSettings;
     }
 
     buildLayout(): void {

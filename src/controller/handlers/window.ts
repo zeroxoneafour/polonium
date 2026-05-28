@@ -1,5 +1,5 @@
 import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
-import { config, queueEvent } from "..";
+import { config, console, queueEvent } from "..";
 import { Workspace } from "kwin-api/qml";
 import { GRect } from "../../util/geometry";
 
@@ -35,6 +35,8 @@ export class WindowHandler {
     }
 
     outputChanged() {
+        console().debug("output changed on window", this.window.resourceClass);
+
         const previousOutput = this.previousOutput;
         this.previousOutput = this.window.output;
         if (!this.tiled) return;
@@ -54,6 +56,8 @@ export class WindowHandler {
     }
 
     desktopsChanged() {
+        console().debug("desktops changed on window", this.window.resourceClass);
+        
         const previousDesktops = [...this.previousDesktops];
         this.previousDesktops = [...this.window.desktops];
         if (!this.tiled) return;
@@ -90,6 +94,7 @@ export class WindowHandler {
     }
 
     fullscreenChanged() {
+        console().debug("fullscreen changed on window", this.window.resourceClass);
         if (this.window.fullScreen && this.tiled) {
             this.tiled = false;
             queueEvent({
@@ -98,7 +103,7 @@ export class WindowHandler {
                 desktops: this.window.desktops,
                 output: this.window.output
             });
-        } else if (!this.window.fullScreen && !this.tiled && this.wantsTiled) {
+        } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
             this.tiled = true;
             queueEvent({
                 t: "tileWindow",
@@ -111,6 +116,7 @@ export class WindowHandler {
 
     tileChanged(tile: Tile) {
         if (this.tiled && this.window.tile == null && this.canBeTiled()) {
+            console().debug("tile changed on window", this.window.resourceClass);
             this.tiled = false;
             queueEvent({
                 t: "untileWindow",
@@ -123,6 +129,7 @@ export class WindowHandler {
 
     interactiveMoveResizeFinished() {
         if (this.wantsTiled && this.canBeTiled() && !this.tiled) {
+            console().debug("move/resize finished on window", this.window.resourceClass);
             const cursorPos = this.workspace.cursorPos;
             this.tiled = true;
             for (const desktop of this.window.desktops) {

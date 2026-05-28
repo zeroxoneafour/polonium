@@ -4,8 +4,7 @@ import { LogLevel } from "./config";
 
 export class Console {
     private console: QmlConsole;
-    // set this to true to disable logs, will make this better in future
-    private dontLog: boolean = false;
+
     constructor(console: QmlConsole) {
         this.console = console;
     }

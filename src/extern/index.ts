@@ -20,4 +20,6 @@ export interface Root {
 
 export interface Shortcuts {
     getToggleActiveTiling(): ShortcutHandler;
+    getSetEngineBTree(): ShortcutHandler;
+    getSetEngineHalf(): ShortcutHandler;
 }

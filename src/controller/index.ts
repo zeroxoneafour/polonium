@@ -48,7 +48,7 @@ class Controller {
     processEvents() {
         this.processingEvents = true;
         const queue = this.simplifyEventQueue();
-        console().log("Handling", queue.size, "event(s)");
+        console().debug("Handling", queue.size, "event(s)");
         this.eventQueue = new Queue<Event>();
         while (!queue.isEmpty) {
             this.handleEvent(queue.pop()!);
@@ -93,7 +93,7 @@ class Controller {
     }
 
     handleEvent(ev: Event) {
-        console().log("handling event", ev.t);
+        console().debug("handling event", ev.t);
         switch(ev.t) {
             case "tileWindow":
                 for (const desktop of ev.desktops) {
@@ -109,8 +109,17 @@ class Controller {
                     // have to get the desktops another way if the window is destroyed
                     const handler = getWindowHandler(ev.window);
                     // if the handler is undefined then dont remove it from anything idek how this would happen
-                    if (handler == undefined) break;
-                    desktops = handler.previousDesktops ?? [];
+                    if (handler == undefined) {
+                        console().warn("handler undefined for removed window, attempting remove from all desktops")
+                        // in this case, window has been destroyed so attempt to remove it from all drivers
+                        for (const desktop of this.workspace.desktops) {
+                            for (const output of this.workspace.screens) {
+                                this.drivers.get(desktopId(output, desktop))?.removeWindow(ev.window);
+                            }
+                        }
+                        return;
+                    }
+                    desktops = handler.previousDesktops;
                     output = handler.previousOutput;
                 }
                 for (const desktop of desktops) {
@@ -139,6 +148,10 @@ class Controller {
             case "updateTiles":
                 console().log("updating tiles for desktop", ev.desktop.name, "on output", ev.output.name);
                 this.drivers.get(desktopId(ev.output, ev.desktop))?.updateTiles();
+                break;
+            case "changeEngine":
+                console().log("changing engine type/settings for desktop", ev.desktop.name, "on output", ev.output.name);
+                this.drivers.get(desktopId(ev.output, ev.desktop))?.changeTilingEngine(ev.engineType, ev.engineSettings);
                 break;
         }
     }

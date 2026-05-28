@@ -1,175 +1,134 @@
 // half.ts - Tiling engine for the half/split layout
 
-/*
-import {
-    Tile,
-    Client,
-    TilingEngine,
-    EngineCapability,
-    EngineSettings,
-} from "../engine";
-import { Direction } from "../../util/geometry";
-import { InsertionPoint } from "../../util/config";
+import { LayoutDirection } from "kwin-api";
+import { Tile, Window, TilingEngineInterface, Direction } from "../engine";
 
-class ClientBox {
-    client: Client;
+class WindowBox {
+    window: Window;
+    size: number = 1;
 
-    constructor(client: Client) {
-        this.client = client;
+    constructor(window: Window) {
+        this.window = window;
     }
 }
 
-class BoxIndex {
-    index: number;
-    left: boolean = false;
-    right: boolean = false;
-    box: ClientBox;
-
-    constructor(engine: HalfEngine, client: Client) {
-        for (let i = 0; i < engine.left.length; i += 1) {
-            if (engine.left[i].client == client) {
-                this.index = i;
-                this.left = true;
-                this.box = engine.left[i];
-                return;
-            }
-        }
-        for (let i = 0; i < engine.right.length; i += 1) {
-            if (engine.right[i].client == client) {
-                this.index = i;
-                this.right = true;
-                this.box = engine.right[i];
-                return;
-            }
-        }
-        throw new Error("Couldn't find box");
-    }
-}
-
-interface HalfEngineSettings extends EngineSettings {
-    middleSplit: number;
-}
-
-export default class HalfEngine extends TilingEngine {
-    engineCapability = EngineCapability.TranslateRotation;
-    tileMap: Map<Tile, ClientBox> = new Map();
-    left: ClientBox[] = [];
-    right: ClientBox[] = [];
-    // the ratio of left side to total space
+class HalfEngineSettings {
     middleSplit: number = 0.5;
+    side1Dominant: boolean = true;
 
-    get engineSettings(): HalfEngineSettings {
-        return {
-            middleSplit: this.middleSplit,
-        };
+    constructor(obj: any) {
+        for (const key in this) {
+            if (obj.hasOwnProperty(key)) this[key] = obj[key]; 
+        }
+    } 
+}
+
+export default class HalfEngine implements TilingEngineInterface {
+    tileMap: Map<Tile, WindowBox> = new Map();
+    side1: WindowBox[] = [];
+    side2: WindowBox[] = [];
+
+    settings = new HalfEngineSettings({});
+
+    get engineSettings(): object {
+        return this.settings;
+    }
+    set engineSettings(settings: object) {
+        this.settings = new HalfEngineSettings(settings);
     }
 
-    set engineSettings(settings: HalfEngineSettings) {
-        this.middleSplit = settings.middleSplit ?? 0.5;
+    buildLayout(): Tile {
+        const rootTile = new Tile();
+        rootTile.layoutDirection = LayoutDirection.Horizontal;
+        this.tileMap.clear();
+        if (this.side1.length == 0 && this.side2.length == 0) return rootTile;
+        if (this.side1.length == 0 || this.side2.length == 0) {
+            const dominantSide = this.side1.length == 0 ? this.side2 : this.side1;
+            if (rootTile.layoutDirection == LayoutDirection.Horizontal) {
+                rootTile.layoutDirection = LayoutDirection.Vertical;
+            } else {
+                rootTile.layoutDirection = LayoutDirection.Horizontal;
+            }
+            for (const box of dominantSide) {
+                const tile = rootTile.addChild();
+                tile.windows.push(box.window);
+                tile.size = box.size;
+                this.tileMap.set(tile, box);
+            }
+            return rootTile;
+        }
+        const side1Tile = rootTile.addChild();
+        const side2Tile = rootTile.addChild();
+        side1Tile.size = this.settings.middleSplit * 2;
+        side2Tile.size = (1-this.settings.middleSplit) * 2;
+        for (const box of this.side1) {
+            const tile = side1Tile.addChild();
+            tile.windows.push(box.window);
+            tile.size = box.size;
+            this.tileMap.set(tile, box);
+        }
+        for (const box of this.side2) {
+            const tile = side2Tile.addChild();
+            tile.windows.push(box.window);
+            tile.size = box.size;
+            this.tileMap.set(tile, box);
+        }
+        return rootTile;
     }
 
-    buildLayout() {
-        // set original tile direction based on rotating layout or not
-        this.rootTile = new Tile();
-        this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
-        if (this.left.length == 0 && this.right.length == 0) {
-            // empty root tile
+    addWindow(window: Window) {
+        if (this.settings.side1Dominant) {
+            if (this.side1.length == 0) {
+                this.side1.push(new WindowBox(window));
+            } else {
+                this.side2.push(new WindowBox(window));
+            }
+        } else {
+            if (this.side2.length == 0) {
+                this.side2.push(new WindowBox(window));
+            } else {
+                this.side1.push(new WindowBox(window));
+            }
+        }
+    }
+
+    removeWindow(window: Window) {
+        let idx = this.side1.findIndex((x) => x.window == window);
+        if (idx != -1) {
+            this.side1.splice(idx, 1);
+            if (this.side1.length == 0 && this.side2.length > 1) {
+                this.side1.push(this.side2.splice(0, 1)[0]);
+            }
             return;
-        } else if (this.left.length == 0 && this.right.length > 0) {
-            for (const box of this.right) {
-                const tile = this.rootTile.addChild();
-                tile.client = box.client;
-                this.tileMap.set(tile, box);
-            }
-        } else if (this.left.length > 0 && this.right.length == 0) {
-            for (const box of this.left) {
-                const tile = this.rootTile.addChild();
-                tile.client = box.client;
-                this.tileMap.set(tile, box);
-            }
-        } else {
-            this.rootTile.split();
-            const left = this.rootTile.tiles[0];
-            const right = this.rootTile.tiles[1];
-
-            left.relativeSize = this.middleSplit;
-            right.relativeSize = 1 - this.middleSplit;
-            for (const box of this.left) {
-                const tile = left.addChild();
-                tile.client = box.client;
-                this.tileMap.set(tile, box);
-            }
-            for (const box of this.right) {
-                const tile = right.addChild();
-                tile.client = box.client;
-                this.tileMap.set(tile, box);
-            }
         }
-    }
-
-    addClient(client: Client) {
-        if (this.config.insertionPoint == InsertionPoint.Left) {
-            if (this.right.length == 0) {
-                this.right.push(new ClientBox(client));
-            } else {
-                this.left.push(new ClientBox(client));
-            }
-        } else {
-            if (this.left.length == 0) {
-                this.left.push(new ClientBox(client));
-            } else {
-                this.right.push(new ClientBox(client));
-            }
-        }
-    }
-
-    removeClient(client: Client) {
-        let box: BoxIndex;
-        try {
-            box = new BoxIndex(this, client);
-        } catch (e) {
-            throw e;
-        }
-        if (box.right) {
-            this.right.splice(box.index, 1);
-            if (this.right.length == 0 && this.left.length > 1) {
-                this.right.push(this.left.splice(0, 1)[0]);
-            }
-        } else {
-            this.left.splice(box.index, 1);
-            if (this.left.length == 0 && this.right.length > 1) {
-                this.left.push(this.right.splice(0, 1)[0]);
-            }
+        idx = this.side2.findIndex((x) => x.window == window);
+        if (idx == -1) return;
+        this.side2.splice(idx, 1);
+        if (this.side2.length == 0 && this.side1.length > 1) {
+            this.side2.push(this.side1.splice(0, 1)[0]);
         }
     }
 
     // default to inserting below
-    putClientInTile(
-        client: Client,
-        tile: Tile,
-        direction: Direction = Direction.Vertical,
-    ) {
-        const clientBox = new ClientBox(client);
-        let targetBox: BoxIndex;
-        const box = this.tileMap.get(tile);
-        if (box == undefined) {
-            this.addClient(client);
+    placeWindow(window: Window, tile: Tile, direction: Direction = Direction.Vertical) {
+        const targetBox = this.tileMap.get(tile);
+        if (targetBox == undefined) {
+            this.addWindow(window);
             return;
         }
-        targetBox = new BoxIndex(this, box.client);
-
-        const targetArr = targetBox.left ? this.left : this.right;
+        const newBox = new WindowBox(window);
+        const side = this.side1.includes(targetBox) ? this.side1 : this.side2;
+        const idx = side.indexOf(targetBox);
         if (direction & Direction.Up) {
-            targetArr.splice(targetBox.index, 0, clientBox);
+            side.splice(idx, 0, newBox);
         } else {
-            targetArr.splice(targetBox.index + 1, 0, clientBox);
+            side.splice(idx + 1, 0, newBox);
         }
     }
 
-    regenerateLayout(): void {
-        if (this.rootTile.tiles.length == 2) {
-            this.middleSplit = this.rootTile.tiles[0].relativeSize;
+    updateTiles(rootTile: Tile): void {
+        if (rootTile.children.length == 2) {
+            this.settings.middleSplit = rootTile.children[0].size / rootTile.totalChildrenSize();
         }
     }
 }
-*/

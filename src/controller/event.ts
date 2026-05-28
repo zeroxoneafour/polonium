@@ -1,5 +1,6 @@
 import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
 import { Direction } from "../util/geometry";
+import { TilingEngineType } from "../engine";
 
 interface TileWindowEvent {
     t: "tileWindow";
@@ -43,6 +44,13 @@ interface UpdateTilesEvent {
     desktop: VirtualDesktop,
     output: Output
 }
+interface ChangeEngineEvent {
+    t: "changeEngine",
+    desktop: VirtualDesktop,
+    output: Output,
+    engineType?: TilingEngineType,
+    engineSettings?: object,
+}
 
 export type Event = TileWindowEvent
     | UntileWindowEvent
@@ -51,7 +59,8 @@ export type Event = TileWindowEvent
     | RemoveWindowEvent
     | WindowActivatedEvent
     | PlaceWindowEvent
-    | UpdateTilesEvent;
+    | UpdateTilesEvent
+    | ChangeEngineEvent;
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event
