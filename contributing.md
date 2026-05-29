@@ -4,17 +4,17 @@ Here to help out? Add a new feature that you or someone else desires? Fix some b
 
 This project is open to contribution from everyone, and I will probably accept the majority of pull requests. However, keep this in mind -
 
--   I do review all of the pull requests, so don't try anything sneaky or malicious.
--   You must follow the style guide below.
--   **DO NOT** format or beautify any preexisting files.
+- I do review all of the pull requests, so don't try anything sneaky or malicious.
+- You must follow the style guide below.
+- **DO NOT** format or beautify any preexisting files.
 
 ## style guide
 
--   Indent is always 4 spaces
--   All variable, property, and method names are camelCase, and all class names are PascalCase
--   Never use `if (condition) <statement>` or `for (loop) <statement>` without brackets
--   Never use namespaces if at all possible, and it almost always is possible. Look for the idiomatic TypeScript way
--   Use `const` instead of `let` anywhere possible
+- Indent is always 4 spaces
+- All variable, property, and method names are camelCase, and all class names are PascalCase
+- Never use `if (condition) <statement>` or `for (loop) <statement>` without brackets
+- Never use namespaces if at all possible, and it almost always is possible. Look for the idiomatic TypeScript way
+- Use `const` instead of `let` anywhere possible
 
 ## opening an issue/pr
 

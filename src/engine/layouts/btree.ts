@@ -9,9 +9,9 @@ class BTreeSettings {
 
     constructor(obj: any) {
         for (const key in this) {
-            if (obj.hasOwnProperty(key)) this[key] = obj[key]; 
+            if (obj.hasOwnProperty(key)) this[key] = obj[key];
         }
-    } 
+    }
 }
 
 class Node {
@@ -54,11 +54,15 @@ class Node {
         if (this.parent === null || this.parent.children === null) {
             return;
         }
-        const sibling = this.parent.children[0] === this ? this.parent.children[1] : this.parent.children[0];
+        const sibling =
+            this.parent.children[0] === this
+                ? this.parent.children[1]
+                : this.parent.children[0];
         if (sibling.window !== null) {
             this.parent.window = sibling.window;
         }
-        this.parent.children = sibling.children === null ? null : [...sibling.children];
+        this.parent.children =
+            sibling.children === null ? null : [...sibling.children];
         for (const child of this.parent.children ?? []) {
             child.parent = this.parent;
         }
@@ -111,7 +115,8 @@ export default class BTreeEngine implements TilingEngineInterface {
             const node = queue.pop()!;
             if (node.window !== null) {
                 node.split(this.settings.insertOnRight ? 1 : 0);
-                node.children![this.settings.insertOnRight ? 0 : 1].window = window;
+                node.children![this.settings.insertOnRight ? 0 : 1].window =
+                    window;
                 return;
             } else {
                 if (node.children !== null) {
@@ -130,9 +135,14 @@ export default class BTreeEngine implements TilingEngineInterface {
         }
         let insertPoint = this.settings.insertOnRight ? 0 : 1;
         if (direction !== undefined) {
-            insertPoint = node.layoutDirection === LayoutDirection.Horizontal ?
-                direction & Direction.Right ? 1 : 0 :
-                direction & Direction.Up ? 0 : 1;
+            insertPoint =
+                node.layoutDirection === LayoutDirection.Horizontal
+                    ? direction & Direction.Right
+                        ? 1
+                        : 0
+                    : direction & Direction.Up
+                      ? 0
+                      : 1;
         }
         node.split(insertPoint === 0 ? 1 : 0);
         node.children![insertPoint].window = window;

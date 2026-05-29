@@ -23,37 +23,38 @@ interface RebuildDesktopsEvent {
 // registering a window is immediate, but removing a window must happen after all refs have been resolved
 // as such, removing is an event while registering/creating is not
 interface RemoveWindowEvent {
-    t: "removeWindow",
-    window: Window,
+    t: "removeWindow";
+    window: Window;
 }
 interface PlaceWindowEvent {
-    t: "placeWindow",
-    window: Window,
-    desktop: VirtualDesktop,
-    output: Output,
-    tile: Tile,
-    direction?: Direction
+    t: "placeWindow";
+    window: Window;
+    desktop: VirtualDesktop;
+    output: Output;
+    tile: Tile;
+    direction?: Direction;
 }
 interface UpdateTilesEvent {
-    t: "updateTiles",
-    desktop: VirtualDesktop,
-    output: Output
+    t: "updateTiles";
+    desktop: VirtualDesktop;
+    output: Output;
 }
 interface ChangeEngineEvent {
-    t: "changeEngine",
-    desktop: VirtualDesktop,
-    output: Output,
-    engineType?: TilingEngineType,
-    engineSettings?: object,
+    t: "changeEngine";
+    desktop: VirtualDesktop;
+    output: Output;
+    engineType?: TilingEngineType;
+    engineSettings?: object;
 }
 interface SetWindowPropertiesEvent {
-    t: "setWindowProperties",
-    window: Window,
-    fullscreen?: boolean,
-    noBorder?: boolean,
+    t: "setWindowProperties";
+    window: Window;
+    fullscreen?: boolean;
+    noBorder?: boolean;
 }
 
-export type Event = TileWindowEvent
+export type Event =
+    | TileWindowEvent
     | UntileWindowEvent
     | UpdateDriversEvent
     | RebuildDesktopsEvent
@@ -68,7 +69,10 @@ export const lateEvents = new Set(["setWindowProperties"]);
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event
-export function eventsAreParallel(ev1: TileWindowEvent, ev2: UntileWindowEvent): boolean {
+export function eventsAreParallel(
+    ev1: TileWindowEvent,
+    ev2: UntileWindowEvent,
+): boolean {
     if (ev1.window !== ev2.window) return false;
     if (ev1.output !== ev2.output) return false;
     if (ev1.desktops.length !== ev2.desktops.length) return false;

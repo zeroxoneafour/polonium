@@ -10,10 +10,12 @@ export class WorkspaceHandler {
     constructor(workspace: Workspace) {
         this.workspace = workspace;
         this.previousActivated = this.workspace.activeWindow;
-        
+
         this.workspace.windowAdded.connect(this.windowAdded.bind(this));
         this.workspace.windowRemoved.connect(this.windowRemoved.bind(this));
-        this.workspace.currentDesktopChanged.connect(this.currentDesktopChanged.bind(this));
+        this.workspace.currentDesktopChanged.connect(
+            this.currentDesktopChanged.bind(this),
+        );
         this.workspace.screensChanged.connect(this.updateDrivers.bind(this));
         this.workspace.desktopsChanged.connect(this.updateDrivers.bind(this));
         this.workspace.windowActivated.connect(this.windowActivated.bind(this));
@@ -28,37 +30,45 @@ export class WorkspaceHandler {
             t: "tileWindow",
             window: window,
             desktops: window.desktops,
-            output: window.output
+            output: window.output,
         });
     }
-    
+
     windowRemoved(window: Window) {
         // it should just not untile the window if it was never tiled, so we dont need to track that here
         // jk ig we do sometimes
         const isTiled = windowIsTiled(window);
-        if (isTiled || isTiled === undefined) queueEvent({
-            t: "untileWindow",
-            window: window,
-            desktops: window.desktops,
-            output: window.output
-        });
+        if (isTiled || isTiled === undefined)
+            queueEvent({
+                t: "untileWindow",
+                window: window,
+                desktops: window.desktops,
+                output: window.output,
+            });
         queueEvent({
             t: "removeWindow",
-            window: window
+            window: window,
         });
     }
 
-    currentDesktopChanged(previousDesktop: VirtualDesktop, currentDesktop: VirtualDesktop, output: Output) {
+    currentDesktopChanged(
+        previousDesktop: VirtualDesktop,
+        currentDesktop: VirtualDesktop,
+        output: Output,
+    ) {
         // never mind we still have to do stuff
-        queueEvent({t: "rebuildDesktops"});
+        queueEvent({ t: "rebuildDesktops" });
     }
 
     updateDrivers() {
-        queueEvent({t: "updateDrivers"});
+        queueEvent({ t: "updateDrivers" });
     }
 
     windowActivated(window: Window) {
-        if (config.borders == BorderSetting.BorderActive || config.borders == BorderSetting.BorderFloatingActive) {
+        if (
+            config.borders == BorderSetting.BorderActive ||
+            config.borders == BorderSetting.BorderFloatingActive
+        ) {
             if (windowIsTiled(window)) {
                 queueEvent({
                     t: "setWindowProperties",
@@ -66,7 +76,11 @@ export class WorkspaceHandler {
                     noBorder: false,
                 });
             }
-            if (this.previousActivated != null && (windowIsTiled(this.previousActivated) || config.borders == BorderSetting.BorderActive)) {
+            if (
+                this.previousActivated != null &&
+                (windowIsTiled(this.previousActivated) ||
+                    config.borders == BorderSetting.BorderActive)
+            ) {
                 queueEvent({
                     t: "setWindowProperties",
                     window: this.previousActivated,

@@ -8,7 +8,7 @@ body:
       attributes:
           label: Before you make the issue, confirm that
           options:
-              - label: You are running the master build from GitHub actions
+              - label: You are running the dev build from GitHub actions
                 required: true
               - label: You have read the FAQ and the usage instructions
                 required: true

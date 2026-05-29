@@ -18,9 +18,9 @@ class HalfEngineSettings {
 
     constructor(obj: any) {
         for (const key in this) {
-            if (obj.hasOwnProperty(key)) this[key] = obj[key]; 
+            if (obj.hasOwnProperty(key)) this[key] = obj[key];
         }
-    } 
+    }
 }
 
 export default class HalfEngine implements TilingEngineInterface {
@@ -43,7 +43,8 @@ export default class HalfEngine implements TilingEngineInterface {
         this.tileMap.clear();
         if (this.side1.length == 0 && this.side2.length == 0) return rootTile;
         if (this.side1.length == 0 || this.side2.length == 0) {
-            const dominantSide = this.side1.length == 0 ? this.side2 : this.side1;
+            const dominantSide =
+                this.side1.length == 0 ? this.side2 : this.side1;
             if (rootTile.layoutDirection == LayoutDirection.Horizontal) {
                 rootTile.layoutDirection = LayoutDirection.Vertical;
             } else {
@@ -60,7 +61,7 @@ export default class HalfEngine implements TilingEngineInterface {
         const side1Tile = rootTile.addChild();
         const side2Tile = rootTile.addChild();
         side1Tile.size = this.settings.middleSplit * 2;
-        side2Tile.size = (1-this.settings.middleSplit) * 2;
+        side2Tile.size = (1 - this.settings.middleSplit) * 2;
         for (const box of this.side1) {
             const tile = side1Tile.addChild();
             tile.windows.push(box.window);
@@ -110,20 +111,27 @@ export default class HalfEngine implements TilingEngineInterface {
     }
 
     // default to inserting below
-    placeWindow(window: Window, tile: Tile, direction: Direction = Direction.Vertical) {
+    placeWindow(
+        window: Window,
+        tile: Tile,
+        direction: Direction = Direction.Vertical,
+    ) {
         const targetBox = this.tileMap.get(tile);
         if (targetBox == undefined) {
             this.addWindow(window);
             return;
         }
         const newBox = new WindowBox(window);
-        const [side, otherSide] = this.side1.includes(targetBox) ? [this.side1, this.side2] : [this.side2, this.side1];
+        const [side, otherSide] = this.side1.includes(targetBox)
+            ? [this.side1, this.side2]
+            : [this.side2, this.side1];
         const idx = side.indexOf(targetBox);
         // if other side has nothing in it and the window is being inserted on the other side, then add it to the other side
-        if (otherSide.length == 0 && (
-            side == this.side1 && (direction & Direction.Right) ||
-            side == this.side2 && !(direction & Direction.Right)
-        )) {
+        if (
+            otherSide.length == 0 &&
+            ((side == this.side1 && direction & Direction.Right) ||
+                (side == this.side2 && !(direction & Direction.Right)))
+        ) {
             otherSide.push(newBox);
         } else {
             if (direction & Direction.Up) {
@@ -136,7 +144,8 @@ export default class HalfEngine implements TilingEngineInterface {
 
     updateTiles(rootTile: Tile): void {
         if (rootTile.children.length == 2) {
-            this.settings.middleSplit = rootTile.children[0].size / rootTile.totalChildrenSize();
+            this.settings.middleSplit =
+                rootTile.children[0].size / rootTile.totalChildrenSize();
         }
     }
 }

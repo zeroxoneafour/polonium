@@ -49,10 +49,10 @@ export class Window {
     constructor(id: QUuid, name: string, minSize: QSize) {
         this.id = id;
         this.name = name;
-   
-    /**
-     * Builds the layout.
-     */     this.minSize = minSize;
+
+        /**
+         * Builds the layout.
+         */ this.minSize = minSize;
     }
 }
 
@@ -142,9 +142,8 @@ export class Tile {
         }
         this.children = [];
     }
-    
+
     totalChildrenSize(): number {
         return this.children.reduce((s, t) => s + t.size, 0);
     }
 }
-

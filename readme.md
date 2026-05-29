@@ -20,12 +20,12 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
 ## features
 
--   Works in Wayland Plasma 6.4 and up (6.7 recommended)
--   Custom moddable tiling engine backend
--   Edit tile sizes with the integrated KWin GUI
--   Move and tile windows with your mouse and (COMING SOON) keyboard
--   Set layouts independently of desktop and screen
--   (COMING SOON) [DBus integration](https://github.com/zeroxoneafour/dbus-saver) to save layouts and configurations after logging out
+- Works in Wayland Plasma 6.4 and up (6.7 recommended)
+- Custom moddable tiling engine backend
+- Edit tile sizes with the integrated KWin GUI
+- Move and tile windows with your mouse and (COMING SOON) keyboard
+- Set layouts independently of desktop and screen
+- (COMING SOON) [DBus integration](https://github.com/zeroxoneafour/dbus-saver) to save layouts and configurations after logging out
 
 ## X11
 
@@ -37,11 +37,11 @@ Requires `npm` and `kpackagetool6`
 
 Commands -
 
--   Build/Install/Clean - `make`
--   Build - `make build`
--   Install/Reinstall - `make install`
--   Clean build - `make clean`
--   Clean build and target - `make cleanall`
+- Build/Install/Clean - `make`
+- Build - `make build`
+- Install/Reinstall - `make install`
+- Clean build - `make clean`
+- Clean build and target - `make cleanall`
 
 ## license
 

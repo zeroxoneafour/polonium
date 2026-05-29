@@ -12,7 +12,7 @@ export enum BorderSetting {
     BorderFloating,
     BorderActive,
     BorderFloatingActive,
-    BorderAll
+    BorderAll,
 }
 
 export class Config {
@@ -28,8 +28,12 @@ export class Config {
         this.logLevel = rc("LogLevel", LogLevel.Warn);
         this.rebuildDelay = rc("RebuildDelay", 10);
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);
-        this.ignoreWindowClasses = rc("IgnoreWindowClasses", "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge")
-            .split(",").map(x => x.trim());
+        this.ignoreWindowClasses = rc(
+            "IgnoreWindowClasses",
+            "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
+        )
+            .split(",")
+            .map((x) => x.trim());
         this.borders = rc("Borders", BorderSetting.BorderAll);
     }
 }

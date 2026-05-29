@@ -1,5 +1,16 @@
-import { Tile as KwinTile, Window as KwinWindow, LayoutDirection, Output, VirtualDesktop } from "kwin-api";
-import { Tile as EngineTile, Window as EngineWindow, TilingEngine, TilingEngineType } from "../engine";
+import {
+    Tile as KwinTile,
+    Window as KwinWindow,
+    LayoutDirection,
+    Output,
+    VirtualDesktop,
+} from "kwin-api";
+import {
+    Tile as EngineTile,
+    Window as EngineWindow,
+    TilingEngine,
+    TilingEngineType,
+} from "../engine";
 import { buildLayout } from "./buildlayout";
 import { config, console, queueEvent, windowExists } from "../controller";
 import { Direction, GRect } from "../util/geometry";
@@ -16,7 +27,13 @@ export class Driver {
 
     tilingEngine: TilingEngine;
 
-    constructor(rootTile: KwinTile, desktop: VirtualDesktop, output: Output, engineType: TilingEngineType, engineSettings?: object) {
+    constructor(
+        rootTile: KwinTile,
+        desktop: VirtualDesktop,
+        output: Output,
+        engineType: TilingEngineType,
+        engineSettings?: object,
+    ) {
         this.rootTile = rootTile;
         this.desktop = desktop;
         this.output = output;
@@ -25,7 +42,10 @@ export class Driver {
     }
 
     changeTilingEngine(engineType?: TilingEngineType, engineSettings?: object) {
-        if (engineType !== undefined && this.tilingEngine.engineType != engineType) {
+        if (
+            engineType !== undefined &&
+            this.tilingEngine.engineType != engineType
+        ) {
             this.tilingEngine = new TilingEngine(engineType, engineSettings);
             for (const engineWindow of this.windowMap.values()) {
                 this.tilingEngine.addWindow(engineWindow);
@@ -39,19 +59,24 @@ export class Driver {
         const engineRootTile = this.tilingEngine.buildLayout();
         const previousTileSet = new Set(this.tileMap.keys());
         this.tileMap = buildLayout(this.rootTile, engineRootTile);
-        
-        const invertedWindowMap = new Map(Array.from(this.windowMap, a => [a[1], a[0]]));
+
+        const invertedWindowMap = new Map(
+            Array.from(this.windowMap, (a) => [a[1], a[0]]),
+        );
         const tiledWindowsList: KwinWindow[] = [];
         for (const [kwinTile, engineTile] of this.tileMap) {
             // set callbacks on tiles that do not have callbacks set
             if (!previousTileSet.has(kwinTile)) {
-                kwinTile.relativeGeometryChanged.connect(this.updateTilesCallback.bind(this));
+                kwinTile.relativeGeometryChanged.connect(
+                    this.updateTilesCallback.bind(this),
+                );
             }
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
                 if (kwinWindow != undefined && windowExists(kwinWindow)) {
                     setTiledProps(kwinWindow);
-                    if (kwinWindow.tile !== kwinTile) kwinTile.manage(kwinWindow);
+                    if (kwinWindow.tile !== kwinTile)
+                        kwinTile.manage(kwinWindow);
                     //setWindowSize(kwinWindow, kwinTile);
                     tiledWindowsList.push(kwinWindow);
                 }
@@ -62,7 +87,10 @@ export class Driver {
             if (!tiledWindowsList.includes(kwinWindow)) {
                 if (windowExists(kwinWindow)) {
                     setUntiledProps(kwinWindow);
-                    if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
+                    if (
+                        kwinWindow.tile != null &&
+                        this.tileMap.has(kwinWindow.tile)
+                    ) {
                         kwinWindow.tile.unmanage(kwinWindow);
                     }
                 }
@@ -72,7 +100,10 @@ export class Driver {
         for (const kwinWindow of this.windowsToUnmanage) {
             if (windowExists(kwinWindow)) {
                 setUntiledProps(kwinWindow);
-                if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
+                if (
+                    kwinWindow.tile != null &&
+                    this.tileMap.has(kwinWindow.tile)
+                ) {
                     kwinWindow.tile.unmanage(kwinWindow);
                 }
             }
@@ -83,10 +114,16 @@ export class Driver {
     // returns undefined if the window already exists
     private initializeWindow(kwinWindow: KwinWindow): EngineWindow | undefined {
         if (this.windowMap.has(kwinWindow)) {
-            console().warn("initializeWindow error - window already exists in map");
+            console().warn(
+                "initializeWindow error - window already exists in map",
+            );
             return undefined;
         }
-        const engineWindow = new EngineWindow(kwinWindow.internalId, kwinWindow.caption, kwinWindow.minSize);
+        const engineWindow = new EngineWindow(
+            kwinWindow.internalId,
+            kwinWindow.caption,
+            kwinWindow.minSize,
+        );
         this.windowMap.set(kwinWindow, engineWindow);
         return engineWindow;
     }
@@ -97,7 +134,11 @@ export class Driver {
         this.tilingEngine.addWindow(window);
     }
 
-    placeWindow(kwinWindow: KwinWindow, kwinTile: KwinTile, direction?: Direction): void {
+    placeWindow(
+        kwinWindow: KwinWindow,
+        kwinTile: KwinTile,
+        direction?: Direction,
+    ): void {
         const window = this.initializeWindow(kwinWindow);
         if (window === undefined) return;
         const tile = this.tileMap.get(kwinTile);
@@ -109,11 +150,15 @@ export class Driver {
         }
         this.tilingEngine.placeWindow(window, tile, direction);
     }
-    
+
     removeWindow(kwinWindow: KwinWindow): void {
         const engineWindow = this.windowMap.get(kwinWindow);
         if (engineWindow === undefined) {
-            console().log("Window", kwinWindow.resourceClass, "not registered in windowMap");
+            console().log(
+                "Window",
+                kwinWindow.resourceClass,
+                "not registered in windowMap",
+            );
             return;
         }
         this.windowsToUnmanage.push(kwinWindow);
@@ -125,15 +170,22 @@ export class Driver {
     updateTiles(): void {
         const oldTotalChildrenSizes = new Map<EngineTile, number>();
         for (const engineTile of this.tileMap.values()) {
-            oldTotalChildrenSizes.set(engineTile, engineTile.totalChildrenSize());
+            oldTotalChildrenSizes.set(
+                engineTile,
+                engineTile.totalChildrenSize(),
+            );
         }
         for (const [kwinTile, engineTile] of this.tileMap) {
             if (kwinTile.parent == null || engineTile.parent == null) continue;
             let size: number;
-            if (engineTile.parent.layoutDirection === LayoutDirection.Horizontal) {
-                size = kwinTile.relativeGeometry.width /= kwinTile.parent.relativeGeometry.width;
+            if (
+                engineTile.parent.layoutDirection === LayoutDirection.Horizontal
+            ) {
+                size = kwinTile.relativeGeometry.width /=
+                    kwinTile.parent.relativeGeometry.width;
             } else {
-                size = kwinTile.relativeGeometry.height /= kwinTile.parent.relativeGeometry.height;
+                size = kwinTile.relativeGeometry.height /=
+                    kwinTile.parent.relativeGeometry.height;
             }
             size *= oldTotalChildrenSizes.get(engineTile.parent)!;
             engineTile.size = size;
@@ -145,7 +197,7 @@ export class Driver {
         queueEvent({
             t: "updateTiles",
             desktop: this.desktop,
-            output: this.output
+            output: this.output,
         });
     }
 }
@@ -171,7 +223,10 @@ function setTiledProps(window: KwinWindow) {
 
 function setUntiledProps(window: KwinWindow) {
     window.keepBelow = false;
-    if (config.borders != BorderSetting.NoBorders && config.borders != BorderSetting.BorderActive) {
+    if (
+        config.borders != BorderSetting.NoBorders &&
+        config.borders != BorderSetting.BorderActive
+    ) {
         window.noBorder = false;
     }
 }

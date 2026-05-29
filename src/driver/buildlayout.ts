@@ -4,7 +4,10 @@ import { Tile as EngineTile } from "../engine";
 import { Queue } from "../util/queue";
 import { console } from "../controller";
 
-export function buildLayout(kwinRootTile: KwinTile, engineRootTile: EngineTile): Map<KwinTile, EngineTile> {
+export function buildLayout(
+    kwinRootTile: KwinTile,
+    engineRootTile: EngineTile,
+): Map<KwinTile, EngineTile> {
     const tileMap = new Map<KwinTile, EngineTile>();
     const queue = new Queue<[KwinTile, EngineTile]>();
     queue.push([kwinRootTile, engineRootTile]);
@@ -69,9 +72,13 @@ function matchChildrenSizes(kwinTile: KwinTile, engineTile: EngineTile): void {
         const kwinChild = kwinTile.tiles[i];
         const engineChild = engineTile.children[i];
         if (layoutDirection == LayoutDirection.Horizontal) {
-            kwinChild.relativeGeometry.width = kwinTile.relativeGeometry.width * (engineChild.size / totalSize);
+            kwinChild.relativeGeometry.width =
+                kwinTile.relativeGeometry.width *
+                (engineChild.size / totalSize);
         } else if (layoutDirection == LayoutDirection.Vertical) {
-            kwinChild.relativeGeometry.height = kwinTile.relativeGeometry.height * (engineChild.size / totalSize);
+            kwinChild.relativeGeometry.height =
+                kwinTile.relativeGeometry.height *
+                (engineChild.size / totalSize);
         }
     }
 }

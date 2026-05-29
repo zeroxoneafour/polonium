@@ -11,7 +11,7 @@ export class WindowHandler {
     wantsTiled: boolean;
 
     workspace: Workspace;
-    
+
     constructor(window: Window, workspace: Workspace) {
         this.window = window;
         this.workspace = workspace;
@@ -20,17 +20,23 @@ export class WindowHandler {
         this.previousOutput = window.output;
 
         this.tiled = !(
-            config.ignoreWindowClasses.includes(window.resourceClass.toLowerCase())
-            || window.fullScreen
-            || window.specialWindow
-            || window.popupWindow
+            config.ignoreWindowClasses.includes(
+                window.resourceClass.toLowerCase(),
+            ) ||
+            window.fullScreen ||
+            window.specialWindow ||
+            window.popupWindow
         );
         this.wantsTiled = this.tiled;
 
         this.window.desktopsChanged.connect(this.desktopsChanged.bind(this));
         this.window.outputChanged.connect(this.outputChanged.bind(this));
-        this.window.fullScreenChanged.connect(this.fullscreenChanged.bind(this));
-        this.window.interactiveMoveResizeFinished.connect(this.interactiveMoveResizeFinished.bind(this));
+        this.window.fullScreenChanged.connect(
+            this.fullscreenChanged.bind(this),
+        );
+        this.window.interactiveMoveResizeFinished.connect(
+            this.interactiveMoveResizeFinished.bind(this),
+        );
         this.window.tileChanged.connect(this.tileChanged.bind(this));
     }
 
@@ -45,19 +51,22 @@ export class WindowHandler {
             t: "untileWindow",
             window: this.window,
             desktops: this.previousDesktops,
-            output: previousOutput
+            output: previousOutput,
         });
         queueEvent({
             t: "tileWindow",
             window: this.window,
             desktops: this.window.desktops,
-            output: this.window.output
+            output: this.window.output,
         });
     }
 
     desktopsChanged() {
-        console().debug("desktops changed on window", this.window.resourceClass);
-        
+        console().debug(
+            "desktops changed on window",
+            this.window.resourceClass,
+        );
+
         const previousDesktops = [...this.previousDesktops];
         this.previousDesktops = [...this.window.desktops];
         if (!this.tiled) return;
@@ -80,7 +89,7 @@ export class WindowHandler {
                 t: "untileWindow",
                 window: this.window,
                 desktops: desktopsToUntile,
-                output: this.window.output
+                output: this.window.output,
             });
         }
         if (desktopsToTile.length > 0) {
@@ -88,20 +97,23 @@ export class WindowHandler {
                 t: "tileWindow",
                 window: this.window,
                 desktops: desktopsToTile,
-                output: this.window.output
+                output: this.window.output,
             });
         }
     }
 
     fullscreenChanged() {
-        console().debug("fullscreen changed on window", this.window.resourceClass);
+        console().debug(
+            "fullscreen changed on window",
+            this.window.resourceClass,
+        );
         if (this.window.fullScreen && this.tiled) {
             this.tiled = false;
             queueEvent({
                 t: "untileWindow",
                 window: this.window,
                 desktops: this.window.desktops,
-                output: this.window.output
+                output: this.window.output,
             });
             // toggle fullscreen because this works for whatever reason
             queueEvent({
@@ -120,14 +132,17 @@ export class WindowHandler {
                 t: "tileWindow",
                 window: this.window,
                 desktops: this.window.desktops,
-                output: this.window.output
+                output: this.window.output,
             });
         }
     }
 
     tileChanged(tile: Tile) {
         if (this.tiled && this.window.tile == null && this.canBeTiled()) {
-            console().debug("tile changed on window", this.window.resourceClass);
+            console().debug(
+                "tile changed on window",
+                this.window.resourceClass,
+            );
             this.tiled = false;
             queueEvent({
                 t: "untileWindow",
@@ -140,13 +155,22 @@ export class WindowHandler {
 
     interactiveMoveResizeFinished() {
         if (this.wantsTiled && this.canBeTiled() && !this.tiled) {
-            console().debug("move/resize finished on window", this.window.resourceClass);
+            console().debug(
+                "move/resize finished on window",
+                this.window.resourceClass,
+            );
             const cursorPos = this.workspace.cursorPos;
             this.tiled = true;
             for (const desktop of this.window.desktops) {
-                const rootTile = this.workspace.rootTile(this.window.output, desktop);
+                const rootTile = this.workspace.rootTile(
+                    this.window.output,
+                    desktop,
+                );
                 // bug where pick() returns null if there is only one tile (the root tile)
-                const tile = rootTile.tiles.length == 0 ? rootTile : rootTile.pick(cursorPos);
+                const tile =
+                    rootTile.tiles.length == 0
+                        ? rootTile
+                        : rootTile.pick(cursorPos);
                 if (tile == null) {
                     queueEvent({
                         t: "tileWindow",
@@ -161,7 +185,9 @@ export class WindowHandler {
                         desktop: desktop,
                         output: this.window.output,
                         tile: tile,
-                        direction: new GRect(tile.absoluteGeometry).directionFromPoint(cursorPos),
+                        direction: new GRect(
+                            tile.absoluteGeometry,
+                        ).directionFromPoint(cursorPos),
                     });
                 }
             }
