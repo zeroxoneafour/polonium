@@ -49,10 +49,10 @@ export class Window {
     constructor(id: QUuid, name: string, minSize: QSize) {
         this.id = id;
         this.name = name;
-   
-    /**
-     * Builds the layout.
-     */     this.minSize = minSize;
+
+        /**
+         * Builds the layout.
+         */ this.minSize = minSize;
     }
 }
 
@@ -74,9 +74,9 @@ export class Tile {
 
     // adds a child that will split perpendicularly to the parent. Returns the child
     addChild(): Tile {
-        let splitDirection: LayoutDirection = 1;
-        if (this.layoutDirection == 1) {
-            splitDirection = 2;
+        let splitDirection: LayoutDirection = LayoutDirection.Horizontal;
+        if (this.layoutDirection == LayoutDirection.Horizontal) {
+            splitDirection = LayoutDirection.Vertical;
         }
         const childTile = new Tile(this);
         childTile.layoutDirection = splitDirection;
@@ -142,9 +142,8 @@ export class Tile {
         }
         this.children = [];
     }
-    
+
     totalChildrenSize(): number {
         return this.children.reduce((s, t) => s + t.size, 0);
     }
 }
-

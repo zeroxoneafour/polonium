@@ -1,5 +1,11 @@
-import { Options, Output, VirtualDesktop, Console as QmlConsole, Window } from "kwin-api";
-import { Event, eventsAreParallel } from "./event";
+import {
+    Options,
+    Output,
+    VirtualDesktop,
+    Console as QmlConsole,
+    Window,
+} from "kwin-api";
+import { Event, eventsAreParallel, lateEvents } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
 import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
@@ -50,11 +56,22 @@ class Controller {
         const queue = this.simplifyEventQueue();
         console().debug("Handling", queue.size, "event(s)");
         this.eventQueue = new Queue<Event>();
+        const lateEvQueue = new Queue<Event>();
         while (!queue.isEmpty) {
-            this.handleEvent(queue.pop()!);
+            const ev = queue.pop()!;
+            if (lateEvents.has(ev.t)) {
+                lateEvQueue.push(ev);
+            } else {
+                this.handleEvent(ev);
+            }
         }
         for (const output of this.workspace.screens) {
-            this.drivers.get(desktopId(output, this.workspace.currentDesktop))?.buildLayout();
+            this.drivers
+                .get(desktopId(output, this.workspace.currentDesktop))
+                ?.buildLayout();
+        }
+        while (!lateEvQueue.isEmpty) {
+            this.handleEvent(lateEvQueue.pop()!);
         }
         this.processingEvents = false;
     }
@@ -72,7 +89,10 @@ class Controller {
         for (const ev of events) {
             switch (ev.t) {
                 case "tileWindow":
-                    const parallelEvent = events.find(e => (e.t === "untileWindow" && eventsAreParallel(ev, e)));
+                    const parallelEvent = events.find(
+                        (e) =>
+                            e.t === "untileWindow" && eventsAreParallel(ev, e),
+                    );
                     if (parallelEvent === undefined) break;
                     eventsRet.splice(eventsRet.indexOf(parallelEvent), 1);
                     eventsRet.splice(eventsRet.indexOf(ev), 1);
@@ -84,7 +104,8 @@ class Controller {
                     } else {
                         updateTilesEventSet.add(id);
                     }
-                default: break;
+                default:
+                    break;
             }
         }
         const queue = new Queue<Event>();
@@ -94,11 +115,20 @@ class Controller {
 
     handleEvent(ev: Event) {
         console().debug("handling event", ev.t);
-        switch(ev.t) {
+        switch (ev.t) {
             case "tileWindow":
                 for (const desktop of ev.desktops) {
-                    console().log("adding window", ev.window.resourceClass, "on desktop", desktop.name, "on output", ev.output.name);
-                    this.drivers.get(desktopId(ev.output, desktop))?.addWindow(ev.window);
+                    console().log(
+                        "adding window",
+                        ev.window.resourceClass,
+                        "on desktop",
+                        desktop.name,
+                        "on output",
+                        ev.output.name,
+                    );
+                    this.drivers
+                        .get(desktopId(ev.output, desktop))
+                        ?.addWindow(ev.window);
                 }
                 break;
             case "untileWindow":
@@ -110,11 +140,15 @@ class Controller {
                     const handler = getWindowHandler(ev.window);
                     // if the handler is undefined then dont remove it from anything idek how this would happen
                     if (handler == undefined) {
-                        console().warn("handler undefined for removed window, attempting remove from all desktops")
+                        console().warn(
+                            "handler undefined for removed window, attempting remove from all desktops",
+                        );
                         // in this case, window has been destroyed so attempt to remove it from all drivers
                         for (const desktop of this.workspace.desktops) {
                             for (const output of this.workspace.screens) {
-                                this.drivers.get(desktopId(output, desktop))?.removeWindow(ev.window);
+                                this.drivers
+                                    .get(desktopId(output, desktop))
+                                    ?.removeWindow(ev.window);
                             }
                         }
                         return;
@@ -123,8 +157,17 @@ class Controller {
                     output = handler.previousOutput;
                 }
                 for (const desktop of desktops) {
-                    console().log("removing window", ev.window.resourceClass, "from desktop", desktop.name, "on output", output.name);
-                    this.drivers.get(desktopId(output, desktop))?.removeWindow(ev.window);
+                    console().log(
+                        "removing window",
+                        ev.window.resourceClass,
+                        "from desktop",
+                        desktop.name,
+                        "on output",
+                        output.name,
+                    );
+                    this.drivers
+                        .get(desktopId(output, desktop))
+                        ?.removeWindow(ev.window);
                 }
                 break;
             case "updateDrivers":
@@ -139,27 +182,55 @@ class Controller {
                 console().log("destroying window", ev.window.resourceClass);
                 this.windowHandlers.delete(ev.window);
                 break;
-            case "windowActivated":
-                break;
             case "placeWindow":
-                console().log("placing window", ev.window.resourceClass, "in tile at", ev.tile.absoluteGeometry);
-                this.drivers.get(desktopId(ev.output, ev.desktop))?.placeWindow(ev.window, ev.tile, ev.direction);
+                console().log(
+                    "placing window",
+                    ev.window.resourceClass,
+                    "in tile at",
+                    ev.tile.absoluteGeometry,
+                );
+                this.drivers
+                    .get(desktopId(ev.output, ev.desktop))
+                    ?.placeWindow(ev.window, ev.tile, ev.direction);
                 break;
             case "updateTiles":
-                console().log("updating tiles for desktop", ev.desktop.name, "on output", ev.output.name);
-                this.drivers.get(desktopId(ev.output, ev.desktop))?.updateTiles();
+                console().log(
+                    "updating tiles for desktop",
+                    ev.desktop.name,
+                    "on output",
+                    ev.output.name,
+                );
+                this.drivers
+                    .get(desktopId(ev.output, ev.desktop))
+                    ?.updateTiles();
                 break;
             case "changeEngine":
-                console().log("changing engine type/settings for desktop", ev.desktop.name, "on output", ev.output.name);
-                this.drivers.get(desktopId(ev.output, ev.desktop))?.changeTilingEngine(ev.engineType, ev.engineSettings);
+                console().log(
+                    "changing engine type/settings for desktop",
+                    ev.desktop.name,
+                    "on output",
+                    ev.output.name,
+                );
+                this.drivers
+                    .get(desktopId(ev.output, ev.desktop))
+                    ?.changeTilingEngine(ev.engineType, ev.engineSettings);
                 break;
+            case "setWindowProperties":
+                if (!windowExists(ev.window)) break;
+                console().log(
+                    "setting properties for window",
+                    ev.window.resourceClass,
+                );
+                if (ev.fullscreen !== undefined)
+                    ev.window.fullScreen = ev.fullscreen;
+                if (ev.noBorder !== undefined) ev.window.noBorder = ev.noBorder;
         }
     }
 
     parseDesktopId(id: DesktopIdentifier): [Output?, VirtualDesktop?] {
         const parsed = JSON.parse(id);
-        const output = this.workspace.screens.find(s => s.name === parsed.o);
-        const desktop = this.workspace.desktops.find(d => d.id === parsed.d);
+        const output = this.workspace.screens.find((s) => s.name === parsed.o);
+        const desktop = this.workspace.desktops.find((d) => d.id === parsed.d);
         return [output, desktop];
     }
 
@@ -175,14 +246,18 @@ class Controller {
                 const id = desktopId(output, desktop);
                 if (!this.drivers.has(id)) {
                     const rootTile = this.workspace.rootTile(output, desktop);
-                    const driver = new Driver(rootTile, desktop, output, config.defaultEngine);
+                    const driver = new Driver(
+                        rootTile,
+                        desktop,
+                        output,
+                        config.defaultEngine,
+                    );
                     this.drivers.set(id, driver);
                 }
             }
         }
     }
 }
-
 
 let controller: Controller;
 let consoleObj: Console;

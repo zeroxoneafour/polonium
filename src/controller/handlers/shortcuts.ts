@@ -11,9 +11,15 @@ export class ShortcutsHandler {
         this.workspace = workspace;
         this.shortcuts = shortcuts;
 
-        this.shortcuts.getToggleActiveTiling().activated.connect(this.toggleActiveTiling.bind(this));
-        this.shortcuts.getSetEngineBTree().activated.connect(this.setEngineBTree.bind(this));
-        this.shortcuts.getSetEngineHalf().activated.connect(this.setEngineHalf.bind(this));
+        this.shortcuts
+            .getToggleActiveTiling()
+            .activated.connect(this.toggleActiveTiling.bind(this));
+        this.shortcuts
+            .getSetEngineBTree()
+            .activated.connect(this.setEngineBTree.bind(this));
+        this.shortcuts
+            .getSetEngineHalf()
+            .activated.connect(this.setEngineHalf.bind(this));
     }
 
     toggleActiveTiling() {
@@ -28,7 +34,7 @@ export class ShortcutsHandler {
                 t: "untileWindow",
                 window: window,
                 desktops: window.desktops,
-                output: window.output
+                output: window.output,
             });
         } else {
             windowHandler.wantsTiled = true;
@@ -37,7 +43,7 @@ export class ShortcutsHandler {
                 t: "tileWindow",
                 window: window,
                 desktops: window.desktops,
-                output: window.output
+                output: window.output,
             });
         }
     }

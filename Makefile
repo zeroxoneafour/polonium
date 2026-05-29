@@ -1,5 +1,3 @@
-#NAME = $(shell npm pkg get name | tr -d '"')
-#VERSION = $(shell npm pkg get version | tr -d '"')
 NAME = polonium
 VERSION = 1.1.0
 

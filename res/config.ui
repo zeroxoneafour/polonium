@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="General">
         <attribute name="title">
@@ -91,7 +91,7 @@
         </attribute>
         <layout class="QFormLayout" name="formLayout_4">
          <item row="0" column="0">
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="ignoreWindowClassesLabel">
            <property name="text">
             <string>Ignore Window Classes</string>
            </property>
@@ -102,6 +102,51 @@
            <property name="text">
             <string>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</string>
            </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="bordersLabel">
+           <property name="text">
+            <string>Borders</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="kcfg_Borders">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="currentIndex">
+            <number>4</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>No Borders</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Border Floating Only</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Border Active Only</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Border Floating/Active</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Border All</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>
