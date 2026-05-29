@@ -117,12 +117,20 @@ export default class HalfEngine implements TilingEngineInterface {
             return;
         }
         const newBox = new WindowBox(window);
-        const side = this.side1.includes(targetBox) ? this.side1 : this.side2;
+        const [side, otherSide] = this.side1.includes(targetBox) ? [this.side1, this.side2] : [this.side2, this.side1];
         const idx = side.indexOf(targetBox);
-        if (direction & Direction.Up) {
-            side.splice(idx, 0, newBox);
+        // if other side has nothing in it and the window is being inserted on the other side, then add it to the other side
+        if (otherSide.length == 0 && (
+            side == this.side1 && (direction & Direction.Right) ||
+            side == this.side2 && !(direction & Direction.Right)
+        )) {
+            otherSide.push(newBox);
         } else {
-            side.splice(idx + 1, 0, newBox);
+            if (direction & Direction.Up) {
+                side.splice(idx, 0, newBox);
+            } else {
+                side.splice(idx + 1, 0, newBox);
+            }
         }
     }
 

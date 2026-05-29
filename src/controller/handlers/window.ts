@@ -103,6 +103,12 @@ export class WindowHandler {
                 desktops: this.window.desktops,
                 output: this.window.output
             });
+            // toggle fullscreen because this works for whatever reason
+            queueEvent({
+                t: "setWindowProperties",
+                window: this.window,
+                fullscreen: false,
+            });
             queueEvent({
                 t: "setWindowProperties",
                 window: this.window,

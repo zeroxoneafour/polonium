@@ -11,11 +11,19 @@ export function buildLayout(kwinRootTile: KwinTile, engineRootTile: EngineTile):
     while (!queue.isEmpty) {
         const [kwinTile, engineTile] = queue.pop()!;
         tileMap.set(kwinTile, engineTile);
+        console().debug("forming tile", kwinTile.absoluteGeometry);
 
-        const layoutDirection = engineTile.layoutDirection;
-        kwinTile.layoutDirection = layoutDirection;
+        // changing layout direction with preexisting children causes tiling to freak
+        // so we js remove the children beforehand
+        if (kwinTile.layoutDirection != engineTile.layoutDirection) {
+            while (kwinTile.tiles.length > 0) {
+                kwinTile.tiles[kwinTile.tiles.length - 1].remove();
+            }
+        }
+        kwinTile.layoutDirection = engineTile.layoutDirection;
 
-        //console.log("children diff -", childrenDiff);
+        console().debug("kwin children", kwinTile.tiles.length);
+        console().debug("engine children", engineTile.children.length);
 
         // if engine tile has one child then tie that child to the kwin tile
         if (engineTile.children.length == 1) {
