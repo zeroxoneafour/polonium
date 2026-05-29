@@ -9,6 +9,7 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        container: debian:latest
 
         steps:
             - uses: actions/checkout@v6
