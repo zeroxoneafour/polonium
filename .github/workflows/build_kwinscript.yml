@@ -11,7 +11,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v6
 
             - name: Install dependencies
               run: sudo apt-get install -y kpackagetool6 npm
@@ -20,7 +20,7 @@ jobs:
               run: make build
 
             - name: Upload a Build Artifact
-              uses: actions/upload-artifact@v3.1.2
+              uses: actions/upload-artifact@v7
               with:
                   # Artifact name
                   name: polonium.kwinscript
