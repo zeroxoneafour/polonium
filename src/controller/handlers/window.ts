@@ -34,6 +34,7 @@ export class WindowHandler {
         this.window.fullScreenChanged.connect(
             this.fullscreenChanged.bind(this),
         );
+        this.window.minimizedChanged.connect(this.minimizedChanged.bind(this));
         this.window.interactiveMoveResizeFinished.connect(
             this.interactiveMoveResizeFinished.bind(this),
         );
@@ -137,6 +138,30 @@ export class WindowHandler {
         }
     }
 
+    minimizedChanged() {
+        console().debug(
+            "minimized changed on window",
+            this.window.resourceClass,
+        );
+        if (this.window.minimized && this.tiled) {
+            this.tiled = false;
+            queueEvent({
+                t: "untileWindow",
+                window: this.window,
+                desktops: this.window.desktops,
+                output: this.window.output,
+            });
+        } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
+            this.tiled = true;
+            queueEvent({
+                t: "tileWindow",
+                window: this.window,
+                desktops: this.window.desktops,
+                output: this.window.output,
+            });
+        }
+    }
+
     tileChanged(tile: Tile) {
         if (this.tiled && this.window.tile == null && this.canBeTiled()) {
             console().debug(
@@ -195,6 +220,6 @@ export class WindowHandler {
     }
 
     canBeTiled(): boolean {
-        return !this.window.fullScreen;
+        return !(this.window.fullScreen || this.window.minimized);
     }
 }

@@ -37,14 +37,14 @@ export class WorkspaceHandler {
     windowRemoved(window: Window) {
         // it should just not untile the window if it was never tiled, so we dont need to track that here
         // jk ig we do sometimes
-        const isTiled = windowIsTiled(window);
-        if (isTiled || isTiled === undefined)
-            queueEvent({
-                t: "untileWindow",
-                window: window,
-                desktops: window.desktops,
-                output: window.output,
-            });
+        // yk what js untile it regardless every time the engine will reject it if it cant be untiled
+        // no more ghost windows
+        queueEvent({
+            t: "untileWindow",
+            window: window,
+            desktops: window.desktops,
+            output: window.output,
+        });
         queueEvent({
             t: "removeWindow",
             window: window,
