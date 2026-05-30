@@ -215,14 +215,18 @@ function setWindowSize(window: KwinWindow, tile: KwinTile) {
 }
 
 function setTiledProps(window: KwinWindow) {
-    window.keepBelow = true;
+    if (config.tiledWindowsBelow) {
+        window.keepBelow = true;
+    }
     if (config.borders != BorderSetting.BorderAll) {
         window.noBorder = true;
     }
 }
 
 function setUntiledProps(window: KwinWindow) {
-    window.keepBelow = false;
+    if (config.tiledWindowsBelow) {
+        window.keepBelow = false;
+    }
     if (
         config.borders != BorderSetting.NoBorders &&
         config.borders != BorderSetting.BorderActive

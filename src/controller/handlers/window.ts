@@ -19,14 +19,7 @@ export class WindowHandler {
         this.previousDesktops = [...window.desktops];
         this.previousOutput = window.output;
 
-        this.tiled = !(
-            config.ignoreWindowClasses.includes(
-                window.resourceClass.toLowerCase(),
-            ) ||
-            window.fullScreen ||
-            window.specialWindow ||
-            window.popupWindow
-        );
+        this.tiled = this.startTiled();
         this.wantsTiled = this.tiled;
 
         this.window.desktopsChanged.connect(this.desktopsChanged.bind(this));
@@ -39,6 +32,23 @@ export class WindowHandler {
             this.interactiveMoveResizeFinished.bind(this),
         );
         this.window.tileChanged.connect(this.tileChanged.bind(this));
+    }
+
+    startTiled(): boolean {
+        if (
+            this.window.specialWindow ||
+            (!config.tilePopups &&
+                (this.window.popupWindow || this.window.transient))
+        ) {
+            return false;
+        }
+        if (!this.canBeTiled()) {
+            return false;
+        }
+        if (config.ignoreWindowClasses.test(this.window.resourceClass)) {
+            return false;
+        }
+        return true;
     }
 
     outputChanged() {

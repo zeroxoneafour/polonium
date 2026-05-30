@@ -16,24 +16,37 @@ export enum BorderSetting {
 }
 
 export class Config {
-    readonly logLevel: LogLevel;
     readonly rebuildDelay: number;
+
     readonly defaultEngine: TilingEngineType;
-    readonly ignoreWindowClasses: string[];
+
+    readonly ignoreWindowClasses: RegExp;
     readonly borders: BorderSetting;
+    readonly tiledWindowsBelow: boolean;
+    readonly tilePopups: boolean;
+
+    readonly logLevel: LogLevel;
 
     constructor(kwinApi: KWin) {
         const rc = kwinApi.readConfig;
 
-        this.logLevel = rc("LogLevel", LogLevel.Warn);
         this.rebuildDelay = rc("RebuildDelay", 10);
+
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);
-        this.ignoreWindowClasses = rc(
-            "IgnoreWindowClasses",
-            "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
-        )
-            .split(",")
-            .map((x) => x.trim());
+
+        this.ignoreWindowClasses = new RegExp(
+            rc(
+                "IgnoreWindowClasses",
+                "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
+            )
+                .split(",")
+                .map((x) => x.trim())
+                .join("|"),
+        );
         this.borders = rc("Borders", BorderSetting.BorderAll);
+        this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
+        this.tilePopups = rc("TilePopups", false);
+
+        this.logLevel = rc("LogLevel", LogLevel.Warn);
     }
 }

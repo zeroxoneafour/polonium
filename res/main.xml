@@ -7,5 +7,7 @@
         <entry name="DefaultEngine" type="int"><default>0</default></entry>
         <entry name="IgnoreWindowClasses" type="string"><default>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</default></entry>
         <entry name="Borders" type="int"><default>4</default></entry>
+        <entry name="TilePopups" type="bool"><default>false</default></entry>
+        <entry name="TiledWindowsBelow" type="bool"><default>true</default></entry>
     </group>
 </kcfg>

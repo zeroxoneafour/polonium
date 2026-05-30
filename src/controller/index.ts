@@ -264,10 +264,11 @@ let consoleObj: Console;
 export let config: Config;
 
 export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
-    consoleObj = new Console(qmlApi.console);
     config = new Config(qmlApi.kwin);
+    consoleObj = new Console(qmlApi.console);
+    console().debug("config -", JSON.stringify(config));
     controller = new Controller(qmlApi, qmlObjects);
-    console().log("Controller initialized");
+    console().log("controller initialized. Welcome to Polonium!");
 }
 
 export function console(): Console {

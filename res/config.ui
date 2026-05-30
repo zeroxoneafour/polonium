@@ -14,7 +14,7 @@
    <string>Polonium</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="1">
+   <item row="1" column="1">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QTabWidget" name="tabWidget">
@@ -90,28 +90,28 @@
          <string>Windows</string>
         </attribute>
         <layout class="QFormLayout" name="formLayout_4">
-         <item row="0" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="ignoreWindowClassesLabel">
            <property name="text">
-            <string>Ignore Window Classes</string>
+            <string>Do Not Tile Window Classes</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="1" column="1">
           <widget class="QLineEdit" name="kcfg_IgnoreWindowClasses">
            <property name="text">
             <string>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="bordersLabel">
            <property name="text">
             <string>Borders</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="2" column="1">
           <widget class="QComboBox" name="kcfg_Borders">
            <property name="minimumSize">
             <size>
@@ -147,6 +147,53 @@
              <string>Border All</string>
             </property>
            </item>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="tiledWindowsBelowLabel">
+           <property name="text">
+            <string>Place Tiled Windows Below</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="kcfg_TiledWindowsBelow">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QLabel" name="regexInfoLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>All text fields accept regex. Commas will become OR statements (regex &quot;|&quot;).</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Tile Popup Windows</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="kcfg_TilePopups">
+           <property name="text">
+            <string/>
+           </property>
           </widget>
          </item>
         </layout>
@@ -194,17 +241,17 @@
        </widget>
       </widget>
      </item>
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Changes only apply after logging out or restarting KWin!</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
     </layout>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Changes only apply after logging out or restarting KWin!</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
