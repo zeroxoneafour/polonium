@@ -154,7 +154,7 @@ export class Driver {
     removeWindow(kwinWindow: KwinWindow): void {
         const engineWindow = this.windowMap.get(kwinWindow);
         if (engineWindow === undefined) {
-            console().log(
+            console().warn(
                 "Window",
                 kwinWindow.resourceClass,
                 "not registered in windowMap",

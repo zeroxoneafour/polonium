@@ -132,42 +132,21 @@ class Controller {
                 }
                 break;
             case "untileWindow":
-                let desktops = ev.desktops;
-                let output = ev.output;
-                // window can be destroyed but ref is still "valid" (not null) so we have to check for that
-                if (!windowExists(ev.window)) {
-                    // have to get the desktops another way if the window is destroyed
-                    const handler = getWindowHandler(ev.window);
-                    // if the handler is undefined then dont remove it from anything idek how this would happen
-                    if (handler == undefined) {
-                        console().warn(
-                            "handler undefined for removed window, attempting remove from all desktops",
-                        );
-                        // in this case, window has been destroyed so attempt to remove it from all drivers
-                        for (const desktop of this.workspace.desktops) {
-                            for (const output of this.workspace.screens) {
-                                this.drivers
-                                    .get(desktopId(output, desktop))
-                                    ?.removeWindow(ev.window);
-                            }
-                        }
-                        return;
-                    }
-                    desktops = handler.previousDesktops;
-                    output = handler.previousOutput;
-                }
-                for (const desktop of desktops) {
+                if (ev.output == undefined) break;
+                for (const desktop of ev.desktops) {
+                    if (desktop == undefined) continue;
                     console().log(
                         "removing window",
                         ev.window.resourceClass,
                         "from desktop",
                         desktop.name,
                         "on output",
-                        output.name,
+                        ev.output.name,
                     );
-                    this.drivers
-                        .get(desktopId(output, desktop))
-                        ?.removeWindow(ev.window);
+                    const driver = this.drivers.get(desktopId(ev.output, desktop));
+                    if (driver !== undefined && driver.windowMap.has(ev.window)) {
+                        driver.removeWindow(ev.window);
+                    }
                 }
                 break;
             case "updateDrivers":
