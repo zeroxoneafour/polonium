@@ -35,7 +35,7 @@ class Controller {
         this.qmlObjects = qmlObjects;
 
         this.eventTimer = qmlObjects.root.createTimer();
-        this.eventTimer.interval = config.rebuildDelay;
+        this.eventTimer.interval = config().rebuildDelay;
         this.eventTimer.repeat = false;
         this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
@@ -143,8 +143,13 @@ class Controller {
                         "on output",
                         ev.output.name,
                     );
-                    const driver = this.drivers.get(desktopId(ev.output, desktop));
-                    if (driver !== undefined && driver.windowMap.has(ev.window)) {
+                    const driver = this.drivers.get(
+                        desktopId(ev.output, desktop),
+                    );
+                    if (
+                        driver !== undefined &&
+                        driver.windowMap.has(ev.window)
+                    ) {
                         driver.removeWindow(ev.window);
                     }
                 }
@@ -229,7 +234,7 @@ class Controller {
                         rootTile,
                         desktop,
                         output,
-                        config.defaultEngine,
+                        config().defaultEngine,
                     );
                     this.drivers.set(id, driver);
                 }
@@ -240,18 +245,22 @@ class Controller {
 
 let controller: Controller;
 let consoleObj: Console;
-export let config: Config;
+export let configObj: Config;
 
 export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
-    config = new Config(qmlApi.kwin);
+    configObj = new Config(qmlApi.kwin);
     consoleObj = new Console(qmlApi.console);
-    console().debug("config -", JSON.stringify(config));
+    console().debug("config -", JSON.stringify(config()));
     controller = new Controller(qmlApi, qmlObjects);
     console().log("controller initialized. Welcome to Polonium!");
 }
 
 export function console(): Console {
     return consoleObj;
+}
+
+export function config(): Config {
+    return configObj;
 }
 
 // controller should exist at all points other than right after initialization

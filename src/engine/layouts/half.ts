@@ -126,13 +126,15 @@ export default class HalfEngine implements TilingEngineInterface {
             ? [this.side1, this.side2]
             : [this.side2, this.side1];
         const idx = side.indexOf(targetBox);
-        // if other side has nothing in it and the window is being inserted on the other side, then add it to the other side
-        if (
-            otherSide.length == 0 &&
-            ((side == this.side1 && direction & Direction.Right) ||
-                (side == this.side2 && !(direction & Direction.Right)))
-        ) {
-            otherSide.push(newBox);
+        if (otherSide.length == 0) {
+            // if side == side 2 and inserting in right or vice versa then push box to other side, else push to same side
+            // complex xor but it makes sense in practice trust me
+            if ((side == this.side2) != ((direction & Direction.Right) != 0)) {
+                otherSide.push(newBox);
+            } else {
+                otherSide.push(side.splice(0, 1)[0]);
+                side.push(newBox);
+            }
         } else {
             if (direction & Direction.Up) {
                 side.splice(idx, 0, newBox);

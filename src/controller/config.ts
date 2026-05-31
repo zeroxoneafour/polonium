@@ -17,6 +17,9 @@ export enum BorderSetting {
 
 export class Config {
     readonly rebuildDelay: number;
+    readonly tileResizeAmount: number;
+    readonly fullRebuild: boolean;
+    readonly logLevel: LogLevel;
 
     readonly defaultEngine: TilingEngineType;
 
@@ -25,12 +28,13 @@ export class Config {
     readonly tiledWindowsBelow: boolean;
     readonly tilePopups: boolean;
 
-    readonly logLevel: LogLevel;
-
     constructor(kwinApi: KWin) {
         const rc = kwinApi.readConfig;
 
         this.rebuildDelay = rc("RebuildDelay", 10);
+        this.tileResizeAmount = rc("TileResizeAmount", 10);
+        this.fullRebuild = rc("FullRebuild", true);
+        this.logLevel = rc("LogLevel", LogLevel.Warn);
 
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);
 
@@ -46,7 +50,5 @@ export class Config {
         this.borders = rc("Borders", BorderSetting.BorderAll);
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.tilePopups = rc("TilePopups", false);
-
-        this.logLevel = rc("LogLevel", LogLevel.Warn);
     }
 }

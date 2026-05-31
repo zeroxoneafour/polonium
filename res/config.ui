@@ -19,19 +19,13 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="General">
         <attribute name="title">
          <string>General</string>
         </attribute>
         <layout class="QFormLayout" name="formLayout_2">
-         <property name="labelAlignment">
-          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-         <property name="formAlignment">
-          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-         </property>
          <item row="0" column="0">
           <widget class="QLabel" name="rebuildDelayLabel">
            <property name="text">
@@ -52,6 +46,102 @@
            </property>
            <property name="value">
             <number>10</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="tileResizeAmountLabel">
+           <property name="text">
+            <string>Tile Resize Amount</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="kcfg_TileResizeAmount">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="QLabel" name="debugTitle">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Debug</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="logLevelLabel">
+           <property name="text">
+            <string>Log Level</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QComboBox" name="kcfg_LogLevel">
+           <property name="currentIndex">
+            <number>1</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>Error</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Warn</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Log</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Debug</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="fullRebuildLabel">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Increases lag but ensures tiles in groups of 3 or more are properly sized.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Run Full Tile Rebuild</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="kcfg_FullRebuild">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Increases lag but ensures tiles in groups of 3 or more are properly sized.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -183,7 +273,7 @@
           </widget>
          </item>
          <item row="4" column="0">
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="tilePopupsLabel">
            <property name="text">
             <string>Tile Popup Windows</string>
            </property>
@@ -194,47 +284,6 @@
            <property name="text">
             <string/>
            </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="Debug">
-        <attribute name="title">
-         <string>Debug</string>
-        </attribute>
-        <layout class="QFormLayout" name="formLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="logLevelLabel">
-           <property name="text">
-            <string>Log Level</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="kcfg_LogLevel">
-           <property name="currentIndex">
-            <number>1</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>Error</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Warn</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Log</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Debug</string>
-            </property>
-           </item>
           </widget>
          </item>
         </layout>

@@ -37,7 +37,7 @@ export class WindowHandler {
     startTiled(): boolean {
         if (
             this.window.specialWindow ||
-            (!config.tilePopups &&
+            (!config().tilePopups &&
                 (this.window.popupWindow || this.window.transient))
         ) {
             return false;
@@ -45,7 +45,7 @@ export class WindowHandler {
         if (!this.canBeTiled()) {
             return false;
         }
-        if (config.ignoreWindowClasses.test(this.window.resourceClass)) {
+        if (config().ignoreWindowClasses.test(this.window.resourceClass)) {
             return false;
         }
         return true;

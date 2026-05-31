@@ -63,8 +63,8 @@ export class WorkspaceHandler {
 
     windowActivated(window: Window) {
         if (
-            config.borders == BorderSetting.BorderActive ||
-            config.borders == BorderSetting.BorderFloatingActive
+            config().borders == BorderSetting.BorderActive ||
+            config().borders == BorderSetting.BorderFloatingActive
         ) {
             if (windowIsTiled(window)) {
                 queueEvent({
@@ -76,7 +76,7 @@ export class WorkspaceHandler {
             if (
                 this.previousActivated != null &&
                 (windowIsTiled(this.previousActivated) ||
-                    config.borders == BorderSetting.BorderActive)
+                    config().borders == BorderSetting.BorderActive)
             ) {
                 queueEvent({
                     t: "setWindowProperties",

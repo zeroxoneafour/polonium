@@ -2,12 +2,16 @@
 <kcfg xmlns="http://www.kde.org/standards/kcfg/1.0">
     <kcfgfile name=""/>
     <group name="">
-        <entry name="LogLevel" type="int"><default>1</default></entry>
         <entry name="RebuildDelay" type="int"><default>10</default></entry>
+        <entry name="TileResizeAmount" type="int"><default>10</default></entry>
+        <entry name="FullRebuild" type="bool"><default>true</default></entry>
+        <entry name="LogLevel" type="int"><default>1</default></entry>
+
         <entry name="DefaultEngine" type="int"><default>0</default></entry>
+
         <entry name="IgnoreWindowClasses" type="string"><default>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</default></entry>
         <entry name="Borders" type="int"><default>4</default></entry>
-        <entry name="TilePopups" type="bool"><default>false</default></entry>
         <entry name="TiledWindowsBelow" type="bool"><default>true</default></entry>
+        <entry name="TilePopups" type="bool"><default>false</default></entry>
     </group>
 </kcfg>

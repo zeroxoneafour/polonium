@@ -215,21 +215,21 @@ function setWindowSize(window: KwinWindow, tile: KwinTile) {
 }
 
 function setTiledProps(window: KwinWindow) {
-    if (config.tiledWindowsBelow) {
+    if (config().tiledWindowsBelow) {
         window.keepBelow = true;
     }
-    if (config.borders != BorderSetting.BorderAll) {
+    if (config().borders != BorderSetting.BorderAll) {
         window.noBorder = true;
     }
 }
 
 function setUntiledProps(window: KwinWindow) {
-    if (config.tiledWindowsBelow) {
+    if (config().tiledWindowsBelow) {
         window.keepBelow = false;
     }
     if (
-        config.borders != BorderSetting.NoBorders &&
-        config.borders != BorderSetting.BorderActive
+        config().borders != BorderSetting.NoBorders &&
+        config().borders != BorderSetting.BorderActive
     ) {
         window.noBorder = false;
     }

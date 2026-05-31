@@ -2,7 +2,7 @@
 import { Tile as KwinTile, LayoutDirection } from "kwin-api";
 import { Tile as EngineTile } from "../engine";
 import { Queue } from "../util/queue";
-import { console } from "../controller";
+import { config, console } from "../controller";
 
 export function buildLayout(
     kwinRootTile: KwinTile,
@@ -35,11 +35,10 @@ export function buildLayout(
             }
             queue.push([kwinTile, engineTile.children[0]]);
         } else {
-            matchChildrenCount(kwinTile, engineTile);
+            matchChildren(kwinTile, engineTile);
         }
 
         if (engineTile.children.length > 1) {
-            matchChildrenSizes(kwinTile, engineTile);
             for (let i = 0; i < engineTile.children.length; i += 1) {
                 queue.push([kwinTile.tiles[i], engineTile.children[i]]);
             }
@@ -48,37 +47,59 @@ export function buildLayout(
     return tileMap;
 }
 
-function matchChildrenCount(kwinTile: KwinTile, engineTile: EngineTile): void {
+// matches children count and sizing using following steps -
+// 1 - removes old children
+// 2 - properly sizes all but last of current children (only done if older children remain)
+// 3 - adds new children, sizing the second to last child after each add
+// 4 - sizes last tile
+// config().fullRebuild controls whether all children or only extras are removed
+function matchChildren(kwinTile: KwinTile, engineTile: EngineTile): void {
     const layoutDirection = engineTile.layoutDirection;
-    // only one of these whiles should run
-    while (kwinTile.tiles.length > engineTile.children.length) {
-        // if there is only one child left then it will take over for its parent so just dont worry about it
+    // step 1
+    // yk what just nuke all the children and make them later
+    const tileCountToLeave = config().fullRebuild
+        ? 0
+        : engineTile.children.length;
+    while (kwinTile.tiles.length > tileCountToLeave) {
+        // if there is only one child left then it will take over for its parent
         kwinTile.tiles[kwinTile.tiles.length - 1].remove();
     }
+    if (engineTile.children.length === 0) return;
+    // step 2
+    for (let i = 0; i < kwinTile.tiles.length - 1; i += 1) {
+        setChildRelativeSize(kwinTile, engineTile, i);
+    }
+    // step 3
     while (kwinTile.tiles.length < engineTile.children.length) {
         if (kwinTile.tiles.length == 0) {
             kwinTile.split(layoutDirection);
+            setChildRelativeSize(kwinTile, engineTile, 0);
         } else {
-            // splitting in layout direction leads to creating children
             kwinTile.tiles[kwinTile.tiles.length - 1].split(layoutDirection);
+            setChildRelativeSize(
+                kwinTile,
+                engineTile,
+                kwinTile.tiles.length - 2,
+            );
         }
     }
+    // step 4
+    setChildRelativeSize(kwinTile, engineTile, kwinTile.tiles.length - 1);
 }
 
-function matchChildrenSizes(kwinTile: KwinTile, engineTile: EngineTile): void {
-    const layoutDirection = engineTile.layoutDirection;
+function setChildRelativeSize(
+    kwinTile: KwinTile,
+    engineTile: EngineTile,
+    index: number,
+): void {
     const totalSize = engineTile.totalChildrenSize();
-    for (let i = 0; i < kwinTile.tiles.length; i += 1) {
-        const kwinChild = kwinTile.tiles[i];
-        const engineChild = engineTile.children[i];
-        if (layoutDirection == LayoutDirection.Horizontal) {
-            kwinChild.relativeGeometry.width =
-                kwinTile.relativeGeometry.width *
-                (engineChild.size / totalSize);
-        } else if (layoutDirection == LayoutDirection.Vertical) {
-            kwinChild.relativeGeometry.height =
-                kwinTile.relativeGeometry.height *
-                (engineChild.size / totalSize);
-        }
+    const kwinChild = kwinTile.tiles[index];
+    const engineChild = engineTile.children[index];
+    if (engineTile.layoutDirection === LayoutDirection.Horizontal) {
+        kwinChild.relativeGeometry.width =
+            kwinTile.relativeGeometry.width * (engineChild.size / totalSize);
+    } else if (engineTile.layoutDirection === LayoutDirection.Vertical) {
+        kwinChild.relativeGeometry.height =
+            kwinTile.relativeGeometry.height * (engineChild.size / totalSize);
     }
 }
