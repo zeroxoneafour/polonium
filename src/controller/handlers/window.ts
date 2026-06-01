@@ -1,5 +1,5 @@
 import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
-import { config, console, queueEvent } from "..";
+import { config, console, queueEvent, queuePostEvent } from "..";
 import { Workspace } from "kwin-api/qml";
 import { GRect } from "../../util/geometry";
 
@@ -127,12 +127,12 @@ export class WindowHandler {
                 output: this.window.output,
             });
             // toggle fullscreen because this works for whatever reason
-            queueEvent({
+            queuePostEvent({
                 t: "setWindowProperties",
                 window: this.window,
                 fullscreen: false,
             });
-            queueEvent({
+            queuePostEvent({
                 t: "setWindowProperties",
                 window: this.window,
                 fullscreen: true,

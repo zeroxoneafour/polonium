@@ -5,7 +5,7 @@ import {
     Console as QmlConsole,
     Window,
 } from "kwin-api";
-import { Event, eventsAreParallel, lateEvents } from "./event";
+import { Event, PostEvent, simplifyEvents, simplifyPostEvents } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
 import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
@@ -22,6 +22,7 @@ class Controller {
     qmlObjects: QmlObjects;
 
     eventQueue: Queue<Event> = new Queue();
+    postEventQueue: Queue<PostEvent> = new Queue();
     eventTimer: QTimer;
     processingEvents: boolean = false;
 
@@ -51,66 +52,36 @@ class Controller {
         this.eventTimer.start();
     }
 
-    processEvents() {
-        this.processingEvents = true;
-        const queue = this.simplifyEventQueue();
-        console().debug("Handling", queue.size, "event(s)");
-        this.eventQueue = new Queue<Event>();
-        const lateEvQueue = new Queue<Event>();
-        while (!queue.isEmpty) {
-            const ev = queue.pop()!;
-            if (lateEvents.has(ev.t)) {
-                lateEvQueue.push(ev);
-            } else {
-                this.handleEvent(ev);
-            }
-        }
-        for (const output of this.workspace.screens) {
-            this.drivers
-                .get(desktopId(output, this.workspace.currentDesktop))
-                ?.buildLayout();
-        }
-        while (!lateEvQueue.isEmpty) {
-            this.handleEvent(lateEvQueue.pop()!);
-        }
-        this.processingEvents = false;
+    queuePostEvent(ev: PostEvent) {
+        if (this.processingEvents) return;
+        this.postEventQueue.push(ev);
+        this.eventTimer.start();
     }
 
-    simplifyEventQueue(): Queue<Event> {
-        // ultra simple simplifier - only cut out events that directly cancel each other out
-        // also simplifies duplicate events for updateTiles as this typically generates mass duplicates
-        // todo in future - simplify events on a per-desktop, per-output basis
-        const events = [];
-        while (!this.eventQueue.isEmpty) {
-            events.push(this.eventQueue.pop()!);
+    processEvents() {
+        this.processingEvents = true;
+        const queue = simplifyEvents(this.eventQueue);
+        console().debug("Handling", queue.size, "event(s)");
+        const rebuild = queue.size != 0;
+        while (!queue.isEmpty) {
+            this.handleEvent(queue.pop()!);
         }
-        const eventsRet = [...events];
-        const updateTilesEventSet = new Set<string>();
-        for (const ev of events) {
-            switch (ev.t) {
-                case "tileWindow":
-                    const parallelEvent = events.find(
-                        (e) =>
-                            e.t === "untileWindow" && eventsAreParallel(ev, e),
-                    );
-                    if (parallelEvent === undefined) break;
-                    eventsRet.splice(eventsRet.indexOf(parallelEvent), 1);
-                    eventsRet.splice(eventsRet.indexOf(ev), 1);
-                    break;
-                case "updateTiles":
-                    const id = desktopId(ev.output, ev.desktop);
-                    if (updateTilesEventSet.has(id)) {
-                        eventsRet.splice(eventsRet.indexOf(ev), 1);
-                    } else {
-                        updateTilesEventSet.add(id);
-                    }
-                default:
-                    break;
+        if (rebuild) {
+            for (const output of this.workspace.screens) {
+                console().debug("Rebuilding for output", output.name);
+                this.drivers
+                    .get(desktopId(output, this.workspace.currentDesktop))
+                    ?.buildLayout();
             }
         }
-        const queue = new Queue<Event>();
-        queue.multipush(eventsRet);
-        return queue;
+        const postQueue = simplifyPostEvents(this.postEventQueue);
+        console().debug("Handling", postQueue.size, "post event(s)");
+        while (!postQueue.isEmpty) {
+            this.handlePostEvent(postQueue.pop()!);
+        }
+        this.eventQueue = new Queue<Event>();
+        this.postEventQueue = new Queue<PostEvent>();
+        this.processingEvents = false;
     }
 
     handleEvent(ev: Event) {
@@ -199,6 +170,14 @@ class Controller {
                     .get(desktopId(ev.output, ev.desktop))
                     ?.changeTilingEngine(ev.engineType, ev.engineSettings);
                 break;
+            default:
+                break;
+        }
+    }
+
+    handlePostEvent(ev: PostEvent) {
+        console().debug("handling post event", ev.t);
+        switch (ev.t) {
             case "setWindowProperties":
                 if (!windowExists(ev.window)) break;
                 console().log(
@@ -208,6 +187,8 @@ class Controller {
                 if (ev.fullscreen !== undefined)
                     ev.window.fullScreen = ev.fullscreen;
                 if (ev.noBorder !== undefined) ev.window.noBorder = ev.noBorder;
+            default:
+                break;
         }
     }
 
@@ -268,6 +249,9 @@ export function config(): Config {
 export function queueEvent(ev: Event): void {
     controller.queueEvent(ev);
 }
+export function queuePostEvent(ev: PostEvent): void {
+    controller.queuePostEvent(ev);
+}
 
 export function getWindowHandler(window: Window): WindowHandler | undefined {
     return controller.windowHandlers.get(window);
@@ -286,8 +270,10 @@ export function windowExists(window: Window): boolean {
 }
 
 // js can only map off of concrete types (ex. strings)
-// this shouldn't be used outside of the controller file so no export
 type DesktopIdentifier = string;
-function desktopId(output: Output, desktop: VirtualDesktop): DesktopIdentifier {
+export function desktopId(
+    output: Output,
+    desktop: VirtualDesktop,
+): DesktopIdentifier {
     return `{"o":"${output.name}","d":"${desktop.id}"}`;
 }
