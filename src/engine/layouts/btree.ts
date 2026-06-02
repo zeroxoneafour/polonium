@@ -1,17 +1,19 @@
 // engine/layouts/btree.ts - Implementation of binary tree layout
 
-import { TilingEngineInterface, Tile, Window, Direction } from "../engine";
+import {
+    TilingEngineInterface,
+    Tile,
+    Window,
+    Direction,
+    BaseEngineSettings,
+    LayoutDirection,
+} from "../engine";
 import { Queue } from "../../util/queue";
-import { LayoutDirection } from "kwin-api";
+import { console } from "../../controller";
 
-class BTreeSettings {
-    insertOnRight: boolean = false;
-
-    constructor(obj: any) {
-        for (const key in this) {
-            if (obj.hasOwnProperty(key)) this[key] = obj[key];
-        }
-    }
+class BTreeSettings extends BaseEngineSettings {
+    swapInsertSide: boolean = false;
+    rotateLayout: boolean = false;
 }
 
 class Node {
@@ -70,12 +72,15 @@ class Node {
 }
 
 export default class BTreeEngine implements TilingEngineInterface {
-    settings: BTreeSettings = new BTreeSettings({});
-    get engineSettings(): object {
-        return this.settings;
+    settings: BTreeSettings = new BTreeSettings();
+    getEngineSettings(): object {
+        return this.settings.getProps();
     }
-    set engineSettings(settings: object) {
-        this.settings = new BTreeSettings(settings);
+    setEngineSettings(settings: object): void {
+        this.settings.setProps(settings);
+        this.root.layoutDirectionRoot = this.settings.rotateLayout
+            ? LayoutDirection.Vertical
+            : LayoutDirection.Horizontal;
     }
 
     root: Node = new Node();
@@ -114,8 +119,8 @@ export default class BTreeEngine implements TilingEngineInterface {
         while (!queue.isEmpty) {
             const node = queue.pop()!;
             if (node.window !== null) {
-                node.split(this.settings.insertOnRight ? 1 : 0);
-                node.children![this.settings.insertOnRight ? 0 : 1].window =
+                node.split(this.settings.swapInsertSide ? 1 : 0);
+                node.children![this.settings.swapInsertSide ? 0 : 1].window =
                     window;
                 return;
             } else {
@@ -133,7 +138,7 @@ export default class BTreeEngine implements TilingEngineInterface {
             node.window = window;
             return;
         }
-        let insertPoint = this.settings.insertOnRight ? 0 : 1;
+        let insertPoint = this.settings.swapInsertSide ? 0 : 1;
         if (direction !== undefined) {
             insertPoint =
                 node.layoutDirection === LayoutDirection.Horizontal

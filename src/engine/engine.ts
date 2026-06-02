@@ -2,16 +2,16 @@
 
 import { LayoutDirection } from "kwin-api";
 import { QSize, QUuid } from "kwin-api/qt";
-
 import { Direction } from "../util/geometry";
-export { Direction };
+
+export { LayoutDirection, Direction };
 
 /**
  * Tiling Engine interface 2.0
  */
 export interface TilingEngineInterface {
-    get engineSettings(): object;
-    set engineSettings(settings: object);
+    getEngineSettings(): object;
+    setEngineSettings(settings: object): void;
 
     /**
      * Builds the layout.
@@ -96,34 +96,6 @@ export class Tile {
         this.addChild();
     }
 
-    /*
-    // have a tile replace its parent, destroying its siblings
-    secede(): void {
-        const parent = this.parent;
-        // cant secede as root
-        if (parent == null) {
-            return;
-        }
-        this.parent = parent.parent;
-        if (this.parent != null) {
-            this.parent.tiles[this.parent.tiles.indexOf(parent)] = this;
-            for (const tile of parent.tiles) {
-                if (tile != this) {
-                    tile.remove(true);
-                }
-            }
-            parent.tiles = [];
-            parent.windows = [];
-        } else {
-            // special case for roottile because it cant be destroyed
-            parent.windows = this.windows;
-            parent.tiles = this.tiles;
-            this.tiles = [];
-            this.windows = [];
-        }
-    }
-    */
-
     // removes a tile and all its children
     remove(): void {
         const parent = this.parent;
@@ -145,5 +117,24 @@ export class Tile {
 
     totalChildrenSize(): number {
         return this.children.reduce((s, t) => s + t.size, 0);
+    }
+}
+
+// easy class to derive specific engine settings from
+export class BaseEngineSettings {
+    getProps(): object {
+        const ret: any = {};
+        for (const key in this) {
+            if (typeof this[key] !== "function") {
+                ret[key] = this[key];
+            }
+        }
+        return ret;
+    }
+    setProps(obj: any) {
+        if (obj == null) return;
+        for (const key in this) {
+            if (obj.hasOwnProperty(key)) this[key] = obj[key];
+        }
     }
 }

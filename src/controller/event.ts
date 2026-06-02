@@ -2,19 +2,26 @@ import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
 import { Direction } from "../util/geometry";
 import { TilingEngineType } from "../engine";
 import { Queue } from "../util/queue";
-import { desktopId } from ".";
+
+export type Activity = string;
+
+interface GenericEvent {
+    t: string;
+}
 
 // normal events - run before build
 interface TileWindowEvent {
     t: "tileWindow";
     window: Window;
-    desktops: VirtualDesktop[];
+    desktop: VirtualDesktop;
+    activity: Activity;
     output: Output;
 }
 interface UntileWindowEvent {
     t: "untileWindow";
     window: Window;
-    desktops: VirtualDesktop[];
+    desktop: VirtualDesktop;
+    activity: Activity;
     output: Output;
 }
 interface UpdateDriversEvent {
@@ -33,6 +40,7 @@ interface PlaceWindowEvent {
     t: "placeWindow";
     window: Window;
     desktop: VirtualDesktop;
+    activity: Activity;
     output: Output;
     tile: Tile;
     direction?: Direction;
@@ -40,22 +48,16 @@ interface PlaceWindowEvent {
 interface UpdateTilesEvent {
     t: "updateTiles";
     desktop: VirtualDesktop;
+    activity: Activity;
     output: Output;
 }
 interface ChangeEngineEvent {
     t: "changeEngine";
     desktop: VirtualDesktop;
+    activity: Activity;
     output: Output;
     engineType?: TilingEngineType;
     engineSettings?: object;
-}
-
-// post events - these events run after build
-interface SetWindowPropertiesEvent {
-    t: "setWindowProperties";
-    window: Window;
-    fullscreen?: boolean;
-    noBorder?: boolean;
 }
 
 export type Event =
@@ -69,6 +71,14 @@ export type Event =
     | ChangeEngineEvent
     | SetWindowPropertiesEvent;
 
+// post events - these events run after build
+interface SetWindowPropertiesEvent {
+    t: "setWindowProperties";
+    window: Window;
+    fullscreen?: boolean;
+    noBorder?: boolean;
+}
+
 export type PostEvent = SetWindowPropertiesEvent;
 
 // check if two events operate on the same widnow, desktops, and output
@@ -79,51 +89,114 @@ function eventsAreParallel(
 ): boolean {
     if (ev1.window !== ev2.window) return false;
     if (ev1.output !== ev2.output) return false;
-    if (ev1.desktops.length !== ev2.desktops.length) return false;
-    for (let i = 0; i < ev1.desktops.length; i++) {
-        if (ev1.desktops[i] !== ev2.desktops[i]) return false;
+    if (ev1.activity !== ev2.activity) return false;
+    if (ev1.desktop !== ev2.desktop) return false;
+    return true;
+}
+
+function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
+    if (ev1.t !== ev2.t) return false;
+    for (const prop in ev1) {
+        const prop2 = (ev2 as any)[prop];
+        if (prop !== prop2) return false;
     }
     return true;
 }
 
 export function simplifyEvents(eventQueue: Queue<Event>): Queue<Event> {
-    // ultra simple simplifier - only cut out events that directly cancel each other out
-    // also simplifies duplicate events for updateTiles as this typically generates mass duplicates
-    // todo in future - simplify events on a per-desktop, per-output basis
-    const events = new Array<Event>(eventQueue.size);
-    for (let i = 0; i < events.length; i += 1) {
-        events[i] = eventQueue.pop()!;
+    const oldEvents = new Array<Event>(eventQueue.size);
+    for (let i = 0; i < oldEvents.length; i += 1) {
+        oldEvents[i] = eventQueue.pop()!;
     }
-    const eventsRet = [...events];
-    const updateTilesEventSet = new Set<string>();
-    for (const ev of events) {
-        switch (ev.t) {
-            case "tileWindow":
-                const parallelEvent = events.find(
-                    (e) => e.t === "untileWindow" && eventsAreParallel(ev, e),
-                );
-                if (parallelEvent === undefined) break;
-                eventsRet.splice(eventsRet.indexOf(parallelEvent), 1);
-                eventsRet.splice(eventsRet.indexOf(ev), 1);
-                break;
-            case "updateTiles":
-                const id = desktopId(ev.output, ev.desktop);
-                if (updateTilesEventSet.has(id)) {
-                    eventsRet.splice(eventsRet.indexOf(ev), 1);
-                } else {
-                    updateTilesEventSet.add(id);
-                }
-            default:
-                break;
+    const newEvents: Event[] = [];
+    for (const ev of oldEvents) {
+        if (newEvents.some((e) => eventsAreSame(ev, e))) {
+            continue;
         }
+        if (ev.t == "tileWindow" || ev.t == "untileWindow") {
+            const parallelEventIdx = newEvents.findIndex((e) => {
+                if (ev.t == "tileWindow" && e.t == "untileWindow") {
+                    return eventsAreParallel(ev, e);
+                } else if (e.t == "tileWindow" && ev.t == "untileWindow") {
+                    return eventsAreParallel(e, ev);
+                }
+            });
+            // remove old parallel event so we can use new one instead
+            if (parallelEventIdx != -1) {
+                newEvents.splice(parallelEventIdx, 1);
+            }
+        }
+        newEvents.push(ev);
     }
     const ret = new Queue<Event>();
-    ret.multipush(eventsRet);
+    ret.multipush(newEvents);
     return ret;
 }
 
 export function simplifyPostEvents(
     eventQueue: Queue<PostEvent>,
 ): Queue<PostEvent> {
-    return eventQueue;
+    const oldEvents = new Array<PostEvent>(eventQueue.size);
+    for (let i = 0; i < oldEvents.length; i += 1) {
+        oldEvents[i] = eventQueue.pop()!;
+    }
+    const newEvents: PostEvent[] = [];
+    for (const ev of oldEvents) {
+        if (newEvents.find((e) => eventsAreSame(ev, e)) !== undefined) {
+            continue;
+        }
+        newEvents.push(ev);
+    }
+    const ret = new Queue<PostEvent>();
+    ret.multipush(newEvents);
+    return ret;
+}
+
+export function createTileEvents(
+    window: Window,
+    desktops?: VirtualDesktop[],
+    activities?: Activity[],
+    output?: Output,
+): TileWindowEvent[] | UntileWindowEvent[] {
+    if (desktops === undefined) desktops = window.desktops;
+    if (activities === undefined) activities = window.activities;
+    if (output === undefined) output = window.output;
+    const ret = [];
+    for (const desktop of desktops) {
+        for (const activity of activities) {
+            ret.push({
+                t: "tileWindow",
+                window: window,
+                desktop: desktop,
+                activity: activity,
+                output: output,
+            });
+        }
+    }
+    // force return
+    return ret as any;
+}
+
+export function createUntileEvents(
+    window: Window,
+    desktops?: VirtualDesktop[],
+    activities?: Activity[],
+    output?: Output,
+): UntileWindowEvent[] {
+    if (desktops === undefined) desktops = window.desktops;
+    if (activities === undefined) activities = window.activities;
+    if (output === undefined) output = window.output;
+    const ret = [];
+    for (const desktop of desktops) {
+        for (const activity of activities) {
+            ret.push({
+                t: "untileWindow",
+                window: window,
+                desktop: desktop,
+                activity: activity,
+                output: output,
+            });
+        }
+    }
+    return ret as any;
 }

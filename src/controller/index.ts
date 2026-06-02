@@ -1,11 +1,11 @@
+import { Options, Output, VirtualDesktop, Window } from "kwin-api";
 import {
-    Options,
-    Output,
-    VirtualDesktop,
-    Console as QmlConsole,
-    Window,
-} from "kwin-api";
-import { Event, PostEvent, simplifyEvents, simplifyPostEvents } from "./event";
+    Activity,
+    Event,
+    PostEvent,
+    simplifyEvents,
+    simplifyPostEvents,
+} from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
 import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
@@ -14,6 +14,8 @@ import { Console } from "./console";
 import { Driver } from "../driver";
 import { QTimer } from "kwin-api/qt";
 import { Config } from "./config";
+
+export { Activity };
 
 class Controller {
     workspace: Workspace;
@@ -70,7 +72,13 @@ class Controller {
             for (const output of this.workspace.screens) {
                 console().debug("Rebuilding for output", output.name);
                 this.drivers
-                    .get(desktopId(output, this.workspace.currentDesktop))
+                    .get(
+                        desktopId(
+                            this.workspace.currentDesktop,
+                            this.workspace.currentActivity,
+                            output,
+                        ),
+                    )
                     ?.buildLayout();
             }
         }
@@ -88,41 +96,42 @@ class Controller {
         console().debug("handling event", ev.t);
         switch (ev.t) {
             case "tileWindow":
-                for (const desktop of ev.desktops) {
-                    console().log(
-                        "adding window",
-                        ev.window.resourceClass,
-                        "on desktop",
-                        desktop.name,
-                        "on output",
-                        ev.output.name,
-                    );
-                    this.drivers
-                        .get(desktopId(ev.output, desktop))
-                        ?.addWindow(ev.window);
-                }
+                console().log(
+                    "adding window",
+                    ev.window.resourceClass,
+                    "to desktop",
+                    ev.desktop.name,
+                    "on output",
+                    ev.output.name,
+                    "and activity",
+                    ev.activity,
+                );
+                this.drivers
+                    .get(desktopId(ev.desktop, ev.activity, ev.output))
+                    ?.addWindow(ev.window);
                 break;
             case "untileWindow":
-                if (ev.output == undefined) break;
-                for (const desktop of ev.desktops) {
-                    if (desktop == undefined) continue;
-                    console().log(
-                        "removing window",
-                        ev.window.resourceClass,
-                        "from desktop",
-                        desktop.name,
-                        "on output",
-                        ev.output.name,
-                    );
-                    const driver = this.drivers.get(
-                        desktopId(ev.output, desktop),
-                    );
-                    if (
-                        driver !== undefined &&
-                        driver.windowMap.has(ev.window)
-                    ) {
-                        driver.removeWindow(ev.window);
-                    }
+                if (
+                    ev.output == undefined ||
+                    ev.desktop == undefined ||
+                    ev.activity == undefined
+                )
+                    break;
+                console().log(
+                    "removing window",
+                    ev.window.resourceClass,
+                    "from desktop",
+                    ev.desktop.name,
+                    "on output",
+                    ev.output.name,
+                    "and activity",
+                    ev.activity,
+                );
+                const driver = this.drivers.get(
+                    desktopId(ev.desktop, ev.activity, ev.output),
+                );
+                if (driver !== undefined && driver.windowMap.has(ev.window)) {
+                    driver.removeWindow(ev.window);
                 }
                 break;
             case "updateDrivers":
@@ -145,7 +154,7 @@ class Controller {
                     ev.tile.absoluteGeometry,
                 );
                 this.drivers
-                    .get(desktopId(ev.output, ev.desktop))
+                    .get(desktopId(ev.desktop, ev.activity, ev.output))
                     ?.placeWindow(ev.window, ev.tile, ev.direction);
                 break;
             case "updateTiles":
@@ -156,7 +165,7 @@ class Controller {
                     ev.output.name,
                 );
                 this.drivers
-                    .get(desktopId(ev.output, ev.desktop))
+                    .get(desktopId(ev.desktop, ev.activity, ev.output))
                     ?.updateTiles();
                 break;
             case "changeEngine":
@@ -167,10 +176,8 @@ class Controller {
                     ev.output.name,
                 );
                 this.drivers
-                    .get(desktopId(ev.output, ev.desktop))
+                    .get(desktopId(ev.desktop, ev.activity, ev.output))
                     ?.changeTilingEngine(ev.engineType, ev.engineSettings);
-                break;
-            default:
                 break;
         }
     }
@@ -187,16 +194,19 @@ class Controller {
                 if (ev.fullscreen !== undefined)
                     ev.window.fullScreen = ev.fullscreen;
                 if (ev.noBorder !== undefined) ev.window.noBorder = ev.noBorder;
-            default:
-                break;
         }
     }
 
-    parseDesktopId(id: DesktopIdentifier): [Output?, VirtualDesktop?] {
+    parseDesktopId(
+        id: DesktopIdentifier,
+    ): [VirtualDesktop?, Activity?, Output?] {
         const parsed = JSON.parse(id);
-        const output = this.workspace.screens.find((s) => s.name === parsed.o);
         const desktop = this.workspace.desktops.find((d) => d.id === parsed.d);
-        return [output, desktop];
+        const activity = this.workspace.activities.includes(parsed.s)
+            ? parsed.s
+            : undefined;
+        const output = this.workspace.screens.find((s) => s.name === parsed.o);
+        return [desktop, activity, output];
     }
 
     updateDrivers() {
@@ -207,17 +217,23 @@ class Controller {
             }
         }
         for (const output of this.workspace.screens) {
-            for (const desktop of this.workspace.desktops) {
-                const id = desktopId(output, desktop);
-                if (!this.drivers.has(id)) {
-                    const rootTile = this.workspace.rootTile(output, desktop);
-                    const driver = new Driver(
-                        rootTile,
-                        desktop,
-                        output,
-                        config().defaultEngine,
-                    );
-                    this.drivers.set(id, driver);
+            for (const activity of this.workspace.activities) {
+                for (const desktop of this.workspace.desktops) {
+                    const id = desktopId(desktop, activity, output);
+                    if (!this.drivers.has(id)) {
+                        const rootTile = this.workspace.rootTile(
+                            output,
+                            desktop,
+                        );
+                        const driver = new Driver(
+                            rootTile,
+                            desktop,
+                            activity,
+                            output,
+                            config().defaultEngine,
+                        );
+                        this.drivers.set(id, driver);
+                    }
                 }
             }
         }
@@ -272,8 +288,9 @@ export function windowExists(window: Window): boolean {
 // js can only map off of concrete types (ex. strings)
 type DesktopIdentifier = string;
 export function desktopId(
-    output: Output,
     desktop: VirtualDesktop,
+    activity: Activity,
+    output: Output,
 ): DesktopIdentifier {
-    return `{"o":"${output.name}","d":"${desktop.id}"}`;
+    return `{"o":"${output.name}","a":"${activity}","d":"${desktop.id}"}`;
 }

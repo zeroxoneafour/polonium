@@ -1,7 +1,13 @@
 // half.ts - Tiling engine for the half/split layout
 
-import { LayoutDirection } from "kwin-api";
-import { Tile, Window, TilingEngineInterface, Direction } from "../engine";
+import {
+    Tile,
+    Window,
+    TilingEngineInterface,
+    Direction,
+    BaseEngineSettings,
+    LayoutDirection,
+} from "../engine";
 
 class WindowBox {
     window: Window;
@@ -12,15 +18,10 @@ class WindowBox {
     }
 }
 
-class HalfEngineSettings {
+class HalfEngineSettings extends BaseEngineSettings {
     middleSplit: number = 0.5;
-    side1Dominant: boolean = true;
-
-    constructor(obj: any) {
-        for (const key in this) {
-            if (obj.hasOwnProperty(key)) this[key] = obj[key];
-        }
-    }
+    swapInsertSide: boolean = false;
+    rotateLayout: boolean = false;
 }
 
 export default class HalfEngine implements TilingEngineInterface {
@@ -28,18 +29,20 @@ export default class HalfEngine implements TilingEngineInterface {
     side1: WindowBox[] = [];
     side2: WindowBox[] = [];
 
-    settings = new HalfEngineSettings({});
+    settings = new HalfEngineSettings();
 
-    get engineSettings(): object {
-        return this.settings;
+    getEngineSettings(): object {
+        return this.settings.getProps();
     }
-    set engineSettings(settings: object) {
-        this.settings = new HalfEngineSettings(settings);
+    setEngineSettings(settings: object): void {
+        this.settings.setProps(settings);
     }
 
     buildLayout(): Tile {
         const rootTile = new Tile();
-        rootTile.layoutDirection = LayoutDirection.Horizontal;
+        rootTile.layoutDirection = this.settings.rotateLayout
+            ? LayoutDirection.Vertical
+            : LayoutDirection.Horizontal;
         this.tileMap.clear();
         if (this.side1.length == 0 && this.side2.length == 0) return rootTile;
         if (this.side1.length == 0 || this.side2.length == 0) {
@@ -78,7 +81,7 @@ export default class HalfEngine implements TilingEngineInterface {
     }
 
     addWindow(window: Window) {
-        if (this.settings.side1Dominant) {
+        if (!this.settings.swapInsertSide) {
             if (this.side1.length == 0) {
                 this.side1.push(new WindowBox(window));
             } else {
@@ -111,11 +114,10 @@ export default class HalfEngine implements TilingEngineInterface {
     }
 
     // default to inserting below
-    placeWindow(
-        window: Window,
-        tile: Tile,
-        direction: Direction = Direction.Vertical,
-    ) {
+    placeWindow(window: Window, tile: Tile, direction?: Direction) {
+        if (direction === undefined) {
+            direction = Direction.Vertical;
+        }
         const targetBox = this.tileMap.get(tile);
         if (targetBox == undefined) {
             this.addWindow(window);

@@ -1,4 +1,5 @@
 // engine/index.ts - Wrapper around the engines to interact with the driver
+import { console } from "../controller";
 import { TilingEngineInterface, Window, Tile, Direction } from "./engine";
 import BTreeEngine from "./layouts/btree";
 import HalfEngine from "./layouts/half";
@@ -16,7 +17,7 @@ export class TilingEngine {
 
     readonly engineType: TilingEngineType;
 
-    constructor(type: TilingEngineType, settings?: object) {
+    constructor(type: TilingEngineType, settings: object) {
         this.engineType = type;
         switch (type) {
             case TilingEngineType.BTree:
@@ -26,15 +27,15 @@ export class TilingEngine {
                 this.engine = new HalfEngine();
                 break;
         }
-        if (settings !== undefined) this.engine.engineSettings = settings;
+        this.engine.setEngineSettings(settings);
         this.engineRootTile = this.engine.buildLayout();
     }
 
-    get engineSettings() {
-        return this.engine.engineSettings;
+    getEngineSettings(): object {
+        return this.engine.getEngineSettings();
     }
-    set engineSettings(settings: object) {
-        this.engine.engineSettings = settings;
+    setEngineSettings(settings: object): void {
+        this.engine.setEngineSettings(settings);
     }
 
     buildLayout(): Tile {

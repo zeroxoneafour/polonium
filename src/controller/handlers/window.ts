@@ -1,11 +1,13 @@
 import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
-import { config, console, queueEvent, queuePostEvent } from "..";
+import { Activity, config, console, queueEvent, queuePostEvent } from "..";
+import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
 import { GRect } from "../../util/geometry";
 
 export class WindowHandler {
     window: Window;
     previousDesktops: VirtualDesktop[];
+    previousActivities: Activity[];
     previousOutput: Output;
     tiled: boolean;
     wantsTiled: boolean;
@@ -17,6 +19,7 @@ export class WindowHandler {
         this.workspace = workspace;
 
         this.previousDesktops = [...window.desktops];
+        this.previousActivities = [...window.activities];
         this.previousOutput = window.output;
 
         this.tiled = this.startTiled();
@@ -58,18 +61,17 @@ export class WindowHandler {
         this.previousOutput = this.window.output;
         if (!this.tiled) return;
 
-        queueEvent({
-            t: "untileWindow",
-            window: this.window,
-            desktops: this.previousDesktops,
-            output: previousOutput,
-        });
-        queueEvent({
-            t: "tileWindow",
-            window: this.window,
-            desktops: this.window.desktops,
-            output: this.window.output,
-        });
+        for (const ev of createUntileEvents(
+            this.window,
+            this.previousDesktops,
+            this.previousActivities,
+            previousOutput,
+        )) {
+            queueEvent(ev);
+        }
+        for (const ev of createTileEvents(this.window)) {
+            queueEvent(ev);
+        }
     }
 
     desktopsChanged() {
@@ -82,34 +84,39 @@ export class WindowHandler {
         this.previousDesktops = [...this.window.desktops];
         if (!this.tiled) return;
 
-        const desktopsToTile = [];
-        const desktopsToUntile = [];
-        for (const desktop of this.window.desktops) {
-            if (!previousDesktops.includes(desktop)) {
-                desktopsToTile.push(desktop);
-            }
+        for (const ev of createUntileEvents(
+            this.window,
+            previousDesktops,
+            this.previousActivities,
+            this.previousOutput,
+        )) {
+            queueEvent(ev);
         }
-        for (const desktop of previousDesktops) {
-            if (!this.window.desktops.includes(desktop)) {
-                desktopsToUntile.push(desktop);
-            }
+        for (const ev of createTileEvents(this.window)) {
+            queueEvent(ev);
         }
+    }
 
-        if (desktopsToUntile.length > 0) {
-            queueEvent({
-                t: "untileWindow",
-                window: this.window,
-                desktops: desktopsToUntile,
-                output: this.window.output,
-            });
+    activitiesChanged() {
+        console().debug(
+            "activities changed on window",
+            this.window.resourceClass,
+        );
+
+        const previousActivities = [...this.previousActivities];
+        this.previousActivities = [...this.window.activities];
+        if (!this.tiled) return;
+
+        for (const ev of createUntileEvents(
+            this.window,
+            this.previousDesktops,
+            previousActivities,
+            this.previousOutput,
+        )) {
+            queueEvent(ev);
         }
-        if (desktopsToTile.length > 0) {
-            queueEvent({
-                t: "tileWindow",
-                window: this.window,
-                desktops: desktopsToTile,
-                output: this.window.output,
-            });
+        for (const ev of createTileEvents(this.window)) {
+            queueEvent(ev);
         }
     }
 
@@ -120,12 +127,9 @@ export class WindowHandler {
         );
         if (this.window.fullScreen && this.tiled) {
             this.tiled = false;
-            queueEvent({
-                t: "untileWindow",
-                window: this.window,
-                desktops: this.window.desktops,
-                output: this.window.output,
-            });
+            for (const ev of createUntileEvents(this.window)) {
+                queueEvent(ev);
+            }
             // toggle fullscreen because this works for whatever reason
             queuePostEvent({
                 t: "setWindowProperties",
@@ -139,12 +143,9 @@ export class WindowHandler {
             });
         } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
             this.tiled = true;
-            queueEvent({
-                t: "tileWindow",
-                window: this.window,
-                desktops: this.window.desktops,
-                output: this.window.output,
-            });
+            for (const ev of createTileEvents(this.window)) {
+                queueEvent(ev);
+            }
         }
     }
 
@@ -155,20 +156,14 @@ export class WindowHandler {
         );
         if (this.window.minimized && this.tiled) {
             this.tiled = false;
-            queueEvent({
-                t: "untileWindow",
-                window: this.window,
-                desktops: this.window.desktops,
-                output: this.window.output,
-            });
+            for (const ev of createUntileEvents(this.window)) {
+                queueEvent(ev);
+            }
         } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
             this.tiled = true;
-            queueEvent({
-                t: "tileWindow",
-                window: this.window,
-                desktops: this.window.desktops,
-                output: this.window.output,
-            });
+            for (const ev of createTileEvents(this.window)) {
+                queueEvent(ev);
+            }
         }
     }
 
@@ -179,12 +174,9 @@ export class WindowHandler {
                 this.window.resourceClass,
             );
             this.tiled = false;
-            queueEvent({
-                t: "untileWindow",
-                window: this.window,
-                desktops: this.window.desktops,
-                output: this.window.output,
-            });
+            for (const ev of createUntileEvents(this.window)) {
+                queueEvent(ev);
+            }
         }
     }
 
@@ -210,7 +202,8 @@ export class WindowHandler {
                     queueEvent({
                         t: "tileWindow",
                         window: this.window,
-                        desktops: [desktop],
+                        desktop: desktop,
+                        activity: this.workspace.currentActivity,
                         output: this.window.output,
                     });
                 } else {
@@ -218,12 +211,25 @@ export class WindowHandler {
                         t: "placeWindow",
                         window: this.window,
                         desktop: desktop,
+                        activity: this.workspace.currentActivity,
                         output: this.window.output,
                         tile: tile,
                         direction: new GRect(
                             tile.absoluteGeometry,
                         ).directionFromPoint(cursorPos),
                     });
+                }
+            }
+            // for other activities, just tile dont place
+            for (const activity of this.window.activities) {
+                if (activity === this.workspace.currentActivity) continue;
+                for (const ev of createTileEvents(
+                    this.window,
+                    this.window.desktops,
+                    [activity],
+                    this.window.output,
+                )) {
+                    queueEvent(ev);
                 }
             }
         }

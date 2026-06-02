@@ -1,7 +1,8 @@
 import { Workspace } from "kwin-api/qml";
 import { config, createWindowHandler, getWindowHandler, queueEvent } from "..";
-import { Output, VirtualDesktop, Window } from "kwin-api";
+import { Window } from "kwin-api";
 import { BorderSetting } from "../config";
+import { createTileEvents, createUntileEvents } from "../event";
 
 export class WorkspaceHandler {
     private workspace: Workspace;
@@ -13,12 +14,18 @@ export class WorkspaceHandler {
 
         this.workspace.windowAdded.connect(this.windowAdded.bind(this));
         this.workspace.windowRemoved.connect(this.windowRemoved.bind(this));
+        this.workspace.windowActivated.connect(this.windowActivated.bind(this));
+
         this.workspace.currentDesktopChanged.connect(
-            this.currentDesktopChanged.bind(this),
+            this.rebuildDesktops.bind(this),
         );
+        this.workspace.currentActivityChanged.connect(
+            this.rebuildDesktops.bind(this),
+        );
+
         this.workspace.screensChanged.connect(this.updateDrivers.bind(this));
         this.workspace.desktopsChanged.connect(this.updateDrivers.bind(this));
-        this.workspace.windowActivated.connect(this.windowActivated.bind(this));
+        this.workspace.activitiesChanged.connect(this.updateDrivers.bind(this));
     }
 
     windowAdded(window: Window) {
@@ -26,33 +33,32 @@ export class WorkspaceHandler {
         // never friggin mind we need a ref map to store "tiled" state across shortcut handler as well
         const windowHandler = createWindowHandler(window);
         if (!windowHandler.tiled) return;
-        queueEvent({
-            t: "tileWindow",
-            window: window,
-            desktops: window.desktops,
-            output: window.output,
-        });
+        for (const ev of createTileEvents(
+            window,
+            window.desktops,
+            window.activities,
+            window.output,
+        )) {
+            queueEvent(ev);
+        }
     }
 
     windowRemoved(window: Window) {
-        // slice operator because window.desktops may be destroyed
-        queueEvent({
-            t: "untileWindow",
-            window: window,
-            desktops: [...window.desktops],
-            output: window.output,
-        });
+        for (const ev of createUntileEvents(
+            window,
+            window.desktops,
+            window.activities,
+            window.output,
+        )) {
+            queueEvent(ev);
+        }
         queueEvent({
             t: "removeWindow",
             window: window,
         });
     }
 
-    currentDesktopChanged(
-        previousDesktop: VirtualDesktop,
-        currentDesktop: VirtualDesktop,
-        output: Output,
-    ) {
+    rebuildDesktops() {
         // never mind we still have to do stuff
         queueEvent({ t: "rebuildDesktops" });
     }

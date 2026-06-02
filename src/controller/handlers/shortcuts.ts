@@ -2,6 +2,7 @@ import { Workspace } from "kwin-api/qml";
 import { Shortcuts } from "../../extern";
 import { getWindowHandler, queueEvent } from "..";
 import { TilingEngineType } from "../../engine";
+import { createTileEvents, createUntileEvents } from "../event";
 
 export class ShortcutsHandler {
     workspace: Workspace;
@@ -30,21 +31,15 @@ export class ShortcutsHandler {
         if (windowHandler.tiled) {
             windowHandler.wantsTiled = false;
             windowHandler.tiled = false;
-            queueEvent({
-                t: "untileWindow",
-                window: window,
-                desktops: window.desktops,
-                output: window.output,
-            });
+            for (const ev of createUntileEvents(window)) {
+                queueEvent(ev);
+            }
         } else {
             windowHandler.wantsTiled = true;
             windowHandler.tiled = true;
-            queueEvent({
-                t: "tileWindow",
-                window: window,
-                desktops: window.desktops,
-                output: window.output,
-            });
+            for (const ev of createTileEvents(window)) {
+                queueEvent(ev);
+            }
         }
     }
 
@@ -52,6 +47,7 @@ export class ShortcutsHandler {
         queueEvent({
             t: "changeEngine",
             desktop: this.workspace.currentDesktop,
+            activity: this.workspace.currentActivity,
             output: this.workspace.activeScreen,
             engineType: TilingEngineType.BTree,
         });
@@ -61,6 +57,7 @@ export class ShortcutsHandler {
         queueEvent({
             t: "changeEngine",
             desktop: this.workspace.currentDesktop,
+            activity: this.workspace.currentActivity,
             output: this.workspace.activeScreen,
             engineType: TilingEngineType.Half,
         });

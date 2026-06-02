@@ -12,13 +12,20 @@ import {
     TilingEngineType,
 } from "../engine";
 import { buildLayout } from "./buildlayout";
-import { config, console, queueEvent, windowExists } from "../controller";
+import {
+    Activity,
+    config,
+    console,
+    queueEvent,
+    windowExists,
+} from "../controller";
 import { Direction, GRect } from "../util/geometry";
 import { BorderSetting } from "../controller/config";
 
 export class Driver {
     rootTile: KwinTile;
     desktop: VirtualDesktop;
+    activity: Activity;
     output: Output;
 
     tileMap: Map<KwinTile, EngineTile> = new Map();
@@ -30,15 +37,34 @@ export class Driver {
     constructor(
         rootTile: KwinTile,
         desktop: VirtualDesktop,
+        activity: Activity,
         output: Output,
         engineType: TilingEngineType,
         engineSettings?: object,
     ) {
         this.rootTile = rootTile;
         this.desktop = desktop;
+        this.activity = activity;
         this.output = output;
 
+        if (engineSettings === undefined) {
+            engineSettings = this.getConfigEngineSettings(engineType);
+        }
         this.tilingEngine = new TilingEngine(engineType, engineSettings);
+    }
+
+    // want to completely separate the engine and kwin, so we set config defaults here not in engine
+    private getConfigEngineSettings(engineType: TilingEngineType): object {
+        let ret: object;
+        switch (engineType) {
+            case TilingEngineType.BTree:
+                ret = config().btreeSettings;
+                break;
+            case TilingEngineType.Half:
+                ret = config().halfSettings;
+                break;
+        }
+        return ret;
     }
 
     changeTilingEngine(engineType?: TilingEngineType, engineSettings?: object) {
@@ -46,12 +72,15 @@ export class Driver {
             engineType !== undefined &&
             this.tilingEngine.engineType != engineType
         ) {
+            if (engineSettings === undefined) {
+                engineSettings = this.getConfigEngineSettings(engineType);
+            }
             this.tilingEngine = new TilingEngine(engineType, engineSettings);
             for (const engineWindow of this.windowMap.values()) {
                 this.tilingEngine.addWindow(engineWindow);
             }
         } else if (engineSettings !== undefined) {
-            this.tilingEngine.engineSettings = engineSettings;
+            this.tilingEngine.setEngineSettings(engineSettings);
         }
     }
 
@@ -197,6 +226,7 @@ export class Driver {
         queueEvent({
             t: "updateTiles",
             desktop: this.desktop,
+            activity: this.activity,
             output: this.output,
         });
     }
