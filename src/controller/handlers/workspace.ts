@@ -1,5 +1,5 @@
 import { Workspace } from "kwin-api/qml";
-import { config, createWindowHandler, getWindowHandler, queueEvent } from "..";
+import { config, createWindowHandler, getWindowHandler, queueEvent, queuePostEvent } from "..";
 import { Window } from "kwin-api";
 import { BorderSetting } from "../config";
 import { createTileEvents, createUntileEvents } from "../event";
@@ -73,7 +73,7 @@ export class WorkspaceHandler {
             config().borders == BorderSetting.BorderFloatingActive
         ) {
             if (windowIsTiled(window)) {
-                queueEvent({
+                queuePostEvent({
                     t: "setWindowProperties",
                     window: window,
                     noBorder: false,
@@ -84,7 +84,7 @@ export class WorkspaceHandler {
                 (windowIsTiled(this.previousActivated) ||
                     config().borders == BorderSetting.BorderActive)
             ) {
-                queueEvent({
+                queuePostEvent({
                     t: "setWindowProperties",
                     window: this.previousActivated,
                     noBorder: true,

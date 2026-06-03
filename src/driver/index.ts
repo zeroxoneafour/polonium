@@ -140,13 +140,9 @@ export class Driver {
         this.windowsToUnmanage = [];
     }
 
-    // returns undefined if the window already exists
-    private initializeWindow(kwinWindow: KwinWindow): EngineWindow | undefined {
+    private initializeWindow(kwinWindow: KwinWindow): EngineWindow {
         if (this.windowMap.has(kwinWindow)) {
-            console().warn(
-                "initializeWindow error - window already exists in map",
-            );
-            return undefined;
+            return this.windowMap.get(kwinWindow)!;
         }
         const engineWindow = new EngineWindow(
             kwinWindow.internalId,
@@ -158,8 +154,15 @@ export class Driver {
     }
 
     addWindow(kwinWindow: KwinWindow): void {
+        if (this.windowMap.has(kwinWindow)) {
+            console().warn(
+                "initializeWindow error - window already exists in map",
+            );
+            return;
+        }
         const window = this.initializeWindow(kwinWindow);
-        if (window === undefined) return;
+        if (window === undefined) {
+        }
         this.tilingEngine.addWindow(window);
     }
 
@@ -168,8 +171,7 @@ export class Driver {
         kwinTile: KwinTile,
         direction?: Direction,
     ): void {
-        const window = this.initializeWindow(kwinWindow);
-        if (window === undefined) return;
+        let window = this.initializeWindow(kwinWindow);
         const tile = this.tileMap.get(kwinTile);
         if (tile == undefined) {
             console().warn("tile undefined during window placement");

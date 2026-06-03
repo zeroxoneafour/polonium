@@ -39,6 +39,138 @@ Item {
         sequence: "";
     }
 
+    function getActivateAbove() {
+        return activateAbove;
+    }
+    ShortcutHandler {
+        id: activateAbove;
+        
+        name: "PoloniumactivateAbove";
+        text: "Polonium: activate Above";
+        sequence: "Meta+K";
+    }
+
+    function getActivateBelow() {
+        return activateBelow;
+    }
+    ShortcutHandler {
+        id: activateBelow;
+        
+        name: "PoloniumActivateBelow";
+        text: "Polonium: Activate Below";
+        sequence: "Meta+J";
+    }
+
+    function getActivateLeft() {
+        return activateLeft;
+    }
+    ShortcutHandler {
+        id: activateLeft;
+        
+        name: "PoloniumActivateLeft";
+        text: "Polonium: Activate Left";
+        sequence: "Meta+H";
+    }
+
+    function getActivateRight() {
+        return activateRight;
+    }
+    ShortcutHandler {
+        id: activateRight;
+        
+        name: "PoloniumActivateRight";
+        text: "Polonium: Activate Right";
+        sequence: "Meta+L";
+    }
+
+    function getPlaceAbove() {
+        return placeAbove;
+    }
+    ShortcutHandler {
+        id: placeAbove;
+        
+        name: "PoloniumPlaceAbove";
+        text: "Polonium: Place Window Above";
+        sequence: "Meta+Shift+K";
+    }
+
+    function getPlaceBelow() {
+        return placeBelow;
+    }
+    ShortcutHandler {
+        id: placeBelow;
+        
+        name: "PoloniumPlaceBelow";
+        text: "Polonium: Place Window Below";
+        sequence: "Meta+Shift+J";
+    }
+
+    function getPlaceLeft() {
+        return placeLeft;
+    }
+    ShortcutHandler {
+        id: placeLeft;
+        
+        name: "PoloniumPlaceLeft";
+        text: "Polonium: Place Window Left";
+        sequence: "Meta+Shift+H";
+    }
+
+    function getPlaceRight() {
+        return placeRight;
+    }
+    ShortcutHandler {
+        id: placeRight;
+        
+        name: "PoloniumPlaceRight";
+        text: "Polonium: Place Window Right";
+        sequence: "Meta+Shift+L";
+    }
+
+    function getResizeUp() {
+        return resizeUp;
+    }
+    ShortcutHandler {
+        id: resizeUp;
+        
+        name: "PoloniumResizeUp";
+        text: "Polonium: Resize Tile Up";
+        sequence: "Meta+Ctrl+K";
+    }
+
+    function getResizeDown() {
+        return resizeDown;
+    }
+    ShortcutHandler {
+        id: resizeDown;
+        
+        name: "PoloniumResizeDown";
+        text: "Polonium: Resize Tile Down";
+        sequence: "Meta+Ctrl+J";
+    }
+
+    function getResizeLeft() {
+        return resizeLeft;
+    }
+    ShortcutHandler {
+        id: resizeLeft;
+        
+        name: "PoloniumResizeLeft";
+        text: "Polonium: Resize Tile Left";
+        sequence: "Meta+Ctrl+H";
+    }
+
+    function getResizeRight() {
+        return resizeRight;
+    }
+    ShortcutHandler {
+        id: resizeRight;
+        
+        name: "PoloniumResizeRight";
+        text: "Polonium: Resize Tile Right";
+        sequence: "Meta+Ctrl+L";
+    }
+
     /*
     
     function getOpenSettings() {
@@ -52,138 +184,6 @@ Item {
         sequence: "Meta+\\";
     }
     
-    function getFocusAbove() {
-        return focusAbove;
-    }
-    ShortcutHandler {
-        id: focusAbove;
-        
-        name: "PoloniumFocusAbove";
-        text: "Polonium: Focus Above";
-        sequence: "Meta+K";
-    }
-
-    function getFocusBelow() {
-        return focusBelow;
-    }
-    ShortcutHandler {
-        id: focusBelow;
-        
-        name: "PoloniumFocusBelow";
-        text: "Polonium: Focus Below";
-        sequence: "Meta+J";
-    }
-
-    function getFocusLeft() {
-        return focusLeft;
-    }
-    ShortcutHandler {
-        id: focusLeft;
-        
-        name: "PoloniumFocusLeft";
-        text: "Polonium: Focus Left";
-        sequence: "Meta+H";
-    }
-
-    function getFocusRight() {
-        return focusRight;
-    }
-    ShortcutHandler {
-        id: focusRight;
-        
-        name: "PoloniumFocusRight";
-        text: "Polonium: Focus Right";
-        sequence: "Meta+L";
-    }
-    
-    function getInsertAbove() {
-        return insertAbove;
-    }
-    ShortcutHandler {
-        id: insertAbove;
-        
-        name: "PoloniumInsertAbove";
-        text: "Polonium: Insert Above";
-        sequence: "Meta+Shift+K";
-    }
-
-    function getInsertBelow() {
-        return insertBelow;
-    }
-    ShortcutHandler {
-        id: insertBelow;
-        
-        name: "PoloniumInsertBelow";
-        text: "Polonium: Insert Below";
-        sequence: "Meta+Shift+J";
-    }
-
-    function getInsertLeft() {
-        return insertLeft;
-    }
-    ShortcutHandler {
-        id: insertLeft;
-        
-        name: "PoloniumInsertLeft";
-        text: "Polonium: Insert Left";
-        sequence: "Meta+Shift+H";
-    }
-
-    function getInsertRight() {
-        return insertRight;
-    }
-    ShortcutHandler {
-        id: insertRight;
-        
-        name: "PoloniumInsertRight";
-        text: "Polonium: Insert Right";
-        sequence: "Meta+Shift+L";
-    }
-
-    function getResizeAbove() {
-        return resizeAbove;
-    }
-    ShortcutHandler {
-        id: resizeAbove;
-        
-        name: "PoloniumResizeAbove";
-        text: "Polonium: Resize Above";
-        sequence: "Meta+Ctrl+K";
-    }
-
-    function getResizeBelow() {
-        return resizeBelow;
-    }
-    ShortcutHandler {
-        id: resizeBelow;
-        
-        name: "PoloniumResizeBelow";
-        text: "Polonium: Resize Below";
-        sequence: "Meta+Ctrl+J";
-    }
-
-    function getResizeLeft() {
-        return resizeLeft;
-    }
-    ShortcutHandler {
-        id: resizeLeft;
-        
-        name: "PoloniumResizeLeft";
-        text: "Polonium: Resize Left";
-        sequence: "Meta+Ctrl+H";
-    }
-
-    function getResizeRight() {
-        return resizeRight;
-    }
-    ShortcutHandler {
-        id: resizeRight;
-        
-        name: "PoloniumResizeRight";
-        text: "Polonium: Resize Right";
-        sequence: "Meta+Ctrl+L";
-    }
-
     function getRotateLayout() {
         return rotateLayout;
     }

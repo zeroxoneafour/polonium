@@ -6,7 +6,7 @@ import {
     simplifyEvents,
     simplifyPostEvents,
 } from "./event";
-import { QmlApi, QmlObjects } from "../extern";
+import { QmlApi, QmlObjects, Qt } from "../extern";
 import { Workspace, KWin } from "kwin-api/qml";
 import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
 import { Queue } from "../util/queue";
@@ -30,6 +30,7 @@ class Controller {
 
     drivers: Map<DesktopIdentifier, Driver> = new Map();
     windowHandlers: Map<Window, WindowHandler> = new Map();
+    workspaceHandler: WorkspaceHandler;
 
     constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
@@ -42,7 +43,7 @@ class Controller {
         this.eventTimer.repeat = false;
         this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
-        new WorkspaceHandler(this.workspace);
+        this.workspaceHandler = new WorkspaceHandler(this.workspace);
         new ShortcutsHandler(this.workspace, this.qmlObjects.shortcuts);
         this.updateDrivers();
     }
@@ -242,11 +243,13 @@ class Controller {
 
 let controller: Controller;
 let consoleObj: Console;
-export let configObj: Config;
+let configObj: Config;
+let qtObject: Qt;
 
 export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
     configObj = new Config(qmlApi.kwin);
     consoleObj = new Console(qmlApi.console);
+    qtObject = qmlApi.qt;
     console().debug("config -", JSON.stringify(config()));
     controller = new Controller(qmlApi, qmlObjects);
     console().log("controller initialized. Welcome to Polonium!");
@@ -255,9 +258,11 @@ export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
 export function console(): Console {
     return consoleObj;
 }
-
 export function config(): Config {
     return configObj;
+}
+export function qt(): Qt {
+    return qtObject;
 }
 
 // controller should exist at all points other than right after initialization

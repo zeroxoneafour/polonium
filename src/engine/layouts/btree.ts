@@ -21,6 +21,7 @@ class Node {
     children: [Node, Node] | null = null;
     window: Window | null = null;
     size: number = 1;
+    destroyed: boolean = false;
 
     layoutDirectionRoot: LayoutDirection = LayoutDirection.Horizontal;
     get layoutDirection(): LayoutDirection {
@@ -68,6 +69,8 @@ class Node {
         for (const child of this.parent.children ?? []) {
             child.parent = this.parent;
         }
+        this.destroyed = true;
+        sibling.destroyed = true;
     }
 }
 
@@ -85,6 +88,7 @@ export default class BTreeEngine implements TilingEngineInterface {
 
     root: Node = new Node();
     tileMap: Map<Tile, Node> = new Map();
+    windowSet: Set<Window> = new Set();
 
     buildLayout(): Tile {
         const queue = new Queue<[Node, Tile]>();
@@ -109,6 +113,8 @@ export default class BTreeEngine implements TilingEngineInterface {
     }
 
     addWindow(window: Window): void {
+        if (this.windowSet.has(window)) return;
+        this.windowSet.add(window);
         // no windows case
         if (this.root.window === null && this.root.children === null) {
             this.root.window = window;
@@ -132,8 +138,23 @@ export default class BTreeEngine implements TilingEngineInterface {
     }
 
     placeWindow(window: Window, tile: Tile, direction?: Direction) {
-        const node = this.tileMap.get(tile);
+        if (this.windowSet.has(window)) {
+            // nothing to do if inserting into place it already exists
+            if (tile.windows.includes(window)) {
+                return;
+            }
+            this.removeWindow(window);
+        }
+        this.windowSet.add(window);
+        let node: Node | null | undefined = this.tileMap.get(tile);
+        console().debug(node);
         if (node == undefined) return;
+        if (node.destroyed) {
+            // chance that the call to removeWindow destroyed the node
+            // in this case, try for parent
+            node = node.parent;
+            if (node == null) return;
+        }
         if (node.window === null) {
             node.window = window;
             return;
@@ -154,6 +175,10 @@ export default class BTreeEngine implements TilingEngineInterface {
     }
 
     removeWindow(window: Window): void {
+        if (!this.windowSet.has(window)) {
+            return;
+        }
+        this.windowSet.delete(window);
         if (this.root.window === window) {
             this.root.window = null;
             return;

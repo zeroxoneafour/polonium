@@ -18,6 +18,7 @@ Item {
             "options": Options,
             "kwin": KWin,
             "console": console,
+            "qt": Qt,
         };
         const qmlObjects = {
             "root": root,

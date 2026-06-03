@@ -118,6 +118,12 @@ export default class HalfEngine implements TilingEngineInterface {
         if (direction === undefined) {
             direction = Direction.Vertical;
         }
+        if (this.tileMap.get(tile)?.window === window) {
+            return;
+        }
+        if (this.side1.some((x) => x.window) || this.side2.some((x) => x.window)) {
+            this.removeWindow(window);
+        }
         const targetBox = this.tileMap.get(tile);
         if (targetBox == undefined) {
             this.addWindow(window);
