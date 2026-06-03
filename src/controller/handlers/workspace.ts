@@ -1,5 +1,11 @@
 import { Workspace } from "kwin-api/qml";
-import { config, createWindowHandler, getWindowHandler, queueEvent, queuePostEvent } from "..";
+import {
+    config,
+    createWindowHandler,
+    getWindowHandler,
+    queueEvent,
+    queuePostEvent,
+} from "..";
 import { Window } from "kwin-api";
 import { BorderSetting } from "../config";
 import { createTileEvents, createUntileEvents } from "../event";

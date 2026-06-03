@@ -1,6 +1,6 @@
 import { Workspace } from "kwin-api/qml";
 import { Shortcuts } from "../../extern";
-import { config, getWindowHandler, qt, queueEvent } from "..";
+import { config, console, getWindowHandler, qt, queueEvent } from "..";
 import { Direction, TilingEngineType } from "../../engine";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Edge, Tile } from "kwin-api";
@@ -19,27 +19,41 @@ export class ShortcutsHandler {
 
         this.shortcuts
             .getSetEngineBTree()
-            .activated.connect(this.setEngineType.bind(this, TilingEngineType.BTree));
+            .activated.connect(
+                this.setEngineType.bind(this, TilingEngineType.BTree),
+            );
         this.shortcuts
             .getSetEngineHalf()
-            .activated.connect(this.setEngineType.bind(this, TilingEngineType.Half));
+            .activated.connect(
+                this.setEngineType.bind(this, TilingEngineType.Half),
+            );
 
         this.shortcuts
             .getActivateBelow()
-            .activated.connect(this.activateInDirection.bind(this, Edge.BottomEdge));
+            .activated.connect(
+                this.activateInDirection.bind(this, Edge.BottomEdge),
+            );
         this.shortcuts
             .getActivateAbove()
-            .activated.connect(this.activateInDirection.bind(this, Edge.TopEdge));
+            .activated.connect(
+                this.activateInDirection.bind(this, Edge.TopEdge),
+            );
         this.shortcuts
             .getActivateLeft()
-            .activated.connect(this.activateInDirection.bind(this, Edge.LeftEdge));
+            .activated.connect(
+                this.activateInDirection.bind(this, Edge.LeftEdge),
+            );
         this.shortcuts
             .getActivateRight()
-            .activated.connect(this.activateInDirection.bind(this, Edge.RightEdge));
+            .activated.connect(
+                this.activateInDirection.bind(this, Edge.RightEdge),
+            );
 
         this.shortcuts
             .getPlaceBelow()
-            .activated.connect(this.placeInDirection.bind(this, Edge.BottomEdge));
+            .activated.connect(
+                this.placeInDirection.bind(this, Edge.BottomEdge),
+            );
         this.shortcuts
             .getPlaceAbove()
             .activated.connect(this.placeInDirection.bind(this, Edge.TopEdge));
@@ -48,20 +62,28 @@ export class ShortcutsHandler {
             .activated.connect(this.placeInDirection.bind(this, Edge.LeftEdge));
         this.shortcuts
             .getPlaceRight()
-            .activated.connect(this.placeInDirection.bind(this, Edge.RightEdge));
+            .activated.connect(
+                this.placeInDirection.bind(this, Edge.RightEdge),
+            );
 
         this.shortcuts
             .getResizeDown()
-            .activated.connect(this.resizeInDirection.bind(this, Edge.BottomEdge));
+            .activated.connect(
+                this.resizeInDirection.bind(this, Edge.BottomEdge),
+            );
         this.shortcuts
             .getResizeUp()
             .activated.connect(this.resizeInDirection.bind(this, Edge.TopEdge));
         this.shortcuts
             .getResizeLeft()
-            .activated.connect(this.resizeInDirection.bind(this, Edge.LeftEdge));
+            .activated.connect(
+                this.resizeInDirection.bind(this, Edge.LeftEdge),
+            );
         this.shortcuts
             .getResizeRight()
-            .activated.connect(this.resizeInDirection.bind(this, Edge.RightEdge));
+            .activated.connect(
+                this.resizeInDirection.bind(this, Edge.RightEdge),
+            );
     }
 
     toggleActiveTiling() {
@@ -94,92 +116,96 @@ export class ShortcutsHandler {
         });
     }
 
-    getTileAbove(tile: Tile, rootTile: Tile): Tile | null {
-        // no tile above if this tile is root
+    getTileInDirection(tile: Tile, rootTile: Tile, edge: Edge): Tile | null {
         if (tile == rootTile) return null;
-        let x = tile.absoluteGeometry.x + (tile.absoluteGeometry.width / 2);
-        let y = tile.absoluteGeometry.y - (tile.padding * 2);
-        return rootTile.pick(qt().point(x, y));
-    }
-    getTileBelow(tile: Tile, rootTile: Tile): Tile | null {
-        // no tile above if this tile is root
-        if (tile == rootTile) return null;
-        let x = tile.absoluteGeometry.x + (tile.absoluteGeometry.width / 2);
-        let y = tile.absoluteGeometry.y + tile.absoluteGeometry.height + (tile.padding * 2);
-        return rootTile.pick(qt().point(x, y));
-    }
-    getTileLeft(tile: Tile, rootTile: Tile): Tile | null {
-        // no tile above if this tile is root
-        if (tile == rootTile) return null;
-        let x = tile.absoluteGeometry.x - (tile.padding * 2);
-        let y = tile.absoluteGeometry.y + (tile.absoluteGeometry.height / 2);
-        return rootTile.pick(qt().point(x, y));
-    }
-    getTileRight(tile: Tile, rootTile: Tile): Tile | null {
-        // no tile above if this tile is root
-        if (tile == rootTile) return null;
-        let x = tile.absoluteGeometry.x + tile.absoluteGeometry.width + (tile.padding * 2);
-        let y = tile.absoluteGeometry.y + (tile.absoluteGeometry.height / 2);
+        let x = tile.absoluteGeometry.x;
+        let y = tile.absoluteGeometry.y;
+        switch (edge) {
+            case Edge.BottomEdge:
+                x += tile.absoluteGeometry.width / 2;
+                y += tile.absoluteGeometry.height + tile.padding * 2;
+                break;
+            case Edge.TopEdge:
+                x += tile.absoluteGeometry.width / 2;
+                y -= tile.padding * 2;
+                break;
+            case Edge.LeftEdge:
+                x -= tile.padding * 2;
+                y += tile.absoluteGeometry.height / 2;
+                break;
+            case Edge.RightEdge:
+                x += tile.absoluteGeometry.width + tile.padding * 2;
+                y += tile.absoluteGeometry.height / 2;
+                break;
+            default:
+                return null;
+        }
         return rootTile.pick(qt().point(x, y));
     }
 
     activateInDirection(edge: Edge) {
-        const currentWindowTile = this.workspace.activeWindow?.tile;
-        if (currentWindowTile == null) return;
-        let rootTile = currentWindowTile;
+        const currentTile = this.workspace.activeWindow?.tile;
+        if (currentTile == null) return;
+        let rootTile = currentTile;
         while (rootTile.parent != null) {
             rootTile = rootTile.parent!;
         }
-        let targetTile = null;
-        switch (edge) {
-            case Edge.TopEdge:
-                targetTile = this.getTileAbove(currentWindowTile, rootTile);
-                break;
-            case Edge.BottomEdge:
-                targetTile = this.getTileBelow(currentWindowTile, rootTile);
-                break;
-            case Edge.LeftEdge:
-                targetTile = this.getTileLeft(currentWindowTile, rootTile);
-                break;
-            case Edge.RightEdge:
-                targetTile = this.getTileRight(currentWindowTile, rootTile);
-                break;
-            default: break;
-        }
+        const targetTile = this.getTileInDirection(currentTile, rootTile, edge);
         if (targetTile == null) return;
         if (targetTile.windows.length == 0) return;
         this.workspace.activeWindow = targetTile.windows[0];
     }
 
     placeInDirection(edge: Edge) {
-        const currentWindowTile = this.workspace.activeWindow?.tile;
-        if (currentWindowTile == null) return;
-        let rootTile = currentWindowTile;
+        const currentTile = this.workspace.activeWindow?.tile;
+        if (currentTile == null) return;
+        let rootTile = currentTile;
         while (rootTile.parent != null) {
             rootTile = rootTile.parent!;
         }
-        let targetTile = null;
-        let direction = null;
+        const targetTile = this.getTileInDirection(currentTile, rootTile, edge);
+        if (targetTile == null) return;
+        let direction = Direction.None;
         switch (edge) {
             case Edge.TopEdge:
-                targetTile = this.getTileAbove(currentWindowTile, rootTile);
                 direction = Direction.Up | Direction.Vertical;
                 break;
             case Edge.BottomEdge:
-                targetTile = this.getTileBelow(currentWindowTile, rootTile);
                 direction = Direction.Vertical;
                 break;
             case Edge.LeftEdge:
-                targetTile = this.getTileLeft(currentWindowTile, rootTile);
                 direction = Direction.None;
                 break;
             case Edge.RightEdge:
-                targetTile = this.getTileRight(currentWindowTile, rootTile);
                 direction = Direction.Right;
                 break;
-            default: break;
+            default:
+                break;
         }
-        if (targetTile == null || direction == null) return;
+        // if the old tile x axis center is farther right (greater) than the target x axis center,
+        // then set right flag as well
+        if (edge & Edge.BottomEdge || edge & Edge.TopEdge) {
+            const currentCenter =
+                currentTile.absoluteGeometry.x +
+                currentTile.absoluteGeometry.width / 2;
+            const targetCenter =
+                targetTile.absoluteGeometry.x +
+                targetTile.absoluteGeometry.width / 2;
+            if (currentCenter > targetCenter) {
+                direction |= Direction.Right;
+            }
+        } else if (edge & Edge.LeftEdge || edge & Edge.RightEdge) {
+            const currentCenter =
+                currentTile.absoluteGeometry.y +
+                currentTile.absoluteGeometry.height / 2;
+            const targetCenter =
+                targetTile.absoluteGeometry.y +
+                targetTile.absoluteGeometry.height / 2;
+            // same thing for left/right primary but up means smaller y
+            if (currentCenter < targetCenter) {
+                direction |= Direction.Up;
+            }
+        }
         const window = this.workspace.activeWindow!;
         queueEvent({
             t: "placeWindow",
@@ -193,12 +219,12 @@ export class ShortcutsHandler {
     }
 
     resizeInDirection(edge: Edge) {
-        const currentWindowTile = this.workspace.activeWindow?.tile;
-        if (currentWindowTile == null) return;
+        const currentTile = this.workspace.activeWindow?.tile;
+        if (currentTile == null) return;
         let amount = config().tileResizeAmount;
-        if ((edge & Edge.TopEdge) || (edge & Edge.LeftEdge)) {
+        if (edge & Edge.TopEdge || edge & Edge.LeftEdge) {
             amount *= -1;
         }
-        currentWindowTile.resizeByPixels(amount, edge);
+        currentTile.resizeByPixels(amount, edge);
     }
 }
