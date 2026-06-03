@@ -1,5 +1,6 @@
 // half.ts - Tiling engine for the half/split layout
 
+import { translateDirection } from "../../util/geometry";
 import {
     Tile,
     Window,
@@ -132,6 +133,9 @@ export default class HalfEngine implements TilingEngineInterface {
             this.addWindow(window);
             return;
         }
+        if (direction !== undefined && this.settings.rotateLayout) {
+            direction = translateDirection(direction);
+        }
         const newBox = new WindowBox(window);
         const [side, otherSide] = this.side1.includes(targetBox)
             ? [this.side1, this.side2]
@@ -147,10 +151,10 @@ export default class HalfEngine implements TilingEngineInterface {
                 side.push(newBox);
             }
         } else {
-            if (direction & Direction.Up) {
-                side.splice(idx, 0, newBox);
-            } else {
+            if (direction & Direction.Down) {
                 side.splice(idx + 1, 0, newBox);
+            } else {
+                side.splice(idx, 0, newBox);
             }
         }
     }

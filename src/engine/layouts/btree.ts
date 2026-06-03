@@ -166,9 +166,9 @@ export default class BTreeEngine implements TilingEngineInterface {
                     ? direction & Direction.Right
                         ? 1
                         : 0
-                    : direction & Direction.Up
-                      ? 0
-                      : 1;
+                    : direction & Direction.Down
+                      ? 1
+                      : 0;
         }
         node.split(insertPoint === 0 ? 1 : 0);
         node.children![insertPoint].window = window;

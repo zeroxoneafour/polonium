@@ -68,8 +68,7 @@ export type Event =
     | RemoveWindowEvent
     | PlaceWindowEvent
     | UpdateTilesEvent
-    | ChangeEngineEvent
-    | SetWindowPropertiesEvent;
+    | ChangeEngineEvent;
 
 // post events - these events run after build
 interface SetWindowPropertiesEvent {
@@ -97,8 +96,9 @@ function eventsAreParallel(
 function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
     if (ev1.t !== ev2.t) return false;
     for (const prop in ev1) {
-        const prop2 = (ev2 as any)[prop];
-        if (prop !== prop2) return false;
+        const val1 = (ev1 as any)[prop];
+        const val2 = (ev2 as any)[prop];
+        if (val1 !== val2) return false;
     }
     return true;
 }

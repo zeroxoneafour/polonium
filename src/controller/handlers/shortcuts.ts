@@ -168,10 +168,10 @@ export class ShortcutsHandler {
         let direction = Direction.None;
         switch (edge) {
             case Edge.TopEdge:
-                direction = Direction.Up | Direction.Vertical;
+                direction = Direction.Vertical;
                 break;
             case Edge.BottomEdge:
-                direction = Direction.Vertical;
+                direction = Direction.Down | Direction.Vertical;
                 break;
             case Edge.LeftEdge:
                 direction = Direction.None;
@@ -202,8 +202,8 @@ export class ShortcutsHandler {
                 targetTile.absoluteGeometry.y +
                 targetTile.absoluteGeometry.height / 2;
             // same thing for left/right primary but up means smaller y
-            if (currentCenter < targetCenter) {
-                direction |= Direction.Up;
+            if (currentCenter > targetCenter) {
+                direction |= Direction.Down;
             }
         }
         const window = this.workspace.activeWindow!;

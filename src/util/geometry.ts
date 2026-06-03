@@ -5,71 +5,77 @@ import { QPoint, QRect, QSize } from "kwin-api/qt";
 // direction uses up/right for quadrant of direction and vertical for whether the point is leaning vertically or horizontally along the y = +-x split
 export const enum Direction {
     None = 0,
-    Up = 1 << 0,
+    Down = 1 << 0,
     Right = 1 << 1,
     Vertical = 1 << 2,
 }
-export class DirectionTools {
-    private d: Direction;
 
-    constructor(d: Direction) {
-        this.d = d;
-    }
-
-    // rotate clockwise 90 deg
-    rotateCw(): Direction {
-        // it will always have the vertical component inverted
-        let ret =
-            (this.d & Direction.Vertical) == Direction.Vertical
-                ? Direction.None
-                : Direction.Vertical;
-        if ((this.d & Direction.Up) == Direction.Up) {
-            if ((this.d & Direction.Right) == Direction.Right) {
-                // top right
-                ret |= Direction.Right;
-            } else {
-                // top left
-                ret |= Direction.Right | Direction.Up;
-            }
-        } else {
-            if ((this.d & Direction.Right) == Direction.Right) {
-                // bottom right (becomes bottom left or none)
-                ret |= Direction.None;
-            } else {
-                // bottom left
-                ret |= Direction.Up;
-            }
-        }
-        return ret;
-    }
-
-    // rotate counterclockwise 90 deg
-    rotateCcw(): Direction {
-        // it will always have the vertical component inverted
-        let ret =
-            (this.d & Direction.Vertical) == Direction.Vertical
-                ? Direction.None
-                : Direction.Vertical;
-        if ((this.d & Direction.Up) == Direction.Up) {
-            if ((this.d & Direction.Right) == Direction.Right) {
-                // top right
-                ret |= Direction.Up;
-            } else {
-                // top left (becomes bottom left or none)
-                ret |= Direction.None;
-            }
-        } else {
-            if ((this.d & Direction.Right) == Direction.Right) {
-                // bottom right (becomes bottom left or none)
-                ret |= Direction.Up | Direction.Right;
-            } else {
-                // bottom left
-                ret |= Direction.Right;
-            }
-        }
-        return ret;
-    }
+// translates direction from horizontal split tiles => vertical split tiles
+// afaik this is one way and im not making it another way too bc its too hard
+export function translateDirection(d: Direction): Direction {
+    let ret = Direction.None;
+    if (!(d & Direction.Vertical)) ret |= Direction.Vertical;
+    if (d & Direction.Right) ret |= Direction.Down;
+    if (d & Direction.Down) ret |= Direction.Right;
+    return ret;
 }
+
+/*
+export function rotateCw(d: Direction): Direction {
+    // it will always have the vertical component inverted
+    let ret =
+        (d & Direction.Vertical) == Direction.Vertical
+            ? Direction.None
+            : Direction.Vertical;
+    if ((d & Direction.Up) == Direction.Up) {
+        if ((d & Direction.Right) == Direction.Right) {
+            // top right
+            ret |= Direction.Right;
+        } else {
+            // top left
+            ret |= Direction.Right | Direction.Up;
+        }
+    } else {
+        if ((d & Direction.Right) == Direction.Right) {
+            // bottom right (becomes bottom left or none)
+            ret |= Direction.None;
+        } else {
+            // bottom left
+            ret |= Direction.Up;
+        }
+    }
+    return ret;
+}
+*/
+
+/*
+// rotate counterclockwise 90 deg
+rotateCcw(): Direction {
+    // it will always have the vertical component inverted
+    let ret =
+        (this.d & Direction.Vertical) == Direction.Vertical
+            ? Direction.None
+            : Direction.Vertical;
+    if ((this.d & Direction.Up) == Direction.Up) {
+        if ((this.d & Direction.Right) == Direction.Right) {
+            // top right
+            ret |= Direction.Up;
+        } else {
+            // top left (becomes bottom left or none)
+            ret |= Direction.None;
+        }
+    } else {
+        if ((this.d & Direction.Right) == Direction.Right) {
+            // bottom right (becomes bottom left or none)
+            ret |= Direction.Up | Direction.Right;
+        } else {
+            // bottom left
+            ret |= Direction.Right;
+        }
+    }
+    return ret;
+}
+*/
 
 export class GPoint implements QPoint {
     x: number = 0;
@@ -122,9 +128,9 @@ export class GRect implements QRect {
                     relativePoint.x >
                     (this.width * relativePoint.y) / this.height
                 ) {
-                    return Direction.Up | Direction.Vertical; // left top, top leaning
+                    return Direction.Vertical; // left top, top leaning
                 } else {
-                    return Direction.Up; // left top, left leaning
+                    return Direction.None; // left top, left leaning
                 }
             } // left bottom
             else {
@@ -132,9 +138,9 @@ export class GRect implements QRect {
                     relativePoint.x >
                     (this.width * relativePoint.y) / this.height
                 ) {
-                    return Direction.Vertical; // left bottom, bottom leaning
+                    return Direction.Down | Direction.Vertical; // left bottom, bottom leaning
                 } else {
-                    return Direction.None; // left bottom, left leaning
+                    return Direction.Down; // left bottom, left leaning
                 }
             }
         } // right
@@ -145,9 +151,9 @@ export class GRect implements QRect {
                     relativePoint.x <
                     (this.width * relativePoint.y) / this.height
                 ) {
-                    return Direction.Right | Direction.Up | Direction.Vertical; // right top, top leaning
+                    return Direction.Right | Direction.Vertical; // right top, top leaning
                 } else {
-                    return Direction.Right | Direction.Up; // right top, right leaning
+                    return Direction.Right; // right top, right leaning
                 }
             } // right bottom
             else {
@@ -155,9 +161,9 @@ export class GRect implements QRect {
                     relativePoint.x <
                     (this.width * relativePoint.y) / this.height
                 ) {
-                    return Direction.Right | Direction.Vertical; // right bottom, bottom leaning
+                    return Direction.Down | Direction.Right | Direction.Vertical; // right bottom, bottom leaning
                 } else {
-                    return Direction.Right; // right bottom, right leaning
+                    return Direction.Down | Direction.Right; // right bottom, right leaning
                 }
             }
         }
