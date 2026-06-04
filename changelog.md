@@ -2,6 +2,16 @@
 
 ## 1.1
 
+### 1.1-b1
+
+- Engine settings
+- Activity support
+- Better event processing
+- Tile resizing
+- Keyboard shortcuts
+- Countless bugfixes
+- Probably more as well
+
 ### 1.1-a1
 
 - Complete rewrite to event-based system using custom event loop

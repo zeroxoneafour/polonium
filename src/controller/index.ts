@@ -211,10 +211,12 @@ class Controller {
     }
 
     updateDrivers() {
-        for (const id of this.drivers.keys()) {
-            const [output, desktop] = this.parseDesktopId(id);
-            if (!output || !desktop) {
-                this.drivers.delete(id);
+        if (!config().preserveOldDrivers) {
+            for (const id of this.drivers.keys()) {
+                const [desktop, activity, output] = this.parseDesktopId(id);
+                if (!desktop || !activity || !output) {
+                    this.drivers.delete(id);
+                }
             }
         }
         for (const output of this.workspace.screens) {

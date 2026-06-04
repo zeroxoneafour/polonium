@@ -19,6 +19,7 @@ export class Config {
     readonly rebuildDelay: number;
     readonly tileResizeAmount: number;
     readonly fullRebuild: boolean;
+    readonly preserveOldDrivers: boolean;
     readonly logLevel: LogLevel;
 
     readonly defaultEngine: TilingEngineType;
@@ -36,6 +37,7 @@ export class Config {
         this.rebuildDelay = rc("RebuildDelay", 10);
         this.tileResizeAmount = rc("TileResizeAmount", 10);
         this.fullRebuild = rc("FullRebuild", true);
+        this.preserveOldDrivers = rc("PreserveOldDrivers", true);
         this.logLevel = rc("LogLevel", LogLevel.Warn);
 
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);

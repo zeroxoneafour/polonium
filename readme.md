@@ -23,13 +23,13 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 - Works in Wayland Plasma 6.4 and up (6.7 recommended)
 - Custom moddable tiling engine backend
 - Edit tile sizes with the integrated KWin GUI
-- Move and tile windows with your mouse and (COMING SOON) keyboard
-- Set layouts independently of desktop and screen
+- Move and tile windows with your mouse and keyboard
+- (COMING SOON) Set layouts independently of desktop and screen
 - (COMING SOON) [DBus integration](https://github.com/zeroxoneafour/dbus-saver) to save layouts and configurations after logging out
 
 ## X11
 
-X11 has been briefly tested but is not supported. If you encounter an issue running the script on X11, make sure it is reproducible in Wayland before submitting a bug report.
+X11 is not supported. If you encounter an issue running the script on X11, make sure it is reproducible in Wayland before submitting a bug report.
 
 ## building
 
@@ -45,7 +45,7 @@ Commands -
 
 ## license
 
-Majority of this project is [MIT licensed](https://github.com/zeroxoneafour/polonium/blob/master/license.txt), please bum my code if you can use to make something better. Make sure to give credit though!
+Majority of this project is [MIT licensed](https://github.com/zeroxoneafour/polonium/blob/master/license.txt)
 
 ## name
 

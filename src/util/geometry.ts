@@ -161,7 +161,9 @@ export class GRect implements QRect {
                     relativePoint.x <
                     (this.width * relativePoint.y) / this.height
                 ) {
-                    return Direction.Down | Direction.Right | Direction.Vertical; // right bottom, bottom leaning
+                    return (
+                        Direction.Down | Direction.Right | Direction.Vertical
+                    ); // right bottom, bottom leaning
                 } else {
                     return Direction.Down | Direction.Right; // right bottom, right leaning
                 }
