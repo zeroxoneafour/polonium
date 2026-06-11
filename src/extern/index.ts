@@ -1,6 +1,6 @@
-import { Workspace, KWin, ShortcutHandler } from "kwin-api/qml";
-import { Console, Options } from "kwin-api";
-import { QPoint, QTimer } from "kwin-api/qt";
+import { Workspace, KWin, ShortcutHandler, Qt } from "kwin-api/qml";
+import { Options } from "kwin-api";
+import { QTimer, Console } from "kwin-api/qt";
 
 export interface QmlApi {
     workspace: Workspace;
@@ -39,8 +39,4 @@ export interface Shortcuts {
     getResizeDown(): ShortcutHandler;
     getResizeLeft(): ShortcutHandler;
     getResizeRight(): ShortcutHandler;
-}
-
-export interface Qt {
-    point(x: number, y: number): QPoint;
 }

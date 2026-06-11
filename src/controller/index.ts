@@ -1,21 +1,13 @@
-import { Options, Output, VirtualDesktop, Window } from "kwin-api";
-import {
-    Activity,
-    Event,
-    PostEvent,
-    simplifyEvents,
-    simplifyPostEvents,
-} from "./event";
-import { QmlApi, QmlObjects, Qt } from "../extern";
-import { Workspace, KWin } from "kwin-api/qml";
+import { Options, Output, VirtualDesktop, Window, Activity } from "kwin-api";
+import { Event, PostEvent, simplifyEvents, simplifyPostEvents } from "./event";
+import { QmlApi, QmlObjects } from "../extern";
+import { Workspace, KWin, Qt } from "kwin-api/qml";
 import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
 import { Queue } from "../util/queue";
 import { Console } from "./console";
 import { Driver } from "../driver";
 import { QTimer } from "kwin-api/qt";
 import { Config } from "./config";
-
-export { Activity };
 
 class Controller {
     workspace: Workspace;
@@ -211,10 +203,12 @@ class Controller {
     }
 
     updateDrivers() {
-        if (!config().preserveOldDrivers) {
-            for (const id of this.drivers.keys()) {
-                const [desktop, activity, output] = this.parseDesktopId(id);
-                if (!desktop || !activity || !output) {
+        for (const id of this.drivers.keys()) {
+            const [desktop, activity, output] = this.parseDesktopId(id);
+            if (!desktop || !activity || !output) {
+                if (config().preserveOldDrivers && this.drivers.has(id)) {
+                    this.drivers.get(id)!.active = false;
+                } else {
                     this.drivers.delete(id);
                 }
             }
@@ -223,11 +217,9 @@ class Controller {
             for (const activity of this.workspace.activities) {
                 for (const desktop of this.workspace.desktops) {
                     const id = desktopId(desktop, activity, output);
-                    if (!this.drivers.has(id)) {
-                        const rootTile = this.workspace.rootTile(
-                            output,
-                            desktop,
-                        );
+                    const driver = this.drivers.get(id);
+                    const rootTile = this.workspace.rootTile(output, desktop);
+                    if (driver === undefined) {
                         const driver = new Driver(
                             rootTile,
                             desktop,
@@ -236,6 +228,14 @@ class Controller {
                             config().defaultEngine,
                         );
                         this.drivers.set(id, driver);
+                    } else if (!driver.active) {
+                        driver.active = true;
+                        driver.refreshDriver(
+                            rootTile,
+                            desktop,
+                            activity,
+                            output,
+                        );
                     }
                 }
             }

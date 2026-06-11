@@ -1,5 +1,5 @@
-import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
-import { Activity, config, console, queueEvent, queuePostEvent } from "..";
+import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
+import { config, console, queueEvent, queuePostEvent } from "..";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
 import { GRect } from "../../util/geometry";
@@ -26,15 +26,22 @@ export class WindowHandler {
         this.wantsTiled = this.tiled;
 
         this.window.desktopsChanged.connect(this.desktopsChanged.bind(this));
+        this.window.activitiesChanged.connect(
+            this.activitiesChanged.bind(this),
+        );
         this.window.outputChanged.connect(this.outputChanged.bind(this));
+
         this.window.fullScreenChanged.connect(
             this.fullscreenChanged.bind(this),
         );
         this.window.minimizedChanged.connect(this.minimizedChanged.bind(this));
+
+        this.window.interactiveMoveResizeStarted.connect(
+            this.interactiveMoveResizeStarted.bind(this),
+        );
         this.window.interactiveMoveResizeFinished.connect(
             this.interactiveMoveResizeFinished.bind(this),
         );
-        this.window.tileChanged.connect(this.tileChanged.bind(this));
     }
 
     startTiled(): boolean {
@@ -167,10 +174,11 @@ export class WindowHandler {
         }
     }
 
-    tileChanged(tile: Tile) {
-        if (this.tiled && this.window.tile == null && this.canBeTiled()) {
+    // use this instead of tileChanged because tileChanged does what it wants
+    interactiveMoveResizeStarted() {
+        if (this.tiled && this.canBeTiled()) {
             console().debug(
-                "tile changed on window",
+                "move/resize started on window",
                 this.window.resourceClass,
             );
             this.tiled = false;

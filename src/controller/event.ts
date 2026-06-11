@@ -1,9 +1,7 @@
-import { Output, Tile, VirtualDesktop, Window } from "kwin-api";
+import { Output, Tile, VirtualDesktop, Window, Activity } from "kwin-api";
 import { Direction } from "../util/geometry";
 import { TilingEngineType } from "../engine";
 import { Queue } from "../util/queue";
-
-export type Activity = string;
 
 interface GenericEvent {
     t: string;

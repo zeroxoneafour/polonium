@@ -4,6 +4,7 @@ import {
     LayoutDirection,
     Output,
     VirtualDesktop,
+    Activity,
 } from "kwin-api";
 import {
     Tile as EngineTile,
@@ -12,18 +13,13 @@ import {
     TilingEngineType,
 } from "../engine";
 import { buildLayout } from "./buildlayout";
-import {
-    Activity,
-    config,
-    console,
-    queueEvent,
-    windowExists,
-} from "../controller";
+import { config, console, queueEvent, windowExists } from "../controller";
 import { Direction, GRect } from "../util/geometry";
 import { BorderSetting } from "../controller/config";
 
 export class Driver {
     rootTile: KwinTile;
+
     desktop: VirtualDesktop;
     activity: Activity;
     output: Output;
@@ -33,6 +29,8 @@ export class Driver {
     windowsToUnmanage: KwinWindow[] = [];
 
     tilingEngine: TilingEngine;
+
+    active: boolean = true;
 
     constructor(
         rootTile: KwinTile,
@@ -51,6 +49,32 @@ export class Driver {
             engineSettings = this.getConfigEngineSettings(engineType);
         }
         this.tilingEngine = new TilingEngine(engineType, engineSettings);
+    }
+
+    refreshDriver(
+        rootTile: KwinTile,
+        desktop: VirtualDesktop,
+        activity: Activity,
+        output: Output,
+    ) {
+        this.rootTile = rootTile;
+        this.desktop = desktop;
+        this.activity = activity;
+        this.output = output;
+
+        // remove invalid windows
+        for (const [kwinWindow, engineWindow] of this.windowMap) {
+            if (kwinWindow == null || !windowExists(kwinWindow)) {
+                if (
+                    kwinWindow.desktops.includes(this.desktop) ||
+                    kwinWindow.activities.includes(this.activity) ||
+                    kwinWindow.output == this.output
+                )
+                    continue;
+                this.tilingEngine.removeWindow(engineWindow);
+                this.windowMap.delete(kwinWindow);
+            }
+        }
     }
 
     // want to completely separate the engine and kwin, so we set config defaults here not in engine
@@ -85,6 +109,10 @@ export class Driver {
     }
 
     buildLayout(): void {
+        if (this.rootTile == null) {
+            console().warn("root tile is null on active driver");
+            return;
+        }
         const engineRootTile = this.tilingEngine.buildLayout();
         const previousTileSet = new Set(this.tileMap.keys());
         this.tileMap = buildLayout(this.rootTile, engineRootTile);

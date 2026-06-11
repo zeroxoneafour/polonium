@@ -13,17 +13,21 @@ export function buildLayout(
     queue.push([kwinRootTile, engineRootTile]);
     while (!queue.isEmpty) {
         const [kwinTile, engineTile] = queue.pop()!;
+        if (kwinTile == null) {
+            console().warn("kwin tile is null");
+            continue;
+        }
         tileMap.set(kwinTile, engineTile);
         console().debug("forming tile", kwinTile.absoluteGeometry);
 
         // changing layout direction with preexisting children causes tiling to freak
         // so we js remove the children beforehand
-        if (kwinTile.layoutDirection != engineTile.layoutDirection) {
+        if (kwinTile.layoutDirection !== engineTile.layoutDirection) {
             while (kwinTile.tiles.length > 0) {
                 kwinTile.tiles[kwinTile.tiles.length - 1].remove();
             }
+            kwinTile.layoutDirection = engineTile.layoutDirection;
         }
-        kwinTile.layoutDirection = engineTile.layoutDirection;
 
         console().debug("kwin children", kwinTile.tiles.length);
         console().debug("engine children", engineTile.children.length);

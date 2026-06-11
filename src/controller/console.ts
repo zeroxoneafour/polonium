@@ -1,4 +1,4 @@
-import { Console as QmlConsole } from "kwin-api";
+import { Console as QmlConsole } from "kwin-api/qt";
 import { config } from ".";
 import { LogLevel } from "./config";
 
