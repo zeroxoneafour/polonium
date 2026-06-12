@@ -43,8 +43,9 @@ interface PlaceWindowEvent {
     tile: Tile;
     direction?: Direction;
 }
-interface UpdateTilesEvent {
-    t: "updateTiles";
+// use this instead of UpdateTileSizes only when the amount of tiles on screen is changed, triggers rebuild
+interface UpdateTileCountEvent {
+    t: "updateTileCount";
     desktop: VirtualDesktop;
     activity: Activity;
     output: Output;
@@ -65,7 +66,7 @@ export type Event =
     | RebuildDesktopsEvent
     | RemoveWindowEvent
     | PlaceWindowEvent
-    | UpdateTilesEvent
+    | UpdateTileCountEvent
     | ChangeEngineEvent;
 
 // post events - these events run after build
@@ -75,8 +76,15 @@ interface SetWindowPropertiesEvent {
     fullscreen?: boolean;
     noBorder?: boolean;
 }
+// make update tile sizes run post to avoid rebuilds that can cause jutter
+interface UpdateTileSizesEvent {
+    t: "updateTileSizes";
+    desktop: VirtualDesktop;
+    activity: Activity;
+    output: Output;
+}
 
-export type PostEvent = SetWindowPropertiesEvent;
+export type PostEvent = SetWindowPropertiesEvent | UpdateTileSizesEvent;
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event

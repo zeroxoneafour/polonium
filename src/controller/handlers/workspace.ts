@@ -1,11 +1,5 @@
 import { Workspace } from "kwin-api/qml";
-import {
-    config,
-    createWindowHandler,
-    getWindowHandler,
-    queueEvent,
-    queuePostEvent,
-} from "..";
+import { config, controller as ctrl } from "..";
 import { Window } from "kwin-api";
 import { BorderSetting } from "../config";
 import { createTileEvents, createUntileEvents } from "../event";
@@ -37,7 +31,7 @@ export class WorkspaceHandler {
     windowAdded(window: Window) {
         // this _should_ not garbage collect I think while the window exists... no ref map needed?
         // never friggin mind we need a ref map to store "tiled" state across shortcut handler as well
-        const windowHandler = createWindowHandler(window);
+        const windowHandler = ctrl().createWindowHandler(window);
         if (!windowHandler.tiled) return;
         for (const ev of createTileEvents(
             window,
@@ -45,7 +39,7 @@ export class WorkspaceHandler {
             window.activities,
             window.output,
         )) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
     }
 
@@ -56,9 +50,9 @@ export class WorkspaceHandler {
             window.activities,
             window.output,
         )) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
-        queueEvent({
+        ctrl().queueEvent({
             t: "removeWindow",
             window: window,
         });
@@ -66,11 +60,11 @@ export class WorkspaceHandler {
 
     rebuildDesktops() {
         // never mind we still have to do stuff
-        queueEvent({ t: "rebuildDesktops" });
+        ctrl().queueEvent({ t: "rebuildDesktops" });
     }
 
     updateDrivers() {
-        queueEvent({ t: "updateDrivers" });
+        ctrl().queueEvent({ t: "updateDrivers" });
     }
 
     windowActivated(window: Window) {
@@ -79,7 +73,7 @@ export class WorkspaceHandler {
             config().borders == BorderSetting.BorderFloatingActive
         ) {
             if (windowIsTiled(window)) {
-                queuePostEvent({
+                ctrl().queuePostEvent({
                     t: "setWindowProperties",
                     window: window,
                     noBorder: false,
@@ -90,7 +84,7 @@ export class WorkspaceHandler {
                 (windowIsTiled(this.previousActivated) ||
                     config().borders == BorderSetting.BorderActive)
             ) {
-                queuePostEvent({
+                ctrl().queuePostEvent({
                     t: "setWindowProperties",
                     window: this.previousActivated,
                     noBorder: true,
@@ -103,5 +97,5 @@ export class WorkspaceHandler {
 
 // undefined if the window handler is undefined (ie window was either never registered or has been destroyed)
 function windowIsTiled(window: Window): boolean | undefined {
-    return window.tile != null || getWindowHandler(window)?.tiled;
+    return window.tile != null || ctrl().getWindowHandler(window)?.tiled;
 }

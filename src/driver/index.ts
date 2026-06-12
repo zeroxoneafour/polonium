@@ -13,7 +13,7 @@ import {
     TilingEngineType,
 } from "../engine";
 import { buildLayout } from "./buildlayout";
-import { config, console, queueEvent, windowExists } from "../controller";
+import { config, console, controller as ctrl } from "../controller";
 import { Direction, GRect } from "../util/geometry";
 import { BorderSetting } from "../controller/config";
 
@@ -64,7 +64,7 @@ export class Driver {
 
         // remove invalid windows
         for (const [kwinWindow, engineWindow] of this.windowMap) {
-            if (kwinWindow == null || !windowExists(kwinWindow)) {
+            if (kwinWindow == null || !ctrl().windowExists(kwinWindow)) {
                 if (
                     kwinWindow.desktops.includes(this.desktop) ||
                     kwinWindow.activities.includes(this.activity) ||
@@ -125,12 +125,15 @@ export class Driver {
             // set callbacks on tiles that do not have callbacks set
             if (!previousTileSet.has(kwinTile)) {
                 kwinTile.relativeGeometryChanged.connect(
-                    this.updateTilesCallback.bind(this),
+                    this.updateTileSizesCallback.bind(this),
                 );
             }
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
-                if (kwinWindow != undefined && windowExists(kwinWindow)) {
+                if (
+                    kwinWindow != undefined &&
+                    ctrl().windowExists(kwinWindow)
+                ) {
                     setTiledProps(kwinWindow);
                     if (kwinWindow.tile !== kwinTile)
                         kwinTile.manage(kwinWindow);
@@ -142,7 +145,7 @@ export class Driver {
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindowsList.includes(kwinWindow)) {
-                if (windowExists(kwinWindow)) {
+                if (ctrl().windowExists(kwinWindow)) {
                     setUntiledProps(kwinWindow);
                     if (
                         kwinWindow.tile != null &&
@@ -155,7 +158,7 @@ export class Driver {
         }
         // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
         for (const kwinWindow of this.windowsToUnmanage) {
-            if (windowExists(kwinWindow)) {
+            if (ctrl().windowExists(kwinWindow)) {
                 setUntiledProps(kwinWindow);
                 if (
                     kwinWindow.tile != null &&
@@ -252,9 +255,9 @@ export class Driver {
         this.tilingEngine.updateTiles(this.tileMap.get(this.rootTile)!);
     }
 
-    updateTilesCallback() {
-        queueEvent({
-            t: "updateTiles",
+    updateTileSizesCallback() {
+        ctrl().queuePostEvent({
+            t: "updateTileSizes",
             desktop: this.desktop,
             activity: this.activity,
             output: this.output,
@@ -281,6 +284,7 @@ function setTiledProps(window: KwinWindow) {
     if (config().borders != BorderSetting.BorderAll) {
         window.noBorder = true;
     }
+    window.setMaximize(false, false);
 }
 
 function setUntiledProps(window: KwinWindow) {

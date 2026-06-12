@@ -10,19 +10,19 @@ import { QTimer } from "kwin-api/qt";
 import { Config } from "./config";
 
 class Controller {
-    workspace: Workspace;
-    options: Options;
-    kwin: KWin;
-    qmlObjects: QmlObjects;
+    private workspace: Workspace;
+    private options: Options;
+    private kwin: KWin;
+    private qmlObjects: QmlObjects;
 
-    eventQueue: Queue<Event> = new Queue();
-    postEventQueue: Queue<PostEvent> = new Queue();
-    eventTimer: QTimer;
-    processingEvents: boolean = false;
+    private eventQueue: Queue<Event> = new Queue();
+    private postEventQueue: Queue<PostEvent> = new Queue();
+    private eventTimer: QTimer;
+    private processingEvents: boolean = false;
 
-    drivers: Map<DesktopIdentifier, Driver> = new Map();
-    windowHandlers: Map<Window, WindowHandler> = new Map();
-    workspaceHandler: WorkspaceHandler;
+    private drivers: Map<DesktopIdentifier, Driver> = new Map();
+    private windowHandlers: Map<Window, WindowHandler> = new Map();
+    private workspaceHandler: WorkspaceHandler;
 
     constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
@@ -53,7 +53,7 @@ class Controller {
         this.eventTimer.start();
     }
 
-    processEvents() {
+    private processEvents() {
         this.processingEvents = true;
         const queue = simplifyEvents(this.eventQueue);
         console().debug("Handling", queue.size, "event(s)");
@@ -85,7 +85,7 @@ class Controller {
         this.processingEvents = false;
     }
 
-    handleEvent(ev: Event) {
+    private handleEvent(ev: Event) {
         console().debug("handling event", ev.t);
         switch (ev.t) {
             case "tileWindow":
@@ -150,9 +150,9 @@ class Controller {
                     .get(desktopId(ev.desktop, ev.activity, ev.output))
                     ?.placeWindow(ev.window, ev.tile, ev.direction);
                 break;
-            case "updateTiles":
+            case "updateTileCount":
                 console().log(
-                    "updating tiles for desktop",
+                    "updating tile count for desktop",
                     ev.desktop.name,
                     "on output",
                     ev.output.name,
@@ -175,22 +175,37 @@ class Controller {
         }
     }
 
-    handlePostEvent(ev: PostEvent) {
+    private handlePostEvent(ev: PostEvent) {
         console().debug("handling post event", ev.t);
         switch (ev.t) {
             case "setWindowProperties":
-                if (!windowExists(ev.window)) break;
+                if (!this.windowExists(ev.window)) break;
                 console().log(
                     "setting properties for window",
                     ev.window.resourceClass,
                 );
-                if (ev.fullscreen !== undefined)
+                if (ev.fullscreen !== undefined) {
                     ev.window.fullScreen = ev.fullscreen;
-                if (ev.noBorder !== undefined) ev.window.noBorder = ev.noBorder;
+                }
+                if (ev.noBorder !== undefined) {
+                    ev.window.noBorder = ev.noBorder;
+                }
+                break;
+            case "updateTileSizes":
+                console().log(
+                    "updating tile sizes for desktop",
+                    ev.desktop.name,
+                    "on output",
+                    ev.output.name,
+                );
+                this.drivers
+                    .get(desktopId(ev.desktop, ev.activity, ev.output))
+                    ?.updateTiles();
+                break;
         }
     }
 
-    parseDesktopId(
+    private parseDesktopId(
         id: DesktopIdentifier,
     ): [VirtualDesktop?, Activity?, Output?] {
         const parsed = JSON.parse(id);
@@ -202,7 +217,7 @@ class Controller {
         return [desktop, activity, output];
     }
 
-    updateDrivers() {
+    private updateDrivers() {
         for (const id of this.drivers.keys()) {
             const [desktop, activity, output] = this.parseDesktopId(id);
             if (!desktop || !activity || !output) {
@@ -213,37 +228,52 @@ class Controller {
                 }
             }
         }
+        const allDesktops: [VirtualDesktop, Activity, Output][] = [];
         for (const output of this.workspace.screens) {
             for (const activity of this.workspace.activities) {
                 for (const desktop of this.workspace.desktops) {
-                    const id = desktopId(desktop, activity, output);
-                    const driver = this.drivers.get(id);
-                    const rootTile = this.workspace.rootTile(output, desktop);
-                    if (driver === undefined) {
-                        const driver = new Driver(
-                            rootTile,
-                            desktop,
-                            activity,
-                            output,
-                            config().defaultEngine,
-                        );
-                        this.drivers.set(id, driver);
-                    } else if (!driver.active) {
-                        driver.active = true;
-                        driver.refreshDriver(
-                            rootTile,
-                            desktop,
-                            activity,
-                            output,
-                        );
-                    }
+                    allDesktops.push([desktop, activity, output]);
                 }
             }
         }
+        for (const [desktop, activity, output] of allDesktops) {
+            const id = desktopId(desktop, activity, output);
+            const driver = this.drivers.get(id);
+            const rootTile = this.workspace.rootTile(output, desktop);
+            if (driver === undefined) {
+                const driver = new Driver(
+                    rootTile,
+                    desktop,
+                    activity,
+                    output,
+                    config().defaultEngine,
+                );
+                this.drivers.set(id, driver);
+            } else if (!driver.active) {
+                driver.active = true;
+                driver.refreshDriver(rootTile, desktop, activity, output);
+            }
+        }
+    }
+
+    createWindowHandler(window: Window): WindowHandler {
+        console().log("registering window", window.resourceClass);
+        const handler = new WindowHandler(window, this.workspace);
+        this.windowHandlers.set(window, handler);
+        return handler;
+    }
+
+    getWindowHandler(window: Window): WindowHandler | undefined {
+        return this.windowHandlers.get(window);
+    }
+
+    // sometimes the window can be destroyed before rebuild but the ref will still exist, so make sure it exists before calling stuff on it
+    windowExists(window: Window): boolean {
+        return this.workspace.windows.includes(window);
     }
 }
 
-let controller: Controller;
+let controllerObj: Controller;
 let consoleObj: Console;
 let configObj: Config;
 let qtObject: Qt;
@@ -253,10 +283,15 @@ export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
     consoleObj = new Console(qmlApi.console);
     qtObject = qmlApi.qt;
     console().debug("config -", JSON.stringify(config()));
-    controller = new Controller(qmlApi, qmlObjects);
+    controllerObj = new Controller(qmlApi, qmlObjects);
     console().log("controller initialized. Welcome to Polonium!");
 }
 
+// controller should exist at all points other than right after initialization
+// also it creates everything that would call this, so logically it should exist(?)
+export function controller(): Controller {
+    return controllerObj;
+}
 export function console(): Console {
     return consoleObj;
 }
@@ -265,31 +300,6 @@ export function config(): Config {
 }
 export function qt(): Qt {
     return qtObject;
-}
-
-// controller should exist at all points other than right after initialization
-// also it creates everything that would call this, so logically it should exist(?)
-export function queueEvent(ev: Event): void {
-    controller.queueEvent(ev);
-}
-export function queuePostEvent(ev: PostEvent): void {
-    controller.queuePostEvent(ev);
-}
-
-export function getWindowHandler(window: Window): WindowHandler | undefined {
-    return controller.windowHandlers.get(window);
-}
-
-export function createWindowHandler(window: Window): WindowHandler {
-    console().log("registering window", window.resourceClass);
-    const handler = new WindowHandler(window, controller.workspace);
-    controller.windowHandlers.set(window, handler);
-    return handler;
-}
-
-// sometimes the window can be destroyed before rebuild but the ref will still exist, so make sure it exists before calling stuff on it
-export function windowExists(window: Window): boolean {
-    return controller.workspace.windows.includes(window);
 }
 
 // js can only map off of concrete types (ex. strings)

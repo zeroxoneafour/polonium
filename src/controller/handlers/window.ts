@@ -1,5 +1,5 @@
 import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
-import { config, console, queueEvent, queuePostEvent } from "..";
+import { config, console, controller as ctrl } from "..";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
 import { GRect } from "../../util/geometry";
@@ -36,8 +36,8 @@ export class WindowHandler {
         );
         this.window.minimizedChanged.connect(this.minimizedChanged.bind(this));
 
-        this.window.interactiveMoveResizeStarted.connect(
-            this.interactiveMoveResizeStarted.bind(this),
+        this.window.interactiveMoveResizeStepped.connect(
+            this.interactiveMoveResizeStepped.bind(this),
         );
         this.window.interactiveMoveResizeFinished.connect(
             this.interactiveMoveResizeFinished.bind(this),
@@ -74,10 +74,10 @@ export class WindowHandler {
             this.previousActivities,
             previousOutput,
         )) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
         for (const ev of createTileEvents(this.window)) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
     }
 
@@ -97,10 +97,10 @@ export class WindowHandler {
             this.previousActivities,
             this.previousOutput,
         )) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
         for (const ev of createTileEvents(this.window)) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
     }
 
@@ -120,10 +120,10 @@ export class WindowHandler {
             previousActivities,
             this.previousOutput,
         )) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
         for (const ev of createTileEvents(this.window)) {
-            queueEvent(ev);
+            ctrl().queueEvent(ev);
         }
     }
 
@@ -135,15 +135,15 @@ export class WindowHandler {
         if (this.window.fullScreen && this.tiled) {
             this.tiled = false;
             for (const ev of createUntileEvents(this.window)) {
-                queueEvent(ev);
+                ctrl().queueEvent(ev);
             }
             // toggle fullscreen because this works for whatever reason
-            queuePostEvent({
+            ctrl().queuePostEvent({
                 t: "setWindowProperties",
                 window: this.window,
                 fullscreen: false,
             });
-            queuePostEvent({
+            ctrl().queuePostEvent({
                 t: "setWindowProperties",
                 window: this.window,
                 fullscreen: true,
@@ -151,7 +151,7 @@ export class WindowHandler {
         } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
             this.tiled = true;
             for (const ev of createTileEvents(this.window)) {
-                queueEvent(ev);
+                ctrl().queueEvent(ev);
             }
         }
     }
@@ -164,81 +164,81 @@ export class WindowHandler {
         if (this.window.minimized && this.tiled) {
             this.tiled = false;
             for (const ev of createUntileEvents(this.window)) {
-                queueEvent(ev);
+                ctrl().queueEvent(ev);
             }
         } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
             this.tiled = true;
             for (const ev of createTileEvents(this.window)) {
-                queueEvent(ev);
+                ctrl().queueEvent(ev);
             }
         }
     }
 
     // use this instead of tileChanged because tileChanged does what it wants
-    interactiveMoveResizeStarted() {
-        if (this.tiled && this.canBeTiled()) {
-            console().debug(
-                "move/resize started on window",
-                this.window.resourceClass,
-            );
-            this.tiled = false;
-            for (const ev of createUntileEvents(this.window)) {
-                queueEvent(ev);
-            }
+    // use stepped instead of started as there can be some delay setting window.tile to null
+    interactiveMoveResizeStepped() {
+        if (!(this.tiled && this.canBeTiled() && this.window.tile == null))
+            return;
+        console().debug(
+            "move/resize stepped (first step) on window",
+            this.window.resourceClass,
+        );
+        this.tiled = false;
+        for (const ev of createUntileEvents(this.window)) {
+            ctrl().queueEvent(ev);
         }
     }
 
     interactiveMoveResizeFinished() {
-        if (this.wantsTiled && this.canBeTiled() && !this.tiled) {
-            console().debug(
-                "move/resize finished on window",
-                this.window.resourceClass,
+        if (!(this.wantsTiled && this.canBeTiled() && !this.tiled)) return;
+        console().debug(
+            "move/resize finished on window",
+            this.window.resourceClass,
+        );
+        const cursorPos = this.workspace.cursorPos;
+        this.tiled = true;
+        for (const desktop of this.window.desktops) {
+            const rootTile = this.workspace.rootTile(
+                this.window.output,
+                desktop,
             );
-            const cursorPos = this.workspace.cursorPos;
-            this.tiled = true;
-            for (const desktop of this.window.desktops) {
-                const rootTile = this.workspace.rootTile(
-                    this.window.output,
-                    desktop,
-                );
-                // bug where pick() returns null if there is only one tile (the root tile)
-                const tile =
-                    rootTile.tiles.length == 0
-                        ? rootTile
-                        : rootTile.pick(cursorPos);
-                if (tile == null) {
-                    queueEvent({
-                        t: "tileWindow",
-                        window: this.window,
-                        desktop: desktop,
-                        activity: this.workspace.currentActivity,
-                        output: this.window.output,
-                    });
-                } else {
-                    queueEvent({
-                        t: "placeWindow",
-                        window: this.window,
-                        desktop: desktop,
-                        activity: this.workspace.currentActivity,
-                        output: this.window.output,
-                        tile: tile,
-                        direction: new GRect(
-                            tile.absoluteGeometry,
-                        ).directionFromPoint(cursorPos),
-                    });
-                }
+            // bug where pick() returns null if there is only one tile (the root tile)
+            const tile =
+                rootTile.tiles.length == 0
+                    ? rootTile
+                    : rootTile.pick(cursorPos);
+            if (tile == null) {
+                ctrl().queueEvent({
+                    t: "tileWindow",
+                    window: this.window,
+                    desktop: desktop,
+                    activity: this.workspace.currentActivity,
+                    output: this.window.output,
+                });
+            } else {
+                ctrl().queueEvent({
+                    t: "placeWindow",
+                    window: this.window,
+                    desktop: desktop,
+                    activity: this.workspace.currentActivity,
+                    output: this.window.output,
+                    tile: tile,
+                    direction: new GRect(
+                        tile.absoluteGeometry,
+                    ).directionFromPoint(cursorPos),
+                });
             }
-            // for other activities, just tile dont place
-            for (const activity of this.window.activities) {
-                if (activity === this.workspace.currentActivity) continue;
-                for (const ev of createTileEvents(
-                    this.window,
-                    this.window.desktops,
-                    [activity],
-                    this.window.output,
-                )) {
-                    queueEvent(ev);
-                }
+        }
+        // for other activities, just tile dont place
+        for (const activity of this.window.activities) {
+            if (activity === this.workspace.currentActivity) continue;
+            for (const ev of createTileEvents(
+                this.window,
+                this.window.desktops,
+                [activity],
+                this.window.output,
+            )) {
+                ctrl().queueEvent(ev);
             }
         }
     }

@@ -1,6 +1,6 @@
 import { Workspace } from "kwin-api/qml";
 import { Shortcuts } from "../../extern";
-import { config, console, getWindowHandler, qt, queueEvent } from "..";
+import { config, console, controller as ctrl, qt } from "..";
 import { Direction, TilingEngineType } from "../../engine";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Edge, Tile } from "kwin-api";
@@ -89,25 +89,25 @@ export class ShortcutsHandler {
     toggleActiveTiling() {
         const window = this.workspace.activeWindow;
         if (window == null) return;
-        const windowHandler = getWindowHandler(window);
+        const windowHandler = ctrl().getWindowHandler(window);
         if (windowHandler == undefined) return;
         if (windowHandler.tiled) {
             windowHandler.wantsTiled = false;
             windowHandler.tiled = false;
             for (const ev of createUntileEvents(window)) {
-                queueEvent(ev);
+                ctrl().queueEvent(ev);
             }
         } else {
             windowHandler.wantsTiled = true;
             windowHandler.tiled = true;
             for (const ev of createTileEvents(window)) {
-                queueEvent(ev);
+                ctrl().queueEvent(ev);
             }
         }
     }
 
     setEngineType(engineType: TilingEngineType) {
-        queueEvent({
+        ctrl().queueEvent({
             t: "changeEngine",
             desktop: this.workspace.currentDesktop,
             activity: this.workspace.currentActivity,
@@ -207,7 +207,7 @@ export class ShortcutsHandler {
             }
         }
         const window = this.workspace.activeWindow!;
-        queueEvent({
+        ctrl().queueEvent({
             t: "placeWindow",
             window: window,
             desktop: this.workspace.currentDesktop,
