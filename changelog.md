@@ -2,6 +2,15 @@
 
 ## 1.1
 
+### 1.1
+
+- Per-desktop engine settings
+- DBus saving
+- Queue and event improvements
+- More settings
+- Activities bugfix
+- Probably still more
+
 ### 1.1-b1
 
 - Engine settings
