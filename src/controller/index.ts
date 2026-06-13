@@ -1,19 +1,22 @@
 import { Options, Output, VirtualDesktop, Window, Activity } from "kwin-api";
 import { Event, PostEvent, simplifyEvents, simplifyPostEvents } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
-import { Workspace, KWin, Qt } from "kwin-api/qml";
-import { WorkspaceHandler, WindowHandler, ShortcutsHandler } from "./handlers";
+import { Workspace, KWin } from "kwin-api/qml";
+import {
+    WorkspaceHandler,
+    WindowHandler,
+    ShortcutsHandler,
+    SettingsHandler,
+    DBusHandler,
+} from "./handlers";
 import { Queue } from "../util/queue";
 import { Console } from "./console";
 import { Driver } from "../driver";
-import { QTimer } from "kwin-api/qt";
+import { QTimer, Qt } from "kwin-api/qt";
 import { Config } from "./config";
-import { SettingsHandler } from "./handlers/settings";
 
 class Controller {
     private workspace: Workspace;
-    private options: Options;
-    private kwin: KWin;
     private qmlObjects: QmlObjects;
 
     private eventQueue: Queue<Event> = new Queue();
@@ -27,19 +30,26 @@ class Controller {
     private workspaceHandler: WorkspaceHandler | null = null;
     private shortcutsHandler: ShortcutsHandler | null = null;
     private settingsHandler: SettingsHandler;
+    private dbusHandler: DBusHandler | null = null;
 
     constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
-        this.options = qmlApi.options;
-        this.kwin = qmlApi.kwin;
+        //this.options = qmlApi.options;
+        //this.kwin = qmlApi.kwin;
         this.qmlObjects = qmlObjects;
 
-        this.eventTimer = qmlObjects.root.createTimer();
+        this.eventTimer = qmlApi.qt.createQmlObject(
+            "import QtQuick; Timer {}",
+            qmlObjects.root,
+        ) as QTimer;
         this.eventTimer.interval = config().rebuildDelay;
         this.eventTimer.repeat = false;
         this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
         this.settingsHandler = new SettingsHandler(this.qmlObjects.settings);
+        if (config().useDBusSaver) {
+            this.dbusHandler = new DBusHandler(this.qmlObjects.dbus);
+        }
         this.updateDrivers();
     }
 
@@ -52,15 +62,15 @@ class Controller {
         );
     }
 
-    queueEvent(ev: Event) {
+    queueEvent(ev: Event, forcePush: boolean = false) {
         // dont add events if processing because processing itself causes a lot of signals to trigger
-        if (this.processingEvents) return;
+        if (this.processingEvents && !forcePush) return;
         this.eventQueue.push(ev);
         this.eventTimer.start();
     }
 
-    queuePostEvent(ev: PostEvent) {
-        if (this.processingEvents) return;
+    queuePostEvent(ev: PostEvent, forcePush: boolean = false) {
+        if (this.processingEvents && !forcePush) return;
         this.postEventQueue.push(ev);
         this.eventTimer.start();
     }
@@ -68,6 +78,7 @@ class Controller {
     private processEvents() {
         this.processingEvents = true;
         const queue = simplifyEvents(this.eventQueue);
+        this.eventQueue = new Queue<Event>();
         console().debug("Handling", queue.size, "event(s)");
         const rebuild = queue.size != 0;
         while (!queue.isEmpty) {
@@ -88,12 +99,11 @@ class Controller {
             }
         }
         const postQueue = simplifyPostEvents(this.postEventQueue);
+        this.postEventQueue = new Queue<PostEvent>();
         console().debug("Handling", postQueue.size, "post event(s)");
         while (!postQueue.isEmpty) {
             this.handlePostEvent(postQueue.pop()!);
         }
-        this.eventQueue = new Queue<Event>();
-        this.postEventQueue = new Queue<PostEvent>();
         this.processingEvents = false;
     }
 
@@ -195,6 +205,15 @@ class Controller {
                 if (this.settingsHandler.isVisible()) {
                     this.showSettingsHandler(driver);
                 }
+                if (ev.noDBusUpdate === undefined || !ev.noDBusUpdate) {
+                    this.dbusHandler?.setSettings(
+                        ev.desktop,
+                        ev.activity,
+                        ev.output,
+                        driver.tilingEngine.engineType,
+                        driver.tilingEngine.getEngineSettings(),
+                    );
+                }
                 break;
             }
             case "resetEngine": {
@@ -214,6 +233,11 @@ class Controller {
                 if (this.settingsHandler.isVisible()) {
                     this.showSettingsHandler(driver);
                 }
+                this.dbusHandler?.resetSettings(
+                    ev.desktop,
+                    ev.activity,
+                    ev.output,
+                );
                 break;
             }
         }
@@ -264,14 +288,17 @@ class Controller {
         }
     }
 
-    private parseDesktopId(
+    parseDesktopId(
         id: DesktopIdentifier,
     ): [VirtualDesktop?, Activity?, Output?] {
-        const parsed = JSON.parse(id);
+        let parsed;
+        try {
+            parsed = JSON.parse(id);
+        } catch (_) {
+            return [undefined, undefined, undefined];
+        }
         const desktop = this.workspace.desktops.find((d) => d.id === parsed.d);
-        const activity = this.workspace.activities.includes(parsed.s)
-            ? parsed.s
-            : undefined;
+        const activity = this.workspace.activities.find((a) => a === parsed.a);
         const output = this.workspace.screens.find((s) => s.name === parsed.o);
         return [desktop, activity, output];
     }
@@ -308,6 +335,7 @@ class Controller {
                     config().defaultEngine,
                 );
                 this.drivers.set(id, driver);
+                this.dbusHandler?.getSettings(desktop, activity, output);
             } else if (!driver.active) {
                 driver.active = true;
                 driver.refreshDriver(rootTile, desktop, activity, output);

@@ -24,14 +24,14 @@ The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 - Custom moddable tiling engine backend
 - Edit tile sizes with the integrated KWin GUI
 - Move and tile windows with your mouse and keyboard
-- (COMING SOON) Set layouts independently of desktop and screen
-- (COMING SOON) [DBus integration](https://github.com/zeroxoneafour/dbus-saver) to save layouts and configurations after logging out
+- Set layouts independently of desktop and screen
+- DBus integration to save layouts and configurations after logging out
 
-## X11
+## x11
 
 X11 is not supported. If you encounter an issue running the script on X11, make sure it is reproducible in Wayland before submitting a bug report.
 
-## building
+## building/installing
 
 Requires `npm` and `kpackagetool6`
 
@@ -42,6 +42,17 @@ Commands -
 - Install/Reinstall - `make install`
 - Clean build - `make clean`
 - Clean build and target - `make cleanall`
+- Build DBus - `make dbus`
+
+To finish installing DBus, use `systemctl --user enable --now polonium-saver` and turn on DBus in the script settings.
+
+## getting logs
+
+To get logs, do the following -
+- Set log level to debug in settings
+- Log out and log in again, and immediately reproduce the issue if possible after logging in
+- Run `journalctl -e --no-pager -g "[Pp]olonium"`
+- Copy EVERYTHING that comes out
 
 ## license
 

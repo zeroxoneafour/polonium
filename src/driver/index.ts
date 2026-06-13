@@ -56,7 +56,7 @@ export class Driver {
         desktop: VirtualDesktop,
         activity: Activity,
         output: Output,
-    ) {
+    ): void {
         this.rootTile = rootTile;
         this.desktop = desktop;
         this.activity = activity;
@@ -80,14 +80,17 @@ export class Driver {
     private setEngineType(
         engineType: TilingEngineType,
         engineSettings: object,
-    ) {
+    ): void {
         this.tilingEngine = new TilingEngine(engineType, engineSettings);
         for (const engineWindow of this.windowMap.values()) {
             this.tilingEngine.addWindow(engineWindow);
         }
     }
 
-    changeTilingEngine(engineType?: TilingEngineType, engineSettings?: object) {
+    changeTilingEngine(
+        engineType?: TilingEngineType,
+        engineSettings?: object,
+    ): void {
         if (
             engineType !== undefined &&
             this.tilingEngine.engineType != engineType
@@ -101,7 +104,7 @@ export class Driver {
         }
     }
 
-    resetTilingEngine() {
+    resetTilingEngine(): void {
         const defaultEngine = config().defaultEngine;
         const defaultSettings = getConfigEngineSettings(defaultEngine);
         if (this.tilingEngine.engineType !== defaultEngine) {

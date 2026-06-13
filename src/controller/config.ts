@@ -20,6 +20,8 @@ export class Config {
     readonly tileResizeAmount: number;
     readonly fullRebuild: boolean;
     readonly preserveOldDrivers: boolean;
+    readonly useDBusSaver: boolean;
+
     readonly logLevel: LogLevel;
 
     readonly defaultEngine: TilingEngineType;
@@ -38,6 +40,8 @@ export class Config {
         this.tileResizeAmount = rc("TileResizeAmount", 10);
         this.fullRebuild = rc("FullRebuild", true);
         this.preserveOldDrivers = rc("PreserveOldDrivers", true);
+        this.useDBusSaver = rc("UseDBusSaver", false);
+
         this.logLevel = rc("LogLevel", LogLevel.Warn);
 
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);

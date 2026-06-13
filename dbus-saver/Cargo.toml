@@ -1,0 +1,10 @@
+[package]
+name = "polonium-saver"
+version = "0.2.0"
+edition = "2024"
+
+[dependencies]
+dbus = "0.9.11"
+dbus-crossroads = "0.5.3"
+serde = "1.0.228"
+serde_json = "1.0.150"

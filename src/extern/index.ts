@@ -1,6 +1,6 @@
-import { Workspace, KWin, ShortcutHandler, Qt } from "kwin-api/qml";
+import { Workspace, KWin, ShortcutHandler, DBusCall } from "kwin-api/qml";
 import { Activity, Options, Output, VirtualDesktop } from "kwin-api";
-import { QTimer, Console, Signal } from "kwin-api/qt";
+import { QTimer, Console, Signal, QObject, Qt } from "kwin-api/qt";
 import { TilingEngineType } from "../engine";
 
 export interface QmlApi {
@@ -12,13 +12,10 @@ export interface QmlApi {
 }
 
 export interface QmlObjects {
-    root: Root;
+    root: QObject;
     shortcuts: Shortcuts;
     settings: Settings;
-}
-
-export interface Root {
-    createTimer(): QTimer;
+    dbus: DBus;
 }
 
 export interface Shortcuts {
@@ -45,7 +42,7 @@ export interface Shortcuts {
     getToggleSettingsMenu(): ShortcutHandler;
 }
 
-export interface Settings {
+export interface Settings extends QObject {
     visible: boolean;
     show(
         desktop: VirtualDesktop,
@@ -67,4 +64,10 @@ export interface Settings {
     resetSettings: Signal<
         (desktop: VirtualDesktop, activity: Activity, output: Output) => void
     >;
+}
+
+export interface DBus extends QObject {
+    getSettings(): DBusCall;
+    setSettings(): DBusCall;
+    resetSettings(): DBusCall;
 }

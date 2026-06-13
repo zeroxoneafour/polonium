@@ -1,0 +1,10 @@
+[Unit]
+Description=DBus saver for Polonium
+After=dbus.service
+
+[Service]
+Type=simple
+ExecStart=sh -c 'exec $HOME/.cargo/bin/polonium-saver'
+
+[Install]
+WantedBy=default.target

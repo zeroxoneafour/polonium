@@ -4,6 +4,8 @@ pkg/
 src/**/*.js
 .scannerwork
 
+dbus-saver/target/
+
 # github default for node
 
 # Logs

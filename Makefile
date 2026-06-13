@@ -57,3 +57,7 @@ $(PKGDIR):
 	mkdir -p $(PKGDIR)/contents/code
 	mkdir $(PKGDIR)/contents/config
 	mkdir $(PKGDIR)/contents/ui
+
+dbus:
+	cd dbus-saver && cargo install --path .
+	cp dbus-saver/polonium-saver.service ~/.config/systemd/user/

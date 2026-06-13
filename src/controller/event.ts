@@ -57,6 +57,8 @@ interface ChangeEngineEvent {
     output: Output;
     engineType?: TilingEngineType;
     engineSettings?: object;
+    // if set explicitly to true, then do not update dbus
+    noDBusUpdate?: boolean;
 }
 interface ResetEngineEvent {
     t: "resetEngine";
@@ -147,6 +149,10 @@ export function simplifyEvents(eventQueue: Queue<Event>): Queue<Event> {
             if (parallelEventIdx != -1) {
                 newEvents.splice(parallelEventIdx, 1);
             }
+        }
+        // filter out changeEngine events with two undefineds
+        if (ev.t == "changeEngine" && ev.engineSettings === undefined && ev.engineType === undefined) {
+            continue;
         }
         newEvents.push(ev);
     }
