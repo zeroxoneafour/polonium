@@ -1,6 +1,7 @@
 import { Workspace, KWin, ShortcutHandler, Qt } from "kwin-api/qml";
-import { Options } from "kwin-api";
-import { QTimer, Console } from "kwin-api/qt";
+import { Activity, Options, Output, VirtualDesktop } from "kwin-api";
+import { QTimer, Console, Signal } from "kwin-api/qt";
+import { TilingEngineType } from "../engine";
 
 export interface QmlApi {
     workspace: Workspace;
@@ -13,6 +14,7 @@ export interface QmlApi {
 export interface QmlObjects {
     root: Root;
     shortcuts: Shortcuts;
+    settings: Settings;
 }
 
 export interface Root {
@@ -39,4 +41,30 @@ export interface Shortcuts {
     getResizeDown(): ShortcutHandler;
     getResizeLeft(): ShortcutHandler;
     getResizeRight(): ShortcutHandler;
+
+    getToggleSettingsMenu(): ShortcutHandler;
+}
+
+export interface Settings {
+    visible: boolean;
+    show(
+        desktop: VirtualDesktop,
+        activity: Activity,
+        output: Output,
+        engineType: TilingEngineType,
+        engineSettings: object,
+    ): void;
+    hide(): void;
+    saveSettings: Signal<
+        (
+            desktop: VirtualDesktop,
+            activity: Activity,
+            output: Output,
+            engineType: TilingEngineType | undefined,
+            engineSettings: object | undefined,
+        ) => void
+    >;
+    resetSettings: Signal<
+        (desktop: VirtualDesktop, activity: Activity, output: Output) => void
+    >;
 }

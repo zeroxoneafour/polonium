@@ -46,7 +46,7 @@ export class Driver {
         this.output = output;
 
         if (engineSettings === undefined) {
-            engineSettings = this.getConfigEngineSettings(engineType);
+            engineSettings = getConfigEngineSettings(engineType);
         }
         this.tilingEngine = new TilingEngine(engineType, engineSettings);
     }
@@ -77,18 +77,14 @@ export class Driver {
         }
     }
 
-    // want to completely separate the engine and kwin, so we set config defaults here not in engine
-    private getConfigEngineSettings(engineType: TilingEngineType): object {
-        let ret: object;
-        switch (engineType) {
-            case TilingEngineType.BTree:
-                ret = config().btreeSettings;
-                break;
-            case TilingEngineType.Half:
-                ret = config().halfSettings;
-                break;
+    private setEngineType(
+        engineType: TilingEngineType,
+        engineSettings: object,
+    ) {
+        this.tilingEngine = new TilingEngine(engineType, engineSettings);
+        for (const engineWindow of this.windowMap.values()) {
+            this.tilingEngine.addWindow(engineWindow);
         }
-        return ret;
     }
 
     changeTilingEngine(engineType?: TilingEngineType, engineSettings?: object) {
@@ -97,14 +93,21 @@ export class Driver {
             this.tilingEngine.engineType != engineType
         ) {
             if (engineSettings === undefined) {
-                engineSettings = this.getConfigEngineSettings(engineType);
+                engineSettings = getConfigEngineSettings(engineType);
             }
-            this.tilingEngine = new TilingEngine(engineType, engineSettings);
-            for (const engineWindow of this.windowMap.values()) {
-                this.tilingEngine.addWindow(engineWindow);
-            }
+            this.setEngineType(engineType, engineSettings);
         } else if (engineSettings !== undefined) {
             this.tilingEngine.setEngineSettings(engineSettings);
+        }
+    }
+
+    resetTilingEngine() {
+        const defaultEngine = config().defaultEngine;
+        const defaultSettings = getConfigEngineSettings(defaultEngine);
+        if (this.tilingEngine.engineType !== defaultEngine) {
+            this.setEngineType(defaultEngine, defaultSettings);
+        } else {
+            this.tilingEngine.setEngineSettings(defaultSettings);
         }
     }
 
@@ -263,6 +266,24 @@ export class Driver {
             output: this.output,
         });
     }
+}
+
+// want to completely separate the engine and kwin, so we set config defaults here not in engine
+function getConfigEngineSettings(engineType: TilingEngineType): object {
+    let ret: object;
+    switch (engineType) {
+        case TilingEngineType.BTree:
+            ret = config().btreeSettings;
+            break;
+        case TilingEngineType.Half:
+            ret = config().halfSettings;
+            break;
+        default:
+            console().error("engine type", engineType, "is invalid");
+            ret = {};
+            break;
+    }
+    return ret;
 }
 
 // sometimes windows (FIREFOX) dont set their size properly so we force them to

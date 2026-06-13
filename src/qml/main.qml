@@ -23,8 +23,8 @@ Item {
         const qmlObjects = {
             "root": root,
             "shortcuts": shortcutsLoader.item,
+            "settings": settingsLoader.item,
             /*
-            "settings": settings,
             "dbus": dbusLoader.item,
             "osd": osdLoader.item,
             */
@@ -38,47 +38,13 @@ Item {
         source: "shortcuts.qml";
     }
 
-    /*
     Loader {
-        id: settings;
-        
-        function isVisible() {
-            return settings.item.visible;
-        }
-        
-        function setSettings(c) {
-            settings.item.setSettings(c);
-        }
-        
-        function show() {
-            settings.item.show();
-        }
-        
-        function hide() {
-            settings.item.hide();
-        }
-        
-        function saveAndHide() {
-            settings.item.saveSettings();
-            settings.item.hide();
-        }
-        
-        signal saveSettings(a: var, b: var);
-        signal removeSettings(a: var);
-        
+        id: settingsLoader;
+                
         source: "settings.qml";
     }
     
-    Connections {
-        target: settings.item;
-        function onSaveSettingsInternal(a, b) {
-            settings.saveSettings(a, b);
-        }
-        function onRemoveSettingsInternal(a) {
-            settings.removeSettings(a);
-        }
-    }
-        
+    /*    
     Loader {
         id: dbusLoader;
         

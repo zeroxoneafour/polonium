@@ -45,8 +45,8 @@ Item {
     ShortcutHandler {
         id: activateAbove;
         
-        name: "PoloniumactivateAbove";
-        text: "Polonium: activate Above";
+        name: "PoloniumActivateAbove";
+        text: "Polonium: Activate Above";
         sequence: "Meta+K";
     }
 
@@ -170,20 +170,19 @@ Item {
         text: "Polonium: Resize Tile Right";
         sequence: "Meta+Ctrl+L";
     }
-
-    /*
     
-    function getOpenSettings() {
-        return openSettings;
+    function getToggleSettingsMenu() {
+        return toggleSettingsMenu;
     }
     ShortcutHandler {
-        id: openSettings;
+        id: toggleSettingsMenu;
         
-        name: "PoloniumOpenSettings";
-        text: "Polonium: Open Settings Dialog";
+        name: "PoloniumToggleSettingsMenu";
+        text: "Polonium: Toggle Settings Menu";
         sequence: "Meta+\\";
     }
-    
+
+    /*
     function getRotateLayout() {
         return rotateLayout;
     }

@@ -9,6 +9,7 @@ export { Window, Tile, Direction };
 export enum TilingEngineType {
     BTree = 0,
     Half = 1,
+    _Loop = 2,
 }
 
 export class TilingEngine {
@@ -25,6 +26,11 @@ export class TilingEngine {
                 break;
             case TilingEngineType.Half:
                 this.engine = new HalfEngine();
+                break;
+            default:
+                console().warn("Invalid tiling engine type", type);
+                this.engineType = TilingEngineType.BTree;
+                this.engine = new BTreeEngine();
                 break;
         }
         this.engine.setEngineSettings(settings);

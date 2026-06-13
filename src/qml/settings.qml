@@ -1,28 +1,23 @@
-// someday
-
-/*
 import QtQuick;
 import QtQuick.Layouts;
+import QtQuick.Controls as QC;
 import org.kde.kwin;
 import org.kde.plasma.components as PC3;
 import org.kde.plasma.core as PlasmaCore;
 
 PlasmaCore.Dialog {
-    id: settingsDialog;
+    id: root;
     
-    property var settings: ({
-        // see engine enum
-        engineType: 0,
-        // 0 - left side, 1 - right side, 2 - active
-        insertionPoint: 1,
+    property var desktop: ({});
+    property var activity: ({});
+    property var output: ({});
+
+    property int engineType: 0;
+    property var engineSettings: ({
         rotateLayout: false,
-    })
-    
-    property var desktop: ({
-        output: "",
-        activity: "",
-        desktop: "",
-    })
+        swapInsertSide: false,
+        middleSplit: 0.5,
+    });
     
     property rect screenGeometry;
     x: (screenGeometry.x + screenGeometry.width / 2) - width / 2;
@@ -32,26 +27,17 @@ PlasmaCore.Dialog {
     flags: Qt.Popup | Qt.WindowStaysOnTopHint;
     location: PlasmaCore.Types.Floating;
     hideOnWindowDeactivate: true;
-
-    function setSettings(s) {
-        this.settings.engineType = s.engineType;
-        this.settings.insertionPoint = s.insertionPoint;
-        this.settings.rotateLayout = s.rotateLayout;
-    }
     
-    function show() {
-        // update desktop
-        this.desktop.output = Workspace.activeScreen.name;
-        this.desktop.activity = Workspace.currentActivity;
-        this.desktop.desktop = Workspace.currentDesktop.id;
-        
-        // update settings
-        engine.currentIndex = this.settings.engineType;
-        insertionPoint.currentIndex = this.settings.insertionPoint;
-        rotateLayout.checkState = this.settings.rotateLayout ? Qt.Checked : Qt.Unchecked;
-        
+    function show(desktop, activity, output, engineType, engineSettings) {
+        this.desktop = desktop;
+        this.activity = activity;
+        this.output = output;
+
+        this.engineType = engineType;
+        this.engineSettings = engineSettings;
+                
         // Update current screen information
-        this.screenGeometry = Workspace.clientArea(KWin.FullScreenArea, Workspace.activeScreen, Workspace.currentDesktop);
+        this.screenGeometry = Workspace.clientArea(KWin.MaximizeArea, output, desktop);
         
         // Show the popup
         this.visible = true;
@@ -60,97 +46,119 @@ PlasmaCore.Dialog {
     function hide() {
         this.visible = false;
     }
-    
-    signal saveSettingsInternal(settings: var, desktop: var);
-    signal removeSettingsInternal(desktop: var);
-    
-    function saveSettings() {
-        this.settings.engineType = engine.currentIndex;
-        this.settings.insertionPoint = insertionPoint.currentIndex;
-        this.settings.rotateLayout = (rotateLayout.checkState == Qt.Checked);
-        this.saveSettingsInternal(this.settings, this.desktop);
+
+    function saveEngineTypeFn() {
+        this.saveSettings(
+            this.desktop,
+            this.activity,
+            this.output,
+            this.engineType,
+            undefined,
+        );
+    }
+    function saveSettingsFn() {
+        this.saveSettings(
+            this.desktop,
+            this.activity,
+            this.output,
+            this.engineType,
+            this.engineSettings,
+        );
     }
     
-    function removeSettings() {
-        this.removeSettingsInternal(this.desktop);
-    }
-        
+    signal saveSettings(desktop: var, activity: var, output: var, engineType: int, engineSettings: var);
+    signal resetSettings(desktop: var, activity: var, output: var);
+                
     mainItem: ColumnLayout {
-        id: main;
+        id: rootLayout;
         Layout.alignment: Qt.AlignHCenter;
         spacing: 10;
-        
-        RowLayout {
-            Layout.fillWidth: true;
-            Layout.alignment: Qt.AlignHCenter;
-            spacing: 10;
-            
+
+        GridLayout {
+            columns: 2;
+
             PC3.Label {
                 text: "Engine:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
             }
             PC3.ComboBox {
-                id: engine;
-                model: ["Binary Tree", "Half", "Three Column", "Monocle", "KWin"];
+                model: ["Binary Tree", "Half"];
+                currentIndex: root.engineType;
+                popup.y: height;
+                onActivated: (idx) => {
+                    root.engineType = idx;
+                    root.saveEngineTypeFn();
+                }
             }
-        }
-        
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter;
-            Layout.fillWidth: true;
-            spacing: 10;
-            
+
             PC3.Label {
-                text: "Insertion Point:";
+                visible: root.engineSettings.hasOwnProperty("rotateLayout");
+                text: "Rotate Layout:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
             }
-            PC3.ComboBox {
-                id: insertionPoint;
-                model: ["Left", "Right", "Selected"];
-            }
-        }
-        
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter;
-            Layout.fillWidth: true;
-            spacing:10;
-            
             PC3.CheckBox {
-                id: rotateLayout;
-                text: "Rotate Layout"
+                visible: root.engineSettings.hasOwnProperty("rotateLayout");
+                checked: root.engineSettings.rotateLayout ?? false;
+                onClicked: {
+                    root.engineSettings.rotateLayout = !root.engineSettings.rotateLayout;
+                    root.saveSettingsFn();
+                }
+            }
+
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("swapInsertSide");
+                text: "Swap Insert Side:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.CheckBox {
+                visible: root.engineSettings.hasOwnProperty("swapInsertSide");
+                checked: root.engineSettings.swapInsertSide ?? false;
+                onClicked: {
+                    root.engineSettings.swapInsertSide = !root.engineSettings.swapInsertSide;
+                    root.saveSettingsFn();
+                }
+            }
+
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("middleSplit");
+                text: "Middle Split:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            // why does PC3 not have a double spin box???
+            PC3.SpinBox {
+                visible: root.engineSettings.hasOwnProperty("middleSplit");
+                from: 15;
+                to: 85;
+                value: root.engineSettings.middleSplit * 100 ?? 50;
+                onValueModified: {
+                    root.engineSettings.middleSplit = this.value / 100;
+                    root.saveSettingsFn();
+                }
             }
         }
-        
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter;
+
+        PC3.Button {
             Layout.fillWidth: true;
-            
-            PC3.Button  {
-                text: "Save and close";
-                onClicked:  {
-                    settingsDialog.saveSettings();
-                    settingsDialog.hide();
-                }
-            }
-            PC3.Button {
-                text: "Close without saving";
-                onClicked: {
-                    settingsDialog.hide();
-                }
+            text: "Reset to Default Settings";
+            onClicked: {
+                root.resetSettings(
+                    root.desktop,
+                    root.activity,
+                    root.output,
+                );
             }
         }
-        
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter;
+  
+        PC3.Button {
             Layout.fillWidth: true;
-            spacing: 10;
-            
-            PC3.Button {
-                text: "Remove custom settings and close";
-                onClicked: {
-                    settingsDialog.removeSettings();
-                    settingsDialog.hide();
-                }
+            text: "Close Menu";
+            onClicked: {
+                root.hide();
             }
         }
     }
 }
-*/

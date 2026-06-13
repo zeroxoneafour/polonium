@@ -84,6 +84,10 @@ export class ShortcutsHandler {
             .activated.connect(
                 this.resizeInDirection.bind(this, Edge.RightEdge),
             );
+
+        this.shortcuts
+            .getToggleSettingsMenu()
+            .activated.connect(this.toggleSettingsMenu.bind(this));
     }
 
     toggleActiveTiling() {
@@ -226,5 +230,14 @@ export class ShortcutsHandler {
             amount *= -1;
         }
         currentTile.resizeByPixels(amount, edge);
+    }
+
+    toggleSettingsMenu() {
+        ctrl().queuePostEvent({
+            t: "toggleSettingsMenu",
+            desktop: this.workspace.currentDesktop,
+            activity: this.workspace.currentActivity,
+            output: this.workspace.activeScreen,
+        });
     }
 }

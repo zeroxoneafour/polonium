@@ -58,6 +58,12 @@ interface ChangeEngineEvent {
     engineType?: TilingEngineType;
     engineSettings?: object;
 }
+interface ResetEngineEvent {
+    t: "resetEngine";
+    desktop: VirtualDesktop;
+    activity: Activity;
+    output: Output;
+}
 
 export type Event =
     | TileWindowEvent
@@ -67,7 +73,8 @@ export type Event =
     | RemoveWindowEvent
     | PlaceWindowEvent
     | UpdateTileCountEvent
-    | ChangeEngineEvent;
+    | ChangeEngineEvent
+    | ResetEngineEvent;
 
 // post events - these events run after build
 interface SetWindowPropertiesEvent {
@@ -83,8 +90,17 @@ interface UpdateTileSizesEvent {
     activity: Activity;
     output: Output;
 }
+interface ToggleSettingsMenuEvent {
+    t: "toggleSettingsMenu";
+    desktop: VirtualDesktop;
+    activity: Activity;
+    output: Output;
+}
 
-export type PostEvent = SetWindowPropertiesEvent | UpdateTileSizesEvent;
+export type PostEvent =
+    | SetWindowPropertiesEvent
+    | UpdateTileSizesEvent
+    | ToggleSettingsMenuEvent;
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event
