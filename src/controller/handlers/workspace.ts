@@ -25,6 +25,8 @@ export class WorkspaceHandler {
 
         this.workspace.screensChanged.connect(this.updateDrivers.bind(this));
         this.workspace.desktopsChanged.connect(this.updateDrivers.bind(this));
+        this.workspace.activityAdded.connect(this.updateDrivers.bind(this));
+        this.workspace.activityRemoved.connect(this.updateDrivers.bind(this));
         this.workspace.activitiesChanged.connect(this.updateDrivers.bind(this));
     }
 
