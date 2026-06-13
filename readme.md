@@ -49,6 +49,7 @@ To finish installing DBus, use `systemctl --user enable --now polonium-saver` an
 ## getting logs
 
 To get logs, do the following -
+
 - Set log level to debug in settings
 - Log out and log in again, and immediately reproduce the issue if possible after logging in
 - Run `journalctl -e --no-pager -g "[Pp]olonium"`

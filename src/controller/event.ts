@@ -151,7 +151,11 @@ export function simplifyEvents(eventQueue: Queue<Event>): Queue<Event> {
             }
         }
         // filter out changeEngine events with two undefineds
-        if (ev.t == "changeEngine" && ev.engineSettings === undefined && ev.engineType === undefined) {
+        if (
+            ev.t == "changeEngine" &&
+            ev.engineSettings === undefined &&
+            ev.engineType === undefined
+        ) {
             continue;
         }
         newEvents.push(ev);
