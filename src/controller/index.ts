@@ -330,7 +330,11 @@ class Controller {
         const id = desktopId(desktop, activity, output);
         let driver = this.drivers.get(id);
         if (driver !== undefined) return driver;
-        console().warn("driver not found for id", id, "updating drivers and trying again");
+        console().warn(
+            "driver not found for id",
+            id,
+            "updating drivers and trying again",
+        );
         this.updateDrivers();
         driver = this.drivers.get(id);
         return driver;
