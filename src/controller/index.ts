@@ -189,6 +189,8 @@ class Controller {
                     ev.desktop.name,
                     "on output",
                     ev.output.name,
+                    "and activity",
+                    ev.activity,
                 );
                 this.getDriver(
                     ev.desktop,
@@ -203,6 +205,8 @@ class Controller {
                     ev.desktop.name,
                     "on output",
                     ev.output.name,
+                    "and activity",
+                    ev.activity,
                 );
                 const driver = this.getDriver(
                     ev.desktop,
@@ -229,10 +233,10 @@ class Controller {
                 console().log(
                     "resetting to default engine settings for desktop",
                     ev.desktop.name,
-                    "and activity",
-                    ev.activity,
                     "on output",
                     ev.output.name,
+                    "and activity",
+                    ev.activity,
                 );
                 const driver = this.getDriver(
                     ev.desktop,
@@ -277,6 +281,8 @@ class Controller {
                     ev.desktop.name,
                     "on output",
                     ev.output.name,
+                    "and activity",
+                    ev.activity,
                 );
                 this.getDriver(
                     ev.desktop,
@@ -324,6 +330,7 @@ class Controller {
         const id = desktopId(desktop, activity, output);
         let driver = this.drivers.get(id);
         if (driver !== undefined) return driver;
+        console().warn("driver not found for id", id, "updating drivers and trying again");
         this.updateDrivers();
         driver = this.drivers.get(id);
         return driver;
@@ -333,7 +340,7 @@ class Controller {
         for (const id of this.drivers.keys()) {
             const [desktop, activity, output] = this.parseDesktopId(id);
             if (!desktop || !activity || !output) {
-                console().debug("removing desktop", id);
+                console().debug("removing driver", id);
                 if (config().preserveOldDrivers && this.drivers.has(id)) {
                     this.drivers.get(id)!.active = false;
                 } else {
@@ -354,7 +361,7 @@ class Controller {
             const driver = this.drivers.get(id);
             const rootTile = this.workspace.rootTile(output, desktop);
             if (driver === undefined) {
-                console().debug("adding desktop", id);
+                console().debug("adding driver", id);
                 const driver = new Driver(
                     rootTile,
                     desktop,
@@ -365,7 +372,7 @@ class Controller {
                 this.drivers.set(id, driver);
                 this.dbusHandler?.getSettings(desktop, activity, output);
             } else if (!driver.active) {
-                console().debug("reactivating desktop", id);
+                console().debug("reactivating driver", id);
                 driver.active = true;
                 driver.refreshDriver(rootTile, desktop, activity, output);
             }
