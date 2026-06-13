@@ -127,27 +127,25 @@ function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
     return true;
 }
 
-export function simplifyEvents(eventQueue: Queue<Event>): Queue<Event> {
-    const oldEvents = new Array<Event>(eventQueue.size);
-    for (let i = 0; i < oldEvents.length; i += 1) {
-        oldEvents[i] = eventQueue.pop()!;
-    }
-    const newEvents: Event[] = [];
+export function simplifyEvents(oldEvents: Queue<Event>): Queue<Event> {
+    const newEvents = new Queue<Event>();
     for (const ev of oldEvents) {
         if (newEvents.some((e) => eventsAreSame(ev, e))) {
             continue;
         }
         if (ev.t == "tileWindow" || ev.t == "untileWindow") {
-            const parallelEventIdx = newEvents.findIndex((e) => {
+            const parallelEventIdx = newEvents.indexOf((e) => {
                 if (ev.t == "tileWindow" && e.t == "untileWindow") {
                     return eventsAreParallel(ev, e);
                 } else if (e.t == "tileWindow" && ev.t == "untileWindow") {
                     return eventsAreParallel(e, ev);
+                } else {
+                    return false;
                 }
             });
             // remove old parallel event so we can use new one instead
             if (parallelEventIdx != -1) {
-                newEvents.splice(parallelEventIdx, 1);
+                newEvents.removeAtIndex(parallelEventIdx);
             }
         }
         // filter out changeEngine events with two undefineds
@@ -160,28 +158,20 @@ export function simplifyEvents(eventQueue: Queue<Event>): Queue<Event> {
         }
         newEvents.push(ev);
     }
-    const ret = new Queue<Event>();
-    ret.multipush(newEvents);
-    return ret;
+    return newEvents;
 }
 
 export function simplifyPostEvents(
-    eventQueue: Queue<PostEvent>,
+    oldEvents: Queue<PostEvent>,
 ): Queue<PostEvent> {
-    const oldEvents = new Array<PostEvent>(eventQueue.size);
-    for (let i = 0; i < oldEvents.length; i += 1) {
-        oldEvents[i] = eventQueue.pop()!;
-    }
-    const newEvents: PostEvent[] = [];
+    const newEvents = new Queue<PostEvent>();
     for (const ev of oldEvents) {
-        if (newEvents.find((e) => eventsAreSame(ev, e)) !== undefined) {
+        if (newEvents.some((e) => eventsAreSame(ev, e))) {
             continue;
         }
         newEvents.push(ev);
     }
-    const ret = new Queue<PostEvent>();
-    ret.multipush(newEvents);
-    return ret;
+    return newEvents;
 }
 
 export function createTileEvents(

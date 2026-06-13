@@ -12,7 +12,7 @@ class Node<T> {
     }
 }
 
-export class Queue<T> {
+export class Queue<T> implements Iterable<T> {
     private head: Node<T> | null = null;
     private tail: Node<T> | null = null;
     private count: number = 0;
@@ -63,10 +63,62 @@ export class Queue<T> {
         return node?.value;
     }
 
+    removeAtIndex(index: number): T | undefined {
+        if (index < 0 || index >= this.count) {
+            return undefined;
+        }
+        let node = this.head;
+        let prevNode: Node<T> | null = null;
+        for (let i = 0; i < index; i += 1) {
+            if (node === null) {
+                return undefined;
+            }
+            prevNode = node;
+            node = node.next;
+        }
+        if (node === null) return undefined;
+        if (prevNode !== null) {
+            prevNode.next = node.next;
+        }
+        return node.value;
+    }
+
     get size(): number {
         return this.count;
     }
     get isEmpty(): boolean {
         return this.count === 0;
+    }
+
+    *[Symbol.iterator](): IterableIterator<T> {
+        let currNode = this.head;
+        while (currNode !== null) {
+            let ret = currNode.value;
+            currNode = currNode.next;
+            yield ret;
+        }
+    }
+
+    some(fn: (x: T) => boolean): boolean {
+        for (const x of this) {
+            if (fn(x)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    indexOf(fn: (x: T) => boolean): number {
+        let node = this.head;
+        for (let i = 0; i < this.count; i += 1) {
+            if (node === null) {
+                return -1;
+            }
+            if (fn(node.value)) {
+                return i;
+            }
+            node = node.next;
+        }
+        return -1;
     }
 }
