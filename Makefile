@@ -58,6 +58,13 @@ $(PKGDIR):
 	mkdir $(PKGDIR)/contents/config
 	mkdir $(PKGDIR)/contents/ui
 
+CARGO_HOME ?= $(HOME)/.cargo
+XDG_CONFIG_HOME ?= $(HOME)/.config
+XDG_DATA_HOME ?= $(HOME)/.local/share
+
 dbus:
 	cd dbus-saver && cargo install --path .
-	cp dbus-saver/polonium-saver.service ~/.config/systemd/user/
+	install -m 644 -D -t $(XDG_CONFIG_HOME)/systemd/user dbus-saver/polonium-saver.service
+	sed -i 's|^ExecStart=polonium-saver$$|ExecStart=$(CARGO_HOME)/bin/polonium-saver|' $(XDG_CONFIG_HOME)/systemd/user/polonium-saver.service
+	install -m 644 -D -t $(XDG_DATA_HOME)/dbus-1/services dbus-saver/xyz.vaughanm.polonium.service
+	sed -i 's|^Exec=polonium-saver$$|Exec=$(CARGO_HOME)/bin/polonium-saver|' $(XDG_DATA_HOME)/dbus-1/services/xyz.vaughanm.polonium.service
