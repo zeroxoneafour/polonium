@@ -38,10 +38,7 @@ class Controller {
         //this.kwin = qmlApi.kwin;
         this.qmlObjects = qmlObjects;
 
-        this.eventTimer = qmlApi.qt.createQmlObject(
-            "import QtQuick; Timer {}",
-            qmlObjects.root,
-        ) as QTimer;
+        this.eventTimer = this.qmlObjects.eventTimer;
         this.eventTimer.interval = config().rebuildDelay;
         this.eventTimer.repeat = false;
         this.eventTimer.triggered.connect(this.processEvents.bind(this));

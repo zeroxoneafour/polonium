@@ -13,6 +13,7 @@ export interface QmlApi {
 
 export interface QmlObjects {
     root: QObject;
+    eventTimer: QTimer;
     shortcuts: Shortcuts;
     settings: Settings;
     dbus: DBus;

@@ -7,6 +7,10 @@ import "../code/main.mjs" as Polonium;
 
 Item {
     id: root;
+
+    Timer {
+        id: eventTimer;
+    }
     
     Component.onCompleted: {
         const api = {
@@ -18,6 +22,7 @@ Item {
         };
         const qmlObjects = {
             "root": root,
+            "eventTimer": eventTimer,
             "shortcuts": shortcutsLoader.item,
             "settings": settingsLoader.item,
             "dbus": dbusLoader.item,

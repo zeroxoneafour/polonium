@@ -2,8 +2,8 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import tsParser from "@typescript-eslint/parser";
 
 export default defineConfig([
-    globalIgnores(["pkg", "**/*.qml", "dbus-saver"]),
     {
+        files: ["src/**/*.ts"],
         languageOptions: {
             globals: {},
             parser: tsParser,

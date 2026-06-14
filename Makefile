@@ -26,15 +26,9 @@ cleanpkg: $(PKGFILE)
 
 cleanall: clean cleanpkg
 
-start: stop
-	dbus-send --session --dest=org.kde.KWin /Scripting org.kde.kwin.Scripting.loadScript string:'' string:'$(NAME)'
-
-stop:
-	dbus-send --session --dest=org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript string:'$(NAME)'
-
 lint:
-	npx eslint "src/**"
-	./scripts/sonarqube.sh
+	npx prettier --check .
+	npx eslint
 
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/
