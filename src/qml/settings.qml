@@ -17,6 +17,7 @@ PlasmaCore.Dialog {
         rotateLayout: false,
         swapInsertSide: false,
         middleSplit: 0.5,
+        depthFirst: false,
     });
     
     property rect screenGeometry;
@@ -136,6 +137,21 @@ PlasmaCore.Dialog {
                 value: root.engineSettings.middleSplit * 100 ?? 50;
                 onValueModified: {
                     root.engineSettings.middleSplit = this.value / 100;
+                    root.saveSettingsFn();
+                }
+            }
+
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("depthFirst");
+                text: "Depth First Insertion:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.CheckBox {
+                visible: root.engineSettings.hasOwnProperty("depthFirst");
+                checked: root.engineSettings.depthFirst ?? false;
+                onClicked: {
+                    root.engineSettings.depthFirst = !root.engineSettings.depthFirst;
                     root.saveSettingsFn();
                 }
             }

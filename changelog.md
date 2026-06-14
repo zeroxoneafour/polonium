@@ -1,5 +1,11 @@
 # changelog
 
+## 1.2
+
+- Add depth-first binary tree (dwindle)
+- Add insert into active window
+- Double buffer active windows
+
 ## 1.1
 
 ### 1.1

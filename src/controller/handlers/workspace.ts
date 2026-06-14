@@ -1,16 +1,21 @@
 import { Workspace } from "kwin-api/qml";
-import { config, controller as ctrl } from "..";
+import { config, console, controller as ctrl } from "..";
 import { Window } from "kwin-api";
 import { BorderSetting } from "../config";
 import { createTileEvents, createUntileEvents } from "../event";
+import { directionFromPoint } from "../../util";
 
 export class WorkspaceHandler {
     private workspace: Workspace;
+    // double buffer activated windows so we know which one was most recently active
+    // (do this for active window insertion)
     private previousActivated: Window | null;
+    private currentActivated: Window | null;
 
     constructor(workspace: Workspace) {
         this.workspace = workspace;
-        this.previousActivated = this.workspace.activeWindow;
+        this.previousActivated = null;
+        this.currentActivated = this.workspace.activeWindow;
 
         this.workspace.windowAdded.connect(this.windowAdded.bind(this));
         this.workspace.windowRemoved.connect(this.windowRemoved.bind(this));
@@ -35,9 +40,34 @@ export class WorkspaceHandler {
         // never friggin mind we need a ref map to store "tiled" state across shortcut handler as well
         const windowHandler = ctrl().createWindowHandler(window);
         if (!windowHandler.tiled) return;
+        let desktops = [...window.desktops];
+        if (
+            config().insertInActive &&
+            this.previousActivated?.tile != null &&
+            window.desktops.includes(this.workspace.currentDesktop) &&
+            window.activities.includes(this.workspace.currentActivity) &&
+            window.output === this.workspace.activeScreen
+        ) {
+            const tile = this.previousActivated?.tile;
+            ctrl().queueEvent({
+                t: "placeWindow",
+                window: window,
+                desktop: this.workspace.currentDesktop,
+                activity: this.workspace.currentActivity,
+                output: this.workspace.activeScreen,
+                tile: tile,
+                direction: directionFromPoint(
+                    tile.absoluteGeometry,
+                    this.workspace.cursorPos,
+                ),
+            });
+            desktops = desktops.filter(
+                (x) => x !== this.workspace.currentDesktop,
+            );
+        }
         for (const ev of createTileEvents(
             window,
-            window.desktops,
+            desktops,
             window.activities,
             window.output,
         )) {
@@ -70,6 +100,8 @@ export class WorkspaceHandler {
     }
 
     windowActivated(window: Window) {
+        this.previousActivated = this.currentActivated;
+        this.currentActivated = window;
         if (
             config().borders == BorderSetting.BorderActive ||
             config().borders == BorderSetting.BorderFloatingActive
@@ -93,7 +125,6 @@ export class WorkspaceHandler {
                 });
             }
         }
-        this.previousActivated = window;
     }
 }
 

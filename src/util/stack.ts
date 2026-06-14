@@ -1,5 +1,3 @@
-// util/queue.ts - Linked list queue
-
 import { StackLike } from "./stacklike";
 
 class Node<T> {
@@ -14,9 +12,8 @@ class Node<T> {
     }
 }
 
-export class Queue<T> extends StackLike<T> {
+export class Stack<T> extends StackLike<T> {
     private head: Node<T> | null = null;
-    private tail: Node<T> | null = null;
     private count: number = 0;
 
     constructor() {
@@ -24,11 +21,10 @@ export class Queue<T> extends StackLike<T> {
     }
 
     push(value: T): void {
-        if (this.head === null || this.tail === null) {
+        if (this.head === null) {
             this.head = new Node(value);
-            this.tail = this.head;
         } else {
-            this.tail = this.tail.append(new Node(value));
+            this.head = this.head.append(new Node(value));
         }
         this.count += 1;
     }
@@ -39,9 +35,6 @@ export class Queue<T> extends StackLike<T> {
         }
         const value = this.head.value;
         this.head = this.head.next;
-        if (this.head === null) {
-            this.tail = null;
-        }
         this.count -= 1;
         return value;
     }

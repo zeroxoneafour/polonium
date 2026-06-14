@@ -2,7 +2,7 @@ import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
 import { config, console, controller as ctrl } from "..";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
-import { GRect } from "../../util/geometry";
+import { directionFromPoint } from "../../util/geometry";
 
 export class WindowHandler {
     window: Window;
@@ -223,9 +223,10 @@ export class WindowHandler {
                     activity: this.workspace.currentActivity,
                     output: this.window.output,
                     tile: tile,
-                    direction: new GRect(
+                    direction: directionFromPoint(
                         tile.absoluteGeometry,
-                    ).directionFromPoint(cursorPos),
+                        cursorPos,
+                    ),
                 });
             }
         }

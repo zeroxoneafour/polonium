@@ -1,6 +1,6 @@
 // geometry.ts - Useful geometry functions (gtools)
 
-import { QPoint, QRect, QSize } from "kwin-api/qt";
+import { QPoint, QRect } from "kwin-api/qt";
 
 // direction uses up/right for quadrant of direction and vertical for whether the point is leaning vertically or horizontally along the y = +-x split
 export const enum Direction {
@@ -20,254 +20,46 @@ export function translateDirection(d: Direction): Direction {
     return ret;
 }
 
-/*
-export function rotateCw(d: Direction): Direction {
-    // it will always have the vertical component inverted
-    let ret =
-        (d & Direction.Vertical) == Direction.Vertical
-            ? Direction.None
-            : Direction.Vertical;
-    if ((d & Direction.Up) == Direction.Up) {
-        if ((d & Direction.Right) == Direction.Right) {
-            // top right
-            ret |= Direction.Right;
-        } else {
-            // top left
-            ret |= Direction.Right | Direction.Up;
-        }
-    } else {
-        if ((d & Direction.Right) == Direction.Right) {
-            // bottom right (becomes bottom left or none)
-            ret |= Direction.None;
-        } else {
-            // bottom left
-            ret |= Direction.Up;
-        }
-    }
-    return ret;
-}
-*/
-
-/*
-// rotate counterclockwise 90 deg
-rotateCcw(): Direction {
-    // it will always have the vertical component inverted
-    let ret =
-        (this.d & Direction.Vertical) == Direction.Vertical
-            ? Direction.None
-            : Direction.Vertical;
-    if ((this.d & Direction.Up) == Direction.Up) {
-        if ((this.d & Direction.Right) == Direction.Right) {
-            // top right
-            ret |= Direction.Up;
-        } else {
-            // top left (becomes bottom left or none)
-            ret |= Direction.None;
-        }
-    } else {
-        if ((this.d & Direction.Right) == Direction.Right) {
-            // bottom right (becomes bottom left or none)
-            ret |= Direction.Up | Direction.Right;
-        } else {
-            // bottom left
-            ret |= Direction.Right;
-        }
-    }
-    return ret;
-}
-*/
-
-export class GPoint implements QPoint {
-    x: number = 0;
-    y: number = 0;
-
-    constructor(p?: QPoint) {
-        if (p == undefined) {
-            return;
-        }
-        this.x = p.x;
-        this.y = p.y;
-    }
-
-    toString(): string {
-        return "GPoint(" + this.x + ", " + this.y + ")";
-    }
-}
-
-export class GRect implements QRect {
-    x: number = 0;
-    y: number = 0;
-    width: number = 0;
-    height: number = 0;
-
-    constructor(r?: QRect) {
-        if (r == undefined) {
-            return;
-        }
-        this.x = r.x;
-        this.y = r.y;
-        this.width = r.width;
-        this.height = r.height;
-    }
-
-    directionFromPoint(p: QPoint): Direction {
-        // very complex, copied this in from old polonium
-        const relativePoint = new GPoint({
-            x: p.x - this.x,
-            y: p.y - this.y,
-        });
-        // vertical split
-        if (relativePoint.x < this.width / 2) {
-            // left
-            // horizontal split
-            if (relativePoint.y < this.height / 2) {
-                // left top
-                // position in diagonal cutting rect in half
-                // math here came to me in a trance from an age long past
-                if (
-                    relativePoint.x >
-                    (this.width * relativePoint.y) / this.height
-                ) {
-                    return Direction.Vertical; // left top, top leaning
-                } else {
-                    return Direction.None; // left top, left leaning
-                }
-            } // left bottom
-            else {
-                if (
-                    relativePoint.x >
-                    (this.width * relativePoint.y) / this.height
-                ) {
-                    return Direction.Down | Direction.Vertical; // left bottom, bottom leaning
-                } else {
-                    return Direction.Down; // left bottom, left leaning
-                }
+export function directionFromPoint(r: QRect, p: QPoint): Direction {
+    const x = p.x - r.x;
+    const y = p.y - r.y;
+    // vertical split
+    if (x < r.width / 2) {
+        // left
+        // horizontal split
+        if (y < r.height / 2) {
+            // left top
+            // position in diagonal cutting rect in half
+            // math here came to me in a trance from an age long past
+            if (x > (r.width * y) / r.height) {
+                return Direction.Vertical; // left top, top leaning
+            } else {
+                return Direction.None; // left top, left leaning
             }
-        } // right
+        } // left bottom
         else {
-            if (relativePoint.y < this.height / 2) {
-                // right top
-                if (
-                    relativePoint.x <
-                    (this.width * relativePoint.y) / this.height
-                ) {
-                    return Direction.Right | Direction.Vertical; // right top, top leaning
-                } else {
-                    return Direction.Right; // right top, right leaning
-                }
-            } // right bottom
-            else {
-                if (
-                    relativePoint.x <
-                    (this.width * relativePoint.y) / this.height
-                ) {
-                    return (
-                        Direction.Down | Direction.Right | Direction.Vertical
-                    ); // right bottom, bottom leaning
-                } else {
-                    return Direction.Down | Direction.Right; // right bottom, right leaning
-                }
+            if (x > (r.width * y) / r.height) {
+                return Direction.Down | Direction.Vertical; // left bottom, bottom leaning
+            } else {
+                return Direction.Down; // left bottom, left leaning
             }
         }
-    }
-
-    get center(): GPoint {
-        return new GPoint({
-            x: this.x + this.width / 2,
-            y: this.y + this.height / 2,
-        });
-    }
-
-    contains(rect: QRect): boolean {
-        if (rect.x < this.x || rect.y < this.y) {
-            return false;
+    } // right
+    else {
+        if (y < r.height / 2) {
+            // right top
+            if (x < (r.width * y) / r.height) {
+                return Direction.Right | Direction.Vertical; // right top, top leaning
+            } else {
+                return Direction.Right; // right top, right leaning
+            }
+        } // right bottom
+        else {
+            if (x < (r.width * y) / r.height) {
+                return Direction.Down | Direction.Right | Direction.Vertical; // right bottom, bottom leaning
+            } else {
+                return Direction.Down | Direction.Right; // right bottom, right leaning
+            }
         }
-        if (
-            rect.x + rect.width > this.x + this.width ||
-            rect.y + rect.height > this.y + this.height
-        ) {
-            return false;
-        }
-        return true;
-    }
-
-    toString(): string {
-        return (
-            "GRect(" +
-            this.x +
-            ", " +
-            this.y +
-            +", " +
-            this.width +
-            ", " +
-            this.height +
-            ")"
-        );
-    }
-
-    writeTo(r: QRect) {
-        if (r.width != this.width) {
-            r.width = this.width;
-        }
-        if (r.height != this.height) {
-            r.height = this.height;
-        }
-        if (r.x != this.x) {
-            r.x = this.x;
-        }
-        if (r.y != this.y) {
-            r.y = this.y;
-        }
-    }
-}
-
-export class GSize implements QSize {
-    width: number = 0;
-    height: number = 0;
-
-    constructor(s?: QSize) {
-        if (s == undefined) {
-            return;
-        }
-        this.width = s.width;
-        this.height = s.height;
-    }
-
-    static fromRect(r: QRect): GSize {
-        return new GSize({
-            width: r.width,
-            height: r.height,
-        });
-    }
-
-    isEqual(s: QSize): boolean {
-        return s.width == this.width && s.height == this.height;
-    }
-
-    // compare two sizes and grow the caller if it is too small
-    fitSize(s: QSize) {
-        if (this.height < s.height) {
-            this.height = s.height;
-        }
-        if (this.width < s.width) {
-            this.width = s.width;
-        }
-    }
-
-    writeTo(s: QSize) {
-        if (s.width != this.width) {
-            s.width = this.width;
-        }
-        if (s.height != this.height) {
-            s.height = this.height;
-        }
-    }
-
-    get area(): number {
-        return this.width * this.height;
-    }
-
-    toString(): string {
-        return "GSize(" + this.width + ", " + this.height + ")";
     }
 }
