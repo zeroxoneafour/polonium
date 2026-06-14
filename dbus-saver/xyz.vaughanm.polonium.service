@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=xyz.vaughanm.polonium
+Exec=polonium-saver
+SystemdService=polonium-saver.service
