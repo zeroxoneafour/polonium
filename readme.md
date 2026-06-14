@@ -42,9 +42,7 @@ Commands -
 - Install/Reinstall - `make install`
 - Clean build - `make clean`
 - Clean build and target - `make cleanall`
-- Build DBus - `make dbus`
-
-To finish installing DBus, use `systemctl --user enable --now polonium-saver` and turn on DBus in the script settings.
+- Build and install DBus service - `make dbus`
 
 ## getting logs
 
