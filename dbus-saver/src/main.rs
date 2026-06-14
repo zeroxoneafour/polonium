@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     let file_path = get_file_path();
-    println!("Loading config at {:?}", &file_path);
+    println!("Polonium LOG - dbus - loading config at {:?}", &file_path);
     let dbus_objs = DBusObjects {
         settings: read_settings(&file_path)?,
         file_path: file_path,
