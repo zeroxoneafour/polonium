@@ -1,6 +1,6 @@
 {
     "include": ["src/"],
-    "exclude": ["pkg/"],
+    "exclude": ["pkg/", "docs/"],
     "compilerOptions": {
         "target": "es2016",
         "module": "nodeNext",

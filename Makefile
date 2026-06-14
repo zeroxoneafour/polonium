@@ -29,6 +29,7 @@ cleanall: clean cleanpkg
 lint:
 	npx prettier --check .
 	npx eslint
+	cd docs && npx eslint
 
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/
@@ -62,3 +63,9 @@ dbus:
 	sed -i 's|^ExecStart=polonium-saver$$|ExecStart=$(CARGO_HOME)/bin/polonium-saver|' $(XDG_CONFIG_HOME)/systemd/user/polonium-saver.service
 	install -m 644 -D -t $(XDG_DATA_HOME)/dbus-1/services dbus-saver/xyz.vaughanm.polonium.service
 	sed -i 's|^Exec=polonium-saver$$|Exec=$(CARGO_HOME)/bin/polonium-saver|' $(XDG_DATA_HOME)/dbus-1/services/xyz.vaughanm.polonium.service
+
+docs: build-docs
+
+build-docs:
+	cd docs && npm ci && npm run build
+

@@ -1,0 +1,52 @@
+name: Build and Deploy Docs
+
+on:
+    push:
+        branches: ["master"]
+
+jobs:
+    # Build job
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v6
+
+            - name: Install dependencies
+              run: sudo apt-get install -y npm
+
+            - name: Build with make
+              run: make docs
+
+            - name: Upload pages
+              uses: actions/upload-artifact@v7
+              with:
+                  # Artifact name
+                  name: github-pages
+                  # A file, directory or wildcard pattern that describes what to upload
+                  path:
+                      ./docs/build/
+                      # The desired behavior if no files are found using the provided path.
+
+    # Deploy job
+    deploy:
+        # Add a dependency to the build job
+        needs: build
+
+        # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+        permissions:
+            pages: write # to deploy to Pages
+            id-token: write # to verify the deployment originates from an appropriate source
+
+        # Deploy to the github-pages environment
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+
+        # Specify runner + deployment step
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
