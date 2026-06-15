@@ -20,14 +20,10 @@ jobs:
               run: make docs
 
             - name: Upload pages
-              uses: actions/upload-artifact@v7
+              id: deployment
+              uses: actions/upload-pages-artifact@v5
               with:
-                  # Artifact name
-                  name: github-pages
-                  # A file, directory or wildcard pattern that describes what to upload
-                  path:
-                      ./docs/build/
-                      # The desired behavior if no files are found using the provided path.
+                  path: ./docs/build/
 
     # Deploy job
     deploy:
