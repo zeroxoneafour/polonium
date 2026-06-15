@@ -48,10 +48,17 @@ Commands -
 
 To get logs, do the following -
 
-- Set log level to debug in settings
+- Set log level to "Log" in settings
 - Log out and log in again, and immediately reproduce the issue if possible after logging in
-- Run `journalctl -e --no-pager -g "[Pp]olonium"`
-- Copy EVERYTHING that comes out
+- Run the below command. An explanation is provided if you are wary about running it. It only works if all of the required executables are installed.
+- `journalctl --since="$(journalctl -g "Polonium LOG: controller initialized" -n 1 --output=short-iso | cut -d ' ' -f1)" -g "[Pp]olonium" | wl-copy`
+    1. Gets the timestamp of the first controller message
+    2. Gets the journalctl log since that message
+    3. Greps for Polonium-related output
+    4. Copies the output into your clipboard
+- If you don't have `wl-copy`, remove that part from the end of the command and run it, and manually copy the output
+
+Depending on the issue, more precise logs may be needed. For these logs, set log level to "Debug" instead.
 
 ## license
 

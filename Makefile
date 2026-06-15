@@ -26,11 +26,13 @@ cleanpkg: $(PKGFILE)
 
 cleanall: clean cleanpkg
 
-lint:
-	npm install
+lint: node_modules
 	npx prettier --check .
 	npx eslint
 	npx -w docs eslint
+
+pretty: node_modules
+	npx prettier --check --write .
 
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/
@@ -44,9 +46,11 @@ src: polonium.mjs $(PKGDIR)
 	mv -f polonium.mjs $(PKGDIR)/contents/code/main.mjs
 	cp -f src/qml/* $(PKGDIR)/contents/ui/
 
-polonium.mjs:
-	npm install
+polonium.mjs: node_modules
 	npx esbuild --bundle src/index.ts --outfile=polonium.mjs --format=esm --platform=neutral
+
+node_modules:
+	npm ci
 
 $(PKGDIR):
 	mkdir -p $(PKGDIR)
@@ -65,9 +69,10 @@ dbus:
 	install -m 644 -D -t $(XDG_DATA_HOME)/dbus-1/services dbus-saver/xyz.vaughanm.polonium.service
 	sed -i 's|^Exec=polonium-saver$$|Exec=$(CARGO_HOME)/bin/polonium-saver|' $(XDG_DATA_HOME)/dbus-1/services/xyz.vaughanm.polonium.service
 
-docs: build-docs
+docs: docs-build
 
-build-docs:
-	npm install
+docs-build: node_modules
 	npm -w docs run build
 
+docs-dev: node_modules
+	npm -w docs run dev
