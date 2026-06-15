@@ -8,6 +8,7 @@ However, both are highly [configurable](../configuration) and can emulate severa
 Three Column will come in the future.
 
 As Monocle is fundamentally incompatible with KWin tiles, it is unlikely that I personally will implement it.
+[Pull requests](https://github.com/zeroxoneafour/polonium/pulls) are welcome for it.
 
 ## Why use this over Krohnkite?
 
@@ -15,9 +16,17 @@ If Krohnkite works for you, then great! This script was made to integrate deeper
 better supports features such as the virtual keyboard, tile resizing, and deep configuration.
 Krohnkite integrates less deeply and subsequently generally has a more predictable and stable experience.
 
+If you would like to use Krohnkite, [here is the link](https://store.kde.org/p/2144146).
+
+## How to use the DBus saver feature?
+
+Clone [the repo](https://github.com/zeroxoneafour/polonium) and run `make dbus`.
+This requires Rust to be installed. Prebuilt executables will come soon maybe.
+
 ## Will you add some feature I want?
 
-Yes, probably! Open an issue or a pull request.
+Yes, probably! Open an [issue](https://github.com/zeroxoneafour/polonium/issues)
+or a [pull request](https://github.com/zeroxoneafour/polonium/pulls).
 A pull request makes it vastly more likely that a feature will be added.
 
 ## It keeps breaking for me!

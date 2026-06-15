@@ -34,7 +34,8 @@ Configuration is accessed through the KWin Scripts settings menu.
 
 ## Windows
 
-Note that all text fields accept regex. Commas are replaced with regex OR statements for backwards compatibility and readability.
+Note that all text fields accept regex.
+Commas are replaced with regex OR statements for backwards compatibility and readability.
 
 * Do Not Tile Window Classes - If a window class matches this regex, it will not be tiled.
 * Borders - How window borders should be distributed.

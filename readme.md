@@ -8,7 +8,7 @@ An (unofficial) spiritual successor to [Bismuth](https://github.com/Bismuth-Forg
 
 The descendant of [autotile](https://github.com/zeroxoneafour/kwin-autotile).
 
-![hot icon](https://raw.githubusercontent.com/zeroxoneafour/polonium/master/docs/logo.svg)
+![hot icon](res/logo.svg)
 
 [![KDE Store](https://img.shields.io/badge/KDE%20Store-Install-blue?style=for-the-badge&logo=KDE&logoColor=white&labelColor=blue)](https://store.kde.org/p/2140417)
 [![GitHub](https://img.shields.io/badge/GitHub-Source%20Code-grey?style=for-the-badge&logo=GitHub&logoColor=white&labelColor=grey)](https://github.com/zeroxoneafour/polonium)
