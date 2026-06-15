@@ -1,0 +1,7 @@
+# Polonium
+
+Polonium is a modern autotiling script for KDE Plasma's KWin window manager.
+
+See the FAQ [here](faq/).
+
+See configuration options [here](configuration/).

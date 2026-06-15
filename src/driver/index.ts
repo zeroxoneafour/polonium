@@ -14,7 +14,7 @@ import {
 } from "../engine";
 import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
-import { Direction, GRect } from "../util/geometry";
+import { Direction } from "../util/geometry";
 import { BorderSetting } from "../controller/config";
 
 export class Driver {
@@ -287,18 +287,6 @@ function getConfigEngineSettings(engineType: TilingEngineType): object {
             break;
     }
     return ret;
-}
-
-// sometimes windows (FIREFOX) dont set their size properly so we force them to
-// we will do this after kwin removes the artificial 0.15 relative size limit on tiles
-// nvm I guess we will probably never do this because its glitchy ash
-function setWindowSize(window: KwinWindow, tile: KwinTile) {
-    const rect = new GRect(tile.absoluteGeometry);
-    rect.x += tile.padding;
-    rect.y += tile.padding;
-    rect.width -= tile.padding * 2;
-    rect.height -= tile.padding * 2;
-    rect.writeTo(window.frameGeometry);
 }
 
 function setTiledProps(window: KwinWindow) {

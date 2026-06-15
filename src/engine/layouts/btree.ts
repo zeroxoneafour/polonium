@@ -8,12 +8,14 @@ import {
     BaseEngineSettings,
     LayoutDirection,
 } from "../engine";
-import { Queue } from "../../util/queue";
+import { Queue, Stack, StackLike } from "../../util";
 import { console } from "../../controller";
 
 class BTreeSettings extends BaseEngineSettings {
     swapInsertSide: boolean = false;
     rotateLayout: boolean = false;
+    depthFirst: boolean = false;
+    insertInActive: boolean = false;
 }
 
 class Node {
@@ -120,7 +122,9 @@ export default class BTreeEngine implements TilingEngineInterface {
             this.root.window = window;
             return;
         }
-        const queue = new Queue<Node>();
+        const queue: StackLike<Node> = this.settings.depthFirst
+            ? new Stack<Node>()
+            : new Queue<Node>();
         queue.push(this.root);
         while (!queue.isEmpty) {
             const node = queue.pop()!;
@@ -131,7 +135,11 @@ export default class BTreeEngine implements TilingEngineInterface {
                 return;
             } else {
                 if (node.children !== null) {
-                    queue.multipush(node.children);
+                    const children = [...node.children];
+                    if (this.settings.swapInsertSide) {
+                        children.reverse();
+                    }
+                    queue.multipush(children);
                 }
             }
         }

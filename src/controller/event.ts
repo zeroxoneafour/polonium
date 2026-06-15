@@ -42,6 +42,9 @@ interface PlaceWindowEvent {
     output: Output;
     tile: Tile;
     direction?: Direction;
+    // set to true if the window should be inserted at the tiling engine's discretion
+    // (through the insertInActive engine config option)
+    onlyIfInsertInActive?: boolean;
 }
 // use this instead of UpdateTileSizes only when the amount of tiles on screen is changed, triggers rebuild
 interface UpdateTileCountEvent {

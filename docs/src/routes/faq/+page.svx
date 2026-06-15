@@ -1,0 +1,29 @@
+# FAQ
+
+## What layouts are supported?
+
+Right now, only BTree (binary tree) and Half (master-stack) are supported.
+However, both are highly [configurable](../configuration) and can emulate several other layout styles.
+
+Three Column will come in the future.
+
+As Monocle is fundamentally incompatible with KWin tiles, it is unlikely that I personally will implement it.
+
+## Why use this over Krohnkite?
+
+If Krohnkite works for you, then great! This script was made to integrate deeper with KWin, and therefore
+better supports features such as the virtual keyboard, tile resizing, and deep configuration.
+Krohnkite integrates less deeply and subsequently generally has a more predictable and stable experience.
+
+## Will you add some feature I want?
+
+Yes, probably! Open an issue or a pull request.
+A pull request makes it vastly more likely that a feature will be added.
+
+## It keeps breaking for me!
+
+Open an issue [here](https://github.com/zeroxoneafour/polonium/issues).
+
+## How about X11?
+
+Never gonna happen. Plasma 6.8 is removing it completely anyway.
