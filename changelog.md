@@ -2,10 +2,11 @@
 
 ## 1.2
 
-- Add depth-first binary tree (dwindle)
+- Add depth-first binary tree (dwindle) and spiral
 - Add insert into active window
 - Double buffer active windows
-- Updating docs (wip)
+- Updating docs
+- Better half layout support
 
 ## 1.1
 

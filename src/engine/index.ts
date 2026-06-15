@@ -1,10 +1,12 @@
 // engine/index.ts - Wrapper around the engines to interact with the driver
 import { console } from "../controller";
 import { TilingEngineInterface, Window, Tile, Direction } from "./engine";
-import BTreeEngine from "./layouts/btree";
-import HalfEngine from "./layouts/half";
+import { BTreeEngine } from "./layouts/btree";
+import { HalfEngine } from "./layouts/half";
 
 export { Window, Tile, Direction };
+
+export { InsertionStyle as BTreeInsertionStyle } from "./layouts/btree";
 
 export enum TilingEngineType {
     BTree = 0,

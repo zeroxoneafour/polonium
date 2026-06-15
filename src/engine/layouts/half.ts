@@ -26,7 +26,7 @@ class HalfEngineSettings extends BaseEngineSettings {
     insertInActive: boolean = false;
 }
 
-export default class HalfEngine implements TilingEngineInterface {
+export class HalfEngine implements TilingEngineInterface {
     tileMap: Map<Tile, WindowBox> = new Map();
     side1: WindowBox[] = [];
     side2: WindowBox[] = [];
@@ -46,7 +46,9 @@ export default class HalfEngine implements TilingEngineInterface {
             ? LayoutDirection.Vertical
             : LayoutDirection.Horizontal;
         this.tileMap.clear();
+
         if (this.side1.length == 0 && this.side2.length == 0) return rootTile;
+
         if (this.side1.length == 0 || this.side2.length == 0) {
             const dominantSide =
                 this.side1.length == 0 ? this.side2 : this.side1;
@@ -63,22 +65,35 @@ export default class HalfEngine implements TilingEngineInterface {
             }
             return rootTile;
         }
+
         const side1Tile = rootTile.addChild();
-        const side2Tile = rootTile.addChild();
         side1Tile.size = this.settings.middleSplit * 2;
+        if (this.side1.length == 1) {
+            side1Tile.windows.push(this.side1[0].window);
+            this.tileMap.set(side1Tile, this.side1[0]);
+        } else {
+            for (const box of this.side1) {
+                const tile = side1Tile.addChild();
+                tile.windows.push(box.window);
+                tile.size = box.size;
+                this.tileMap.set(tile, box);
+            }
+        }
+
+        const side2Tile = rootTile.addChild();
         side2Tile.size = (1 - this.settings.middleSplit) * 2;
-        for (const box of this.side1) {
-            const tile = side1Tile.addChild();
-            tile.windows.push(box.window);
-            tile.size = box.size;
-            this.tileMap.set(tile, box);
+        if (this.side2.length == 1) {
+            side2Tile.windows.push(this.side2[0].window);
+            this.tileMap.set(side2Tile, this.side2[0]);
+        } else {
+            for (const box of this.side2) {
+                const tile = side2Tile.addChild();
+                tile.windows.push(box.window);
+                tile.size = box.size;
+                this.tileMap.set(tile, box);
+            }
         }
-        for (const box of this.side2) {
-            const tile = side2Tile.addChild();
-            tile.windows.push(box.window);
-            tile.size = box.size;
-            this.tileMap.set(tile, box);
-        }
+
         return rootTile;
     }
 
@@ -166,7 +181,12 @@ export default class HalfEngine implements TilingEngineInterface {
                 rootTile.children[0].size / rootTile.totalChildrenSize();
         }
         for (const [tile, box] of this.tileMap) {
-            box.size = tile.size;
+            if (
+                (this.side1.includes(box) && this.side1.length > 1) ||
+                (this.side2.includes(box) && this.side2.length > 1)
+            ) {
+                box.size = tile.size;
+            }
         }
     }
 }

@@ -17,12 +17,19 @@ Configuration is accessed through the KWin Scripts settings menu.
 ## Engine
 
 * Default Engine - The default tiling engine to use.
+    * BTree - Binary tree engine.
+    * Half - Master-stack split engine.
+    * ThreeColumn - Centered master-stack with two stacks.
+    * Pillars - Set amount of vertical pillars.
 
 ### BTree
 
 * Swap Insert Side - Swaps which side new windows are inserted into.
 * Rotate Layout - Rotates the layout to be vertical.
-* Depth-First Insertion - Inserts depth-first, similar to Dwindle.
+* Insertion Style - Sets how new windows should be inserted.
+    * Shallow - Insert breadth-first, causes windows to be evenly sized.
+    * Dwindle - Insert depth-first, newer windows get progressively smaller.
+    * Spiral - Insert depth-first, golden ratio spiral inwards.
 * Insert New Windows in Active Tile - Adds new windows into the currently focused tile.
 
 ### Half

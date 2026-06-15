@@ -14,7 +14,7 @@
 
         <entry name="BTreeSwapInsertSide" type="bool"><default>false</default></entry>
         <entry name="BTreeRotateLayout" type="bool"><default>false</default></entry>
-        <entry name="BTreeDepthFirst" type="bool"><default>false</default></entry>
+        <entry name="BTreeInsertionStyle" type="int"><default>0</default></entry>
         <entry name="BTreeInsertInActive" type="bool"><default>false</default></entry>
 
         <entry name="HalfSwapInsertSide" type="bool"><default>false</default></entry>

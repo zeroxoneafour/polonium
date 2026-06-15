@@ -14,7 +14,7 @@ import { console } from "../../controller";
 class BTreeSettings extends BaseEngineSettings {
     swapInsertSide: boolean = false;
     rotateLayout: boolean = false;
-    depthFirst: boolean = false;
+    insertionStyle: InsertionStyle = InsertionStyle.Shallow;
     insertInActive: boolean = false;
 }
 
@@ -76,7 +76,13 @@ class Node {
     }
 }
 
-export default class BTreeEngine implements TilingEngineInterface {
+export enum InsertionStyle {
+    Shallow = 0,
+    Dwindle,
+    Spiral
+}
+
+export class BTreeEngine implements TilingEngineInterface {
     settings: BTreeSettings = new BTreeSettings();
     getEngineSettings(): object {
         return this.settings.getProps();
@@ -122,24 +128,34 @@ export default class BTreeEngine implements TilingEngineInterface {
             this.root.window = window;
             return;
         }
-        const queue: StackLike<Node> = this.settings.depthFirst
-            ? new Stack<Node>()
-            : new Queue<Node>();
+        const queue: StackLike<Node> = this.settings.insertionStyle === InsertionStyle.Shallow
+            ? new Queue<Node>()
+            : new Stack<Node>();
         queue.push(this.root);
+        let i = 0;
         while (!queue.isEmpty) {
             const node = queue.pop()!;
+            let swapInsertSide = this.settings.swapInsertSide;
+            // spiral does depth-first, toggling insert side every two inserts
+            // on default insert side, should insert right, then down, then left, then up
+            if (this.settings.insertionStyle === InsertionStyle.Spiral) {
+                if (i % 4 > 1) {
+                    swapInsertSide = !swapInsertSide;
+                }
+            }
             if (node.window !== null) {
-                node.split(this.settings.swapInsertSide ? 1 : 0);
-                node.children![this.settings.swapInsertSide ? 0 : 1].window =
+                node.split(swapInsertSide ? 1 : 0);
+                node.children![swapInsertSide ? 0 : 1].window =
                     window;
                 return;
             } else {
                 if (node.children !== null) {
                     const children = [...node.children];
-                    if (this.settings.swapInsertSide) {
+                    if (swapInsertSide) {
                         children.reverse();
                     }
                     queue.multipush(children);
+                    i += 1;
                 }
             }
         }

@@ -1,7 +1,7 @@
-import { Options, Output, VirtualDesktop, Window, Activity } from "kwin-api";
+import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
 import { Event, PostEvent, simplifyEvents, simplifyPostEvents } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
-import { Workspace, KWin } from "kwin-api/qml";
+import { Workspace } from "kwin-api/qml";
 import {
     WorkspaceHandler,
     WindowHandler,
@@ -300,11 +300,26 @@ class Controller {
                     "and activity",
                     ev.activity,
                 );
-                this.getDriver(
+                const driver = this.getDriver(
                     ev.desktop,
                     ev.activity,
                     ev.output,
-                )?.updateTiles();
+                );
+                if (driver === undefined) break;
+                // some tiling engines (half and threecolumn) change fixed split settings based on resizes
+                // so we update dbus if this is the case
+                const before = driver.tilingEngine.getEngineSettings();
+                driver.updateTiles();
+                const after = driver.tilingEngine.getEngineSettings();
+                if (JSON.stringify(before) !== JSON.stringify(after)) {
+                    this.dbusHandler?.setSettings(
+                        ev.desktop,
+                        ev.activity,
+                        ev.output,
+                        driver.tilingEngine.engineType,
+                        after,
+                    );
+                }
                 break;
             }
             case "toggleSettingsMenu": {

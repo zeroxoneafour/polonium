@@ -17,7 +17,7 @@ PlasmaCore.Dialog {
         rotateLayout: false,
         swapInsertSide: false,
         middleSplit: 0.5,
-        depthFirst: false,
+        insertionStyle: 0,
         insertInActive: false,
     });
     
@@ -143,16 +143,17 @@ PlasmaCore.Dialog {
             }
 
             PC3.Label {
-                visible: root.engineSettings.hasOwnProperty("depthFirst");
-                text: "Depth First Insertion:";
+                visible: root.engineSettings.hasOwnProperty("insertionStyle") && root.engineType === 0;
+                text: "Insertion Style:";
                 horizontalAlignment: Text.AlignRight;
                 Layout.fillWidth: true;
             }
-            PC3.CheckBox {
-                visible: root.engineSettings.hasOwnProperty("depthFirst");
-                checked: root.engineSettings.depthFirst ?? false;
-                onClicked: {
-                    root.engineSettings.depthFirst = !root.engineSettings.depthFirst;
+            PC3.ComboBox {
+                model: ["Shallow", "Dwindle", "Spiral"];
+                currentIndex: root.engineSettings.insertionStyle;
+                popup.y: height;
+                onActivated: (idx) => {
+                    root.engineSettings.insertionStyle = idx;
                     root.saveSettingsFn();
                 }
             }

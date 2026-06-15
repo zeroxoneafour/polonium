@@ -279,16 +279,9 @@
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="btreeDepthFirstLabel">
+            <widget class="QLabel" name="btreeInsertionStyleLabel">
              <property name="text">
-              <string>Depth First Insertion</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QCheckBox" name="kcfg_BTreeDepthFirst">
-             <property name="text">
-              <string/>
+              <string>Insertion Style</string>
              </property>
             </widget>
            </item>
@@ -304,6 +297,28 @@
              <property name="text">
               <string/>
              </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="kcfg_BTreeInsertionStyle">
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>Shallow</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Dwindle</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Spiral</string>
+              </property>
+             </item>
             </widget>
            </item>
           </layout>
@@ -380,6 +395,62 @@
            </item>
            <item row="3" column="1">
             <widget class="QCheckBox" name="kcfg_HalfInsertInActive">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="threeColumnLabel">
+           <property name="text">
+            <string>ThreeColumn</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="ThreeColumnForm">
+           <item row="0" column="0">
+            <widget class="QLabel" name="threeColumnSwapInsertSideLabel">
+             <property name="text">
+              <string>Swap Insert Side</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="kcfg_ThreeColumnSwapInsertSide">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="pillarsLabel">
+           <property name="text">
+            <string>Pillars</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="PillarsForm">
+           <item row="0" column="0">
+            <widget class="QLabel" name="pillarsSwapInsertSide">
+             <property name="text">
+              <string>Swap Insert Side</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="kcfg_PillarsSwapInsertSide">
              <property name="text">
               <string/>
              </property>

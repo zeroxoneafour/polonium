@@ -1,5 +1,5 @@
 import { KWin } from "kwin-api/qml";
-import { TilingEngineType } from "../engine";
+import { BTreeInsertionStyle, TilingEngineType } from "../engine";
 
 export enum LogLevel {
     Error = 0,
@@ -50,7 +50,7 @@ export class Config {
         this.btreeSettings = {
             swapInsertSide: rc("BTreeSwapInsertSide", false),
             rotateLayout: rc("BTreeRotateLayout", false),
-            depthFirst: rc("BTreeDepthFirst", false),
+            insertionStyle: rc("BTreeInsertionStyle", BTreeInsertionStyle.Shallow),
             insertInActive: rc("BTreeInsertInActive", false),
         };
         this.halfSettings = {
