@@ -41,8 +41,10 @@ export class WorkspaceHandler {
         const windowHandler = ctrl().createWindowHandler(window);
         if (!windowHandler.tiled) return;
         let desktops = [...window.desktops];
+        // for insert in active handling
+        // checking the actual config is now deferred to the event handler through onlyIfInsertInActive
+        // so that different engines can have different configurations for the option
         if (
-            config().insertInActive &&
             this.previousActivated?.tile != null &&
             window.desktops.includes(this.workspace.currentDesktop) &&
             window.activities.includes(this.workspace.currentActivity) &&
@@ -60,6 +62,7 @@ export class WorkspaceHandler {
                     tile.absoluteGeometry,
                     this.workspace.cursorPos,
                 ),
+                onlyIfInsertInActive: true,
             });
             desktops = desktops.filter(
                 (x) => x !== this.workspace.currentDesktop,

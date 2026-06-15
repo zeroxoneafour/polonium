@@ -167,17 +167,36 @@ class Controller {
                 break;
             }
             case "placeWindow": {
-                console().log(
-                    "placing window",
-                    ev.window.resourceClass,
-                    "in tile at",
-                    ev.tile.absoluteGeometry,
+                const driver = this.getDriver(
+                    ev.desktop,
+                    ev.activity,
+                    ev.output,
                 );
-                this.getDriver(ev.desktop, ev.activity, ev.output)?.placeWindow(
-                    ev.window,
-                    ev.tile,
-                    ev.direction,
-                );
+                if (driver === undefined) break;
+                const insertInActive = (
+                    driver.tilingEngine.getEngineSettings() as any
+                ).insertInActive;
+                if (ev.onlyIfInsertInActive && insertInActive !== true) {
+                    console().log(
+                        "adding window",
+                        ev.window.resourceClass,
+                        "to desktop",
+                        ev.desktop.name,
+                        "on output",
+                        ev.output.name,
+                        "and activity",
+                        ev.activity,
+                    );
+                    driver.addWindow(ev.window);
+                } else {
+                    console().log(
+                        "placing window",
+                        ev.window.resourceClass,
+                        "in tile at",
+                        ev.tile.absoluteGeometry,
+                    );
+                    driver.placeWindow(ev.window, ev.tile, ev.direction);
+                }
                 break;
             }
             case "updateTileCount": {

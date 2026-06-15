@@ -27,9 +27,10 @@ cleanpkg: $(PKGFILE)
 cleanall: clean cleanpkg
 
 lint:
+	npm install
 	npx prettier --check .
 	npx eslint
-	cd docs && npx eslint
+	npx -w docs eslint
 
 res: $(PKGDIR)
 	cp -f res/metadata.json $(PKGDIR)/
@@ -67,5 +68,6 @@ dbus:
 docs: build-docs
 
 build-docs:
-	cd docs && npm ci && npm run build
+	npm install
+	npm -w docs run build
 

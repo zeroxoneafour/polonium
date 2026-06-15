@@ -29,5 +29,8 @@
         "kwin-api": "file:kwin-api",
         "prettier": "3.8.3",
         "typescript": "^6.0.3"
-    }
+    },
+    "workspaces": [
+        "docs"
+    ]
 }

@@ -18,6 +18,7 @@ PlasmaCore.Dialog {
         swapInsertSide: false,
         middleSplit: 0.5,
         depthFirst: false,
+        insertInActive: false,
     });
     
     property rect screenGeometry;
@@ -152,6 +153,21 @@ PlasmaCore.Dialog {
                 checked: root.engineSettings.depthFirst ?? false;
                 onClicked: {
                     root.engineSettings.depthFirst = !root.engineSettings.depthFirst;
+                    root.saveSettingsFn();
+                }
+            }
+
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("insertInActive");
+                text: "Insert in Active Tile:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.CheckBox {
+                visible: root.engineSettings.hasOwnProperty("insertInActive");
+                checked: root.engineSettings.insertInActive ?? false;
+                onClicked: {
+                    root.engineSettings.insertInActive = !root.engineSettings.insertInActive;
                     root.saveSettingsFn();
                 }
             }

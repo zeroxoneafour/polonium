@@ -25,7 +25,6 @@ export class Config {
     readonly logLevel: LogLevel;
 
     readonly defaultEngine: TilingEngineType;
-    readonly insertInActive: boolean;
 
     readonly btreeSettings: object;
     readonly halfSettings: object;
@@ -47,17 +46,18 @@ export class Config {
         this.logLevel = rc("LogLevel", LogLevel.Warn);
 
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);
-        this.insertInActive = rc("InsertInActive", false);
 
         this.btreeSettings = {
             swapInsertSide: rc("BTreeSwapInsertSide", false),
             rotateLayout: rc("BTreeRotateLayout", false),
             depthFirst: rc("BTreeDepthFirst", false),
+            insertInActive: rc("BTreeInsertInActive", false),
         };
         this.halfSettings = {
             swapInsertSide: rc("HalfSwapInsertSide", false),
             middleSplit: rc("HalfMiddleSplit", 0.5),
             rotateLayout: rc("HalfRotateLayout", false),
+            insertInActive: rc("HalfInsertInActive", false),
         };
 
         this.ignoreWindowClasses = new RegExp(

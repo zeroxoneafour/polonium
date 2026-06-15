@@ -15,6 +15,7 @@ class BTreeSettings extends BaseEngineSettings {
     swapInsertSide: boolean = false;
     rotateLayout: boolean = false;
     depthFirst: boolean = false;
+    insertInActive: boolean = false;
 }
 
 class Node {

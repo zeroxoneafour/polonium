@@ -23,6 +23,7 @@ class HalfEngineSettings extends BaseEngineSettings {
     middleSplit: number = 0.5;
     swapInsertSide: boolean = false;
     rotateLayout: boolean = false;
+    insertInActive: boolean = false;
 }
 
 export default class HalfEngine implements TilingEngineInterface {
