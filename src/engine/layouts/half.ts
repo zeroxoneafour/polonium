@@ -165,5 +165,8 @@ export default class HalfEngine implements TilingEngineInterface {
             this.settings.middleSplit =
                 rootTile.children[0].size / rootTile.totalChildrenSize();
         }
+        for (const [tile, box] of this.tileMap) {
+            box.size = tile.size;
+        }
     }
 }

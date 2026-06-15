@@ -14,79 +14,79 @@ export class ShortcutsHandler {
         this.shortcuts = shortcuts;
 
         this.shortcuts
-            .getToggleActiveTiling()
+            .toggleActiveTiling()
             .activated.connect(this.toggleActiveTiling.bind(this));
 
         this.shortcuts
-            .getSetEngineBTree()
+            .setEngineBTree()
             .activated.connect(
                 this.setEngineType.bind(this, TilingEngineType.BTree),
             );
         this.shortcuts
-            .getSetEngineHalf()
+            .setEngineHalf()
             .activated.connect(
                 this.setEngineType.bind(this, TilingEngineType.Half),
             );
 
         this.shortcuts
-            .getActivateBelow()
+            .activateBelow()
             .activated.connect(
                 this.activateInDirection.bind(this, Edge.BottomEdge),
             );
         this.shortcuts
-            .getActivateAbove()
+            .activateAbove()
             .activated.connect(
                 this.activateInDirection.bind(this, Edge.TopEdge),
             );
         this.shortcuts
-            .getActivateLeft()
+            .activateLeft()
             .activated.connect(
                 this.activateInDirection.bind(this, Edge.LeftEdge),
             );
         this.shortcuts
-            .getActivateRight()
+            .activateRight()
             .activated.connect(
                 this.activateInDirection.bind(this, Edge.RightEdge),
             );
 
         this.shortcuts
-            .getPlaceBelow()
+            .placeBelow()
             .activated.connect(
                 this.placeInDirection.bind(this, Edge.BottomEdge),
             );
         this.shortcuts
-            .getPlaceAbove()
+            .placeAbove()
             .activated.connect(this.placeInDirection.bind(this, Edge.TopEdge));
         this.shortcuts
-            .getPlaceLeft()
+            .placeLeft()
             .activated.connect(this.placeInDirection.bind(this, Edge.LeftEdge));
         this.shortcuts
-            .getPlaceRight()
+            .placeRight()
             .activated.connect(
                 this.placeInDirection.bind(this, Edge.RightEdge),
             );
 
         this.shortcuts
-            .getResizeDown()
+            .resizeDown()
             .activated.connect(
                 this.resizeInDirection.bind(this, Edge.BottomEdge),
             );
         this.shortcuts
-            .getResizeUp()
+            .resizeUp()
             .activated.connect(this.resizeInDirection.bind(this, Edge.TopEdge));
         this.shortcuts
-            .getResizeLeft()
+            .resizeLeft()
             .activated.connect(
                 this.resizeInDirection.bind(this, Edge.LeftEdge),
             );
         this.shortcuts
-            .getResizeRight()
+            .resizeRight()
             .activated.connect(
                 this.resizeInDirection.bind(this, Edge.RightEdge),
             );
 
         this.shortcuts
-            .getToggleSettingsMenu()
+            .toggleSettingsMenu()
             .activated.connect(this.toggleSettingsMenu.bind(this));
     }
 

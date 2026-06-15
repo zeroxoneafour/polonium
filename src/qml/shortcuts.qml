@@ -6,176 +6,176 @@ import org.kde.kwin;
 Item {
     id: shortcuts;
     
-    function getToggleActiveTiling() {
-        return toggleActiveTiling;
+    function toggleActiveTiling() {
+        return toggleActiveTilingObj;
     }
     ShortcutHandler {
-        id: toggleActiveTiling;
+        id: toggleActiveTilingObj;
         
         name: "PoloniumToggleActiveTiling";
         text: "Polonium: Toggle Tiling on Active Window";
         sequence: "Meta+Shift+Space";
     }
     // no default shortcuts for specific engines
-    function getSetEngineBTree() {
-        return setEngineBTree;
+    function setEngineBTree() {
+        return setEngineBTreeObj;
     }
     ShortcutHandler {
-        id: setEngineBTree;
+        id: setEngineBTreeObj;
         
         name: "PoloniumSetEngineBTree";
         text: "Polonium: Use Binary Tree Engine";
         sequence: "";
     }
 
-    function getSetEngineHalf() {
-        return setEngineHalf;
+    function setEngineHalf() {
+        return setEngineHalfObj;
     }
     ShortcutHandler {
-        id: setEngineHalf;
+        id: setEngineHalfObj;
         
         name: "PoloniumSetEngineHalf";
         text: "Polonium: Use Half Engine";
         sequence: "";
     }
 
-    function getActivateAbove() {
-        return activateAbove;
+    function activateAbove() {
+        return activateAboveObj;
     }
     ShortcutHandler {
-        id: activateAbove;
+        id: activateAboveObj;
         
         name: "PoloniumActivateAbove";
         text: "Polonium: Activate Above";
         sequence: "Meta+K";
     }
 
-    function getActivateBelow() {
-        return activateBelow;
+    function activateBelow() {
+        return activateBelowObj;
     }
     ShortcutHandler {
-        id: activateBelow;
+        id: activateBelowObj;
         
         name: "PoloniumActivateBelow";
         text: "Polonium: Activate Below";
         sequence: "Meta+J";
     }
 
-    function getActivateLeft() {
-        return activateLeft;
+    function activateLeft() {
+        return activateLeftObj;
     }
     ShortcutHandler {
-        id: activateLeft;
+        id: activateLeftObj;
         
         name: "PoloniumActivateLeft";
         text: "Polonium: Activate Left";
         sequence: "Meta+H";
     }
 
-    function getActivateRight() {
-        return activateRight;
+    function activateRight() {
+        return activateRightObj;
     }
     ShortcutHandler {
-        id: activateRight;
+        id: activateRightObj;
         
         name: "PoloniumActivateRight";
         text: "Polonium: Activate Right";
         sequence: "Meta+L";
     }
 
-    function getPlaceAbove() {
-        return placeAbove;
+    function placeAbove() {
+        return placeAboveObj;
     }
     ShortcutHandler {
-        id: placeAbove;
+        id: placeAboveObj;
         
         name: "PoloniumPlaceAbove";
         text: "Polonium: Place Window Above";
         sequence: "Meta+Shift+K";
     }
 
-    function getPlaceBelow() {
-        return placeBelow;
+    function placeBelow() {
+        return placeBelowObj;
     }
     ShortcutHandler {
-        id: placeBelow;
+        id: placeBelowObj;
         
         name: "PoloniumPlaceBelow";
         text: "Polonium: Place Window Below";
         sequence: "Meta+Shift+J";
     }
 
-    function getPlaceLeft() {
-        return placeLeft;
+    function placeLeft() {
+        return placeLeftObj;
     }
     ShortcutHandler {
-        id: placeLeft;
+        id: placeLeftObj;
         
         name: "PoloniumPlaceLeft";
         text: "Polonium: Place Window Left";
         sequence: "Meta+Shift+H";
     }
 
-    function getPlaceRight() {
-        return placeRight;
+    function placeRight() {
+        return placeRightObj;
     }
     ShortcutHandler {
-        id: placeRight;
+        id: placeRightObj;
         
         name: "PoloniumPlaceRight";
         text: "Polonium: Place Window Right";
         sequence: "Meta+Shift+L";
     }
 
-    function getResizeUp() {
-        return resizeUp;
+    function resizeUp() {
+        return resizeUpObj;
     }
     ShortcutHandler {
-        id: resizeUp;
+        id: resizeUpObj;
         
         name: "PoloniumResizeUp";
         text: "Polonium: Resize Tile Up";
         sequence: "Meta+Ctrl+K";
     }
 
-    function getResizeDown() {
-        return resizeDown;
+    function resizeDown() {
+        return resizeDownObj;
     }
     ShortcutHandler {
-        id: resizeDown;
+        id: resizeDownObj;
         
         name: "PoloniumResizeDown";
         text: "Polonium: Resize Tile Down";
         sequence: "Meta+Ctrl+J";
     }
 
-    function getResizeLeft() {
-        return resizeLeft;
+    function resizeLeft() {
+        return resizeLeftObj;
     }
     ShortcutHandler {
-        id: resizeLeft;
+        id: resizeLeftObj;
         
         name: "PoloniumResizeLeft";
         text: "Polonium: Resize Tile Left";
         sequence: "Meta+Ctrl+H";
     }
 
-    function getResizeRight() {
-        return resizeRight;
+    function resizeRight() {
+        return resizeRightObj;
     }
     ShortcutHandler {
-        id: resizeRight;
+        id: resizeRightObj;
         
         name: "PoloniumResizeRight";
         text: "Polonium: Resize Tile Right";
         sequence: "Meta+Ctrl+L";
     }
     
-    function getToggleSettingsMenu() {
-        return toggleSettingsMenu;
+    function toggleSettingsMenu() {
+        return toggleSettingsMenuObj;
     }
     ShortcutHandler {
-        id: toggleSettingsMenu;
+        id: toggleSettingsMenuObj;
         
         name: "PoloniumToggleSettingsMenu";
         text: "Polonium: Toggle Settings Menu";

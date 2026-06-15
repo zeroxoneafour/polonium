@@ -20,27 +20,27 @@ export interface QmlObjects {
 }
 
 export interface Shortcuts {
-    getToggleActiveTiling(): ShortcutHandler;
+    toggleActiveTiling(): ShortcutHandler;
 
-    getSetEngineBTree(): ShortcutHandler;
-    getSetEngineHalf(): ShortcutHandler;
+    setEngineBTree(): ShortcutHandler;
+    setEngineHalf(): ShortcutHandler;
 
-    getActivateAbove(): ShortcutHandler;
-    getActivateBelow(): ShortcutHandler;
-    getActivateLeft(): ShortcutHandler;
-    getActivateRight(): ShortcutHandler;
+    activateAbove(): ShortcutHandler;
+    activateBelow(): ShortcutHandler;
+    activateLeft(): ShortcutHandler;
+    activateRight(): ShortcutHandler;
 
-    getPlaceAbove(): ShortcutHandler;
-    getPlaceBelow(): ShortcutHandler;
-    getPlaceLeft(): ShortcutHandler;
-    getPlaceRight(): ShortcutHandler;
+    placeAbove(): ShortcutHandler;
+    placeBelow(): ShortcutHandler;
+    placeLeft(): ShortcutHandler;
+    placeRight(): ShortcutHandler;
 
-    getResizeUp(): ShortcutHandler;
-    getResizeDown(): ShortcutHandler;
-    getResizeLeft(): ShortcutHandler;
-    getResizeRight(): ShortcutHandler;
+    resizeUp(): ShortcutHandler;
+    resizeDown(): ShortcutHandler;
+    resizeLeft(): ShortcutHandler;
+    resizeRight(): ShortcutHandler;
 
-    getToggleSettingsMenu(): ShortcutHandler;
+    toggleSettingsMenu(): ShortcutHandler;
 }
 
 export interface Settings extends QObject {
