@@ -2,10 +2,10 @@
 
 ## What layouts are supported?
 
-Right now, only BTree (binary tree) and Half (master-stack) are supported.
-However, both are highly [configurable](../configuration) and can emulate several other layout styles.
+Right now, we have Binary Tree, Half, Three Column, and Pillars layouts.
+They are highly [configurable](../configuration) and can emulate several other layout styles.
 
-Three Column will come in the future.
+Particularly, master-stack can be built with Half and dwindle/spiral can be built with BTree.
 
 As Monocle is fundamentally incompatible with KWin tiles, it is unlikely that I personally will implement it.
 [Pull requests](https://github.com/zeroxoneafour/polonium/pulls) are welcome for it.

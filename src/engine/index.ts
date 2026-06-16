@@ -3,6 +3,7 @@ import { console } from "../controller";
 import { TilingEngineInterface, Window, Tile, Direction } from "./engine";
 import { BTreeEngine } from "./layouts/btree";
 import { HalfEngine } from "./layouts/half";
+import { ThreeColumnEngine } from "./layouts/threecolumn";
 
 export { Window, Tile, Direction };
 
@@ -10,8 +11,10 @@ export { InsertionStyle as BTreeInsertionStyle } from "./layouts/btree";
 
 export enum TilingEngineType {
     BTree = 0,
-    Half = 1,
-    _Loop = 2,
+    Half,
+    ThreeColumn,
+    Pillars,
+    _Loop,
 }
 
 export class TilingEngine {
@@ -28,6 +31,9 @@ export class TilingEngine {
                 break;
             case TilingEngineType.Half:
                 this.engine = new HalfEngine();
+                break;
+            case TilingEngineType.ThreeColumn:
+                this.engine = new ThreeColumnEngine();
                 break;
             default:
                 console().warn("Invalid tiling engine type", type);

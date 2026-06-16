@@ -281,6 +281,9 @@ function getConfigEngineSettings(engineType: TilingEngineType): object {
         case TilingEngineType.Half:
             ret = config().halfSettings;
             break;
+        case TilingEngineType.ThreeColumn:
+            ret = config().threeColumnSettings;
+            break;
         default:
             console().error("engine type", engineType, "is invalid");
             ret = {};

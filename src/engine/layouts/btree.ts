@@ -79,7 +79,7 @@ class Node {
 export enum InsertionStyle {
     Shallow = 0,
     Dwindle,
-    Spiral
+    Spiral,
 }
 
 export class BTreeEngine implements TilingEngineInterface {
@@ -128,9 +128,10 @@ export class BTreeEngine implements TilingEngineInterface {
             this.root.window = window;
             return;
         }
-        const queue: StackLike<Node> = this.settings.insertionStyle === InsertionStyle.Shallow
-            ? new Queue<Node>()
-            : new Stack<Node>();
+        const queue: StackLike<Node> =
+            this.settings.insertionStyle === InsertionStyle.Shallow
+                ? new Queue<Node>()
+                : new Stack<Node>();
         queue.push(this.root);
         let i = 0;
         while (!queue.isEmpty) {
@@ -145,8 +146,7 @@ export class BTreeEngine implements TilingEngineInterface {
             }
             if (node.window !== null) {
                 node.split(swapInsertSide ? 1 : 0);
-                node.children![swapInsertSide ? 0 : 1].window =
-                    window;
+                node.children![swapInsertSide ? 0 : 1].window = window;
                 return;
             } else {
                 if (node.children !== null) {

@@ -28,6 +28,7 @@ export class Config {
 
     readonly btreeSettings: object;
     readonly halfSettings: object;
+    readonly threeColumnSettings: object;
 
     readonly ignoreWindowClasses: RegExp;
     readonly borders: BorderSetting;
@@ -50,7 +51,10 @@ export class Config {
         this.btreeSettings = {
             swapInsertSide: rc("BTreeSwapInsertSide", false),
             rotateLayout: rc("BTreeRotateLayout", false),
-            insertionStyle: rc("BTreeInsertionStyle", BTreeInsertionStyle.Shallow),
+            insertionStyle: rc(
+                "BTreeInsertionStyle",
+                BTreeInsertionStyle.Shallow,
+            ),
             insertInActive: rc("BTreeInsertInActive", false),
         };
         this.halfSettings = {
@@ -58,6 +62,12 @@ export class Config {
             middleSplit: rc("HalfMiddleSplit", 0.5),
             rotateLayout: rc("HalfRotateLayout", false),
             insertInActive: rc("HalfInsertInActive", false),
+        };
+        this.threeColumnSettings = {
+            swapInsertSide: rc("ThreeColumnSwapInsertSide", false),
+            side1Size: rc("ThreeColumnSide1Size", 0.25),
+            side2Size: rc("ThreeColumnSide2Size", 0.25),
+            rotateLayout: rc("ThreeColumnRotateLayout", false),
         };
 
         this.ignoreWindowClasses = new RegExp(

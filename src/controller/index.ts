@@ -27,8 +27,8 @@ class Controller {
     private drivers: Map<DesktopIdentifier, Driver> = new Map();
 
     private windowHandlers: Map<Window, WindowHandler> = new Map();
-    private workspaceHandler: WorkspaceHandler | null = null;
-    private shortcutsHandler: ShortcutsHandler | null = null;
+    private workspaceHandler: WorkspaceHandler;
+    private shortcutsHandler: ShortcutsHandler;
     private settingsHandler: SettingsHandler;
     private dbusHandler: DBusHandler | null = null;
 
@@ -43,14 +43,10 @@ class Controller {
         this.eventTimer.repeat = false;
         this.eventTimer.triggered.connect(this.processEvents.bind(this));
 
-        this.settingsHandler = new SettingsHandler(this.qmlObjects.settings);
         if (config().useDBusSaver) {
             this.dbusHandler = new DBusHandler(this.qmlObjects.dbus);
         }
-    }
-
-    // call this after to prevent issues with workspaceHandler before the object is officially constructed
-    initHandlers() {
+        this.settingsHandler = new SettingsHandler(this.qmlObjects.settings);
         this.workspaceHandler = new WorkspaceHandler(this.workspace);
         this.shortcutsHandler = new ShortcutsHandler(
             this.workspace,
@@ -455,7 +451,6 @@ export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
     qtObject = qmlApi.qt;
     console().debug("config -", JSON.stringify(config()));
     controllerObj = new Controller(qmlApi, qmlObjects);
-    controllerObj.initHandlers();
     console().log("controller initialized. Welcome to Polonium!");
 }
 

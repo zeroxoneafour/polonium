@@ -135,12 +135,15 @@ export class HalfEngine implements TilingEngineInterface {
         if (direction === undefined) {
             direction = Direction.Vertical;
         }
+        if (this.settings.rotateLayout) {
+            direction = translateDirection(direction);
+        }
         if (this.tileMap.get(tile)?.window === window) {
             return;
         }
         if (
-            this.side1.some((x) => x.window) ||
-            this.side2.some((x) => x.window)
+            this.side1.some((x) => x.window === window) ||
+            this.side2.some((x) => x.window === window)
         ) {
             this.removeWindow(window);
         }
@@ -148,9 +151,6 @@ export class HalfEngine implements TilingEngineInterface {
         if (targetBox == undefined) {
             this.addWindow(window);
             return;
-        }
-        if (direction !== undefined && this.settings.rotateLayout) {
-            direction = translateDirection(direction);
         }
         const newBox = new WindowBox(window);
         const [side, otherSide] = this.side1.includes(targetBox)

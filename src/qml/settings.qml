@@ -17,6 +17,8 @@ PlasmaCore.Dialog {
         rotateLayout: false,
         swapInsertSide: false,
         middleSplit: 0.5,
+        side1Split: 0.25,
+        side2Split: 0.25,
         insertionStyle: 0,
         insertInActive: false,
     });
@@ -85,7 +87,7 @@ PlasmaCore.Dialog {
                 Layout.fillWidth: true;
             }
             PC3.ComboBox {
-                model: ["Binary Tree", "Half"];
+                model: ["Binary Tree", "Half", "Three Column"];
                 currentIndex: root.engineType;
                 popup.y: height;
                 onActivated: (idx) => {
@@ -141,16 +143,78 @@ PlasmaCore.Dialog {
                     root.saveSettingsFn();
                 }
             }
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("side1Size");
+                text: "Side 1 Size:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.SpinBox {
+                visible: root.engineSettings.hasOwnProperty("side1Size");
+                from: 15;
+                to: (0.85 - root.engineSettings.side2Size) * 100 ?? 70;
+                value: root.engineSettings.side1Size * 100 ?? 25;
+                onValueModified: {
+                    root.engineSettings.side1Size = this.value / 100;
+                    root.saveSettingsFn();
+                }
+            }
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("side2Size");
+                text: "Side 2 Size:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.SpinBox {
+                visible: root.engineSettings.hasOwnProperty("side2Size");
+                from: 15;
+                to: (0.85 - root.engineSettings.side1Size) * 100 ?? 70;
+                value: root.engineSettings.side2Size * 100 ?? 25;
+                onValueModified: {
+                    root.engineSettings.side2Size = this.value / 100;
+                    root.saveSettingsFn();
+                }
+            }
 
             PC3.Label {
-                visible: root.engineSettings.hasOwnProperty("insertionStyle") && root.engineType === 0;
+                visible: root.engineSettings.hasOwnProperty("pillars");
+                text: "Pillars:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.SpinBox {
+                visible: root.engineSettings.hasOwnProperty("pillars");
+                from: 1;
+                to: 10;
+                value: root.engineSettings.pillars ?? 3;
+                onValueModified: {
+                    root.engineSettings.pillars = this.value;
+                    root.saveSettingsFn();
+                }
+            }
+
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("insertionStyle");
                 text: "Insertion Style:";
                 horizontalAlignment: Text.AlignRight;
                 Layout.fillWidth: true;
             }
+            // btree insertion style
             PC3.ComboBox {
+                visible: root.engineSettings.hasOwnProperty("insertionStyle") && root.engineType === 0;
                 model: ["Shallow", "Dwindle", "Spiral"];
-                currentIndex: root.engineSettings.insertionStyle;
+                currentIndex: root.engineSettings.insertionStyle ?? 0;
+                popup.y: height;
+                onActivated: (idx) => {
+                    root.engineSettings.insertionStyle = idx;
+                    root.saveSettingsFn();
+                }
+            }
+            // pillars insertion style
+            PC3.ComboBox {
+                visible: root.engineSettings.hasOwnProperty("insertionStyle") && root.engineType === 3;
+                model: ["Rows", "Snake", "Rows Up", "Snake Up"];
+                currentIndex: root.engineSettings.insertionStyle ?? 0;
                 popup.y: height;
                 onActivated: (idx) => {
                     root.engineSettings.insertionStyle = idx;

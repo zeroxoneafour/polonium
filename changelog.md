@@ -7,6 +7,7 @@
 - Double buffer active windows
 - Updating docs
 - Better half layout support
+- Three Column layout
 
 ## 1.1
 

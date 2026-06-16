@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
-    <height>644</height>
+    <width>624</width>
+    <height>746</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="General">
         <attribute name="title">
@@ -241,7 +241,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>BTree</string>
+            <string>Binary Tree</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -250,6 +250,12 @@
          </item>
          <item>
           <layout class="QFormLayout" name="BTreeForm">
+           <property name="labelAlignment">
+            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+           </property>
+           <property name="formAlignment">
+            <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+           </property>
            <item row="0" column="0">
             <widget class="QLabel" name="btreeSwapInsertSideLabel">
              <property name="text">
@@ -405,7 +411,17 @@
          <item>
           <widget class="QLabel" name="threeColumnLabel">
            <property name="text">
-            <string>ThreeColumn</string>
+            <string>Three Column</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="threeColumnWarning">
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Warning - Side 1 + Side 2 cannot exceed 0.85!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -428,6 +444,66 @@
              </property>
             </widget>
            </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="threeColumnSide1SizeLabel">
+             <property name="text">
+              <string>Side 1 Size</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="kcfg_ThreeColumnSide1Size">
+             <property name="minimum">
+              <double>0.150000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>0.700000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.050000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.250000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="threeColumnSide2SizeLabel">
+             <property name="text">
+              <string>Side 2 Size</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QDoubleSpinBox" name="kcfg_ThreeColumnSide2Size">
+             <property name="minimum">
+              <double>0.150000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>0.700000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.050000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.250000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="threeColumnRotateLayoutLabel">
+             <property name="text">
+              <string>Rotate Layout</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QCheckBox" name="kcfg_ThreeColumnRotateLayout">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item>
@@ -445,14 +521,14 @@
            <item row="0" column="0">
             <widget class="QLabel" name="pillarsSwapInsertSide">
              <property name="text">
-              <string>Swap Insert Side</string>
+              <string>Coming soon!</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QCheckBox" name="kcfg_PillarsSwapInsertSide">
+            <widget class="QLabel" name="pillarslabelidk">
              <property name="text">
-              <string/>
+              <string>label idk</string>
              </property>
             </widget>
            </item>

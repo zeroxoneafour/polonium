@@ -1,170 +1,245 @@
-// threecolumn.ts - Layout engine that splits 3 columns
+// threecolumn.ts - Three columns idk bro
 
-/*
+import { translateDirection } from "../../util/geometry";
 import {
     Tile,
-    Client,
-    TilingEngine,
-    EngineCapability,
-    EngineSettings,
+    Window,
+    TilingEngineInterface,
+    Direction,
+    BaseEngineSettings,
+    LayoutDirection,
 } from "../engine";
-import { Direction } from "../../util/geometry";
-import { InsertionPoint } from "../../util/config";
-import { LayoutDirection } from "kwin-api";
 
-class ClientBox {
-    client: Client;
+class WindowBox {
+    window: Window;
+    size: number = 1;
 
-    constructor(client: Client) {
-        this.client = client;
+    constructor(window: Window) {
+        this.window = window;
     }
 }
 
-class BoxIndex {
-    index: number;
-    row: number;
-    box: ClientBox;
+class ThreeColumnEngineSettings extends BaseEngineSettings {
+    side1Size: number = 0.25;
+    side2Size: number = 0.25;
+    swapInsertSide: boolean = false;
+    rotateLayout: boolean = false;
+}
 
-    constructor(engine: ThreeColumnEngine, client: Client) {
-        for (let i = 0; i < engine.rows.length; i += 1) {
-            const row = engine.rows[i];
-            for (let j = 0; j < row.length; j += 1) {
-                if (row[j].client == client) {
-                    this.index = j;
-                    this.row = i;
-                    this.box = row[j];
-                    return;
+export class ThreeColumnEngine implements TilingEngineInterface {
+    tileMap: Map<Tile, WindowBox> = new Map();
+    side1: WindowBox[] = [];
+    center: WindowBox | null = null;
+    side2: WindowBox[] = [];
+
+    settings = new ThreeColumnEngineSettings();
+
+    getEngineSettings(): object {
+        return this.settings.getProps();
+    }
+    setEngineSettings(settings: object): void {
+        this.settings.setProps(settings);
+        if (this.settings.side1Size < 0.15) {
+            this.settings.side1Size = 0.15;
+        }
+        if (this.settings.side2Size < 0.15) {
+            this.settings.side2Size = 0.15;
+        }
+        if (this.settings.side1Size + this.settings.side2Size > 0.85) {
+            const side1Ratio =
+                this.settings.side1Size /
+                (this.settings.side1Size + this.settings.side2Size);
+            this.settings.side1Size = 0.85 * side1Ratio;
+            this.settings.side2Size = 0.85 * (1 - side1Ratio);
+        }
+    }
+
+    buildLayout(): Tile {
+        const rootTile = new Tile();
+        rootTile.layoutDirection = this.settings.rotateLayout
+            ? LayoutDirection.Vertical
+            : LayoutDirection.Horizontal;
+        this.tileMap.clear();
+
+        if (this.side1.length == 0 && this.side2.length == 0) {
+            if (this.center !== null) {
+                rootTile.windows.push(this.center.window);
+                this.tileMap.set(rootTile, this.center);
+            }
+            return rootTile;
+        }
+
+        if (this.side1.length > 0) {
+            const side1Tile = rootTile.addChild();
+            side1Tile.size = this.settings.side1Size * 3;
+            if (this.side1.length == 1) {
+                side1Tile.windows.push(this.side1[0].window);
+                this.tileMap.set(side1Tile, this.side1[0]);
+            } else {
+                for (const box of this.side1) {
+                    const tile = side1Tile.addChild();
+                    tile.windows.push(box.window);
+                    tile.size = box.size;
+                    this.tileMap.set(tile, box);
                 }
             }
         }
-        throw new Error("Couldn't find box");
-    }
-}
 
-interface ThreeColumnEngineSettings extends EngineSettings {
-    leftSize: number;
-    rightSize: number;
-}
-
-export default class ThreeColumnEngine extends TilingEngine {
-    engineCapability = EngineCapability.TranslateRotation;
-    tileMap: Map<Tile, ClientBox> = new Map();
-    rows: ClientBox[][] = [[], [], []];
-    leftSize: number = 0.25;
-    rightSize: number = 0.25;
-
-    get engineSettings(): ThreeColumnEngineSettings {
-        return {
-            leftSize: this.leftSize,
-            rightSize: this.rightSize,
-        };
-    }
-
-    set engineSettings(settings: ThreeColumnEngineSettings) {
-        this.leftSize = settings.leftSize ?? 0.25;
-        this.rightSize = settings.rightSize ?? 0.25;
-    }
-
-    buildLayout() {
-        // set original tile direction based on rotating layout or not
-        this.rootTile = new Tile();
-        this.rootTile.layoutDirection = this.config.rotateLayout ? 2 : 1;
-        let middleSize = 1;
-        if (this.rows[2].length != 0) {
-            middleSize -= this.rightSize;
+        const centerTile = rootTile.addChild();
+        centerTile.size = 3;
+        centerTile.size -=
+            this.side1.length > 0 ? this.settings.side1Size * 3 : 0;
+        centerTile.size -=
+            this.side2.length > 0 ? this.settings.side2Size * 3 : 0;
+        if (this.center !== null) {
+            centerTile.windows.push(this.center.window);
+            this.tileMap.set(centerTile, this.center);
         }
-        if (this.rows[0].length != 0) {
-            middleSize -= this.leftSize;
-        }
-        for (let i = 0; i < this.rows.length; i += 1) {
-            const row = this.rows[i];
-            if (row.length == 0) {
-                continue;
-            }
-            const rowRoot = this.rootTile.addChild(false);
-            if (i == 0) {
-                rowRoot.relativeSize = this.leftSize;
-            } else if (i == 1) {
-                rowRoot.relativeSize = middleSize;
+
+        if (this.side2.length > 0) {
+            const side2Tile = rootTile.addChild();
+            side2Tile.size = this.settings.side2Size * 3;
+            if (this.side2.length == 1) {
+                side2Tile.windows.push(this.side2[0].window);
+                this.tileMap.set(side2Tile, this.side2[0]);
             } else {
-                rowRoot.relativeSize = this.rightSize;
-            }
-            for (const box of row) {
-                const tile = rowRoot.addChild();
-                tile.client = box.client;
-                this.tileMap.set(tile, box);
+                for (const box of this.side2) {
+                    const tile = side2Tile.addChild();
+                    tile.windows.push(box.window);
+                    tile.size = box.size;
+                    this.tileMap.set(tile, box);
+                }
             }
         }
+
+        return rootTile;
     }
 
-    addClient(client: Client) {
-        if (this.rows[1].length == 0) {
-            this.rows[1].push(new ClientBox(client));
+    addWindow(window: Window) {
+        const box = new WindowBox(window);
+        if (this.center === null) {
+            this.center = box;
             return;
         }
-        if (this.config.insertionPoint == InsertionPoint.Left) {
-            if (this.rows[0].length > this.rows[2].length) {
-                this.rows[2].push(new ClientBox(client));
-            } else {
-                this.rows[0].push(new ClientBox(client));
-            }
-        } else {
-            if (this.rows[2].length > this.rows[0].length) {
-                this.rows[0].push(new ClientBox(client));
-            } else {
-                this.rows[2].push(new ClientBox(client));
-            }
-        }
-    }
-
-    removeClient(client: Client) {
-        let box: BoxIndex;
-        try {
-            box = new BoxIndex(this, client);
-        } catch (e) {
-            throw e;
-        }
-        const row = this.rows[box.row];
-        row.splice(box.index, 1);
-    }
-
-    putClientInTile(client: Client, tile: Tile, direction?: Direction) {
-        const clientBox = new ClientBox(client);
-        let targetBox: BoxIndex;
-        const box = this.tileMap.get(tile);
-        if (box == undefined) {
-            this.addClient(client);
-            return;
-        }
-        targetBox = new BoxIndex(this, box.client);
-        const targetArr = this.rows[targetBox.row];
-        if (direction == null || direction & Direction.Up) {
-            targetArr.splice(targetBox.index, 0, clientBox);
-        } else {
-            targetArr.splice(targetBox.index + 1, 0, clientBox);
-        }
-    }
-
-    regenerateLayout(): void {
-        // only one column on the screen
+        const lengthDiff = this.side1.length - this.side2.length;
         if (
-            this.rootTile.tiles.length < 2 ||
-            this.rootTile.layoutDirection == LayoutDirection.Vertical
+            (lengthDiff == 0 && this.settings.swapInsertSide) ||
+            lengthDiff < 0
         ) {
+            this.side1.push(box);
+        } else {
+            this.side2.push(box);
+        }
+    }
+
+    removeWindow(window: Window) {
+        if (this.center?.window == window) {
+            this.center = null;
+            if (this.side1.length == 0 && this.side2.length == 0) return;
+            const lengthDiff = this.side1.length - this.side2.length;
+            if (
+                (lengthDiff == 0 && this.settings.swapInsertSide) ||
+                lengthDiff < 0
+            ) {
+                this.center = this.side2.splice(0, 1)[0];
+            } else {
+                this.center = this.side1.splice(0, 1)[0];
+            }
             return;
         }
-        // assuming the middle row always has at least one client
-        if (this.rootTile.tiles.length == 2) {
-            if (this.rows[0].length == 0) {
-                // no left clients
-                this.rightSize = this.rootTile.tiles[1].relativeSize;
-            } else if (this.rows[2].length == 0) {
-                this.leftSize = this.rootTile.tiles[0].relativeSize;
+        let idx = this.side1.findIndex((x) => x.window == window);
+        if (idx != -1) {
+            this.side1.splice(idx, 1);
+            if (this.side1.length == 0 && this.side2.length > 1) {
+                this.side1.push(this.side2.splice(0, 1)[0]);
             }
-        } else if (this.rootTile.tiles.length == 3) {
-            this.rightSize = this.rootTile.tiles[2].relativeSize;
-            this.leftSize = this.rootTile.tiles[0].relativeSize;
+            return;
+        }
+        idx = this.side2.findIndex((x) => x.window == window);
+        if (idx == -1) return;
+        this.side2.splice(idx, 1);
+        if (this.side2.length == 0 && this.side1.length > 1) {
+            this.side2.push(this.side1.splice(0, 1)[0]);
+        }
+    }
+
+    // default to inserting below
+    placeWindow(window: Window, tile: Tile, direction?: Direction) {
+        // center must always be occupied
+        if (this.center === null) {
+            this.addWindow(window);
+            return;
+        }
+        if (direction === undefined) {
+            direction = Direction.Vertical;
+        }
+        if (this.settings.rotateLayout) {
+            direction = translateDirection(direction);
+        }
+        if (this.tileMap.get(tile)?.window === window) {
+            return;
+        }
+        if (
+            this.side1.some((x) => x.window === window) ||
+            this.side2.some((x) => x.window === window) ||
+            this.center?.window === window
+        ) {
+            this.removeWindow(window);
+        }
+        const targetBox = this.tileMap.get(tile);
+        if (targetBox == undefined) {
+            this.addWindow(window);
+            return;
+        }
+        const newBox = new WindowBox(window);
+        if (targetBox === this.center) {
+            // if there are no windows in the chosen side, then add it to that side
+            if (!(direction & Direction.Right) && this.side1.length == 0) {
+                this.side1.push(newBox);
+            } else if (direction & Direction.Right && this.side2.length == 0) {
+                this.side2.push(newBox);
+                // if inserted into right side of center and there are windows in right, push center to the left stack
+            } else if (direction & Direction.Right) {
+                this.side1.push(this.center);
+                this.center = newBox;
+                // if inserted into left side and there are windows in left, push center into right stack
+            } else {
+                this.side2.push(this.center);
+                this.center = newBox;
+            }
+        } else {
+            // normal half style insertion (but even less complex!) if just putting in on side
+            const side = this.side1.includes(targetBox)
+                ? this.side1
+                : this.side2;
+            const idx = side.indexOf(targetBox);
+            if (direction & Direction.Down) {
+                side.splice(idx + 1, 0, newBox);
+            } else {
+                side.splice(idx, 0, newBox);
+            }
+        }
+    }
+
+    updateTiles(rootTile: Tile): void {
+        if (this.side1.length > 0) {
+            this.settings.side1Size =
+                rootTile.children[0].size / rootTile.totalChildrenSize();
+            if (this.side2.length > 0) {
+                this.settings.side2Size =
+                    rootTile.children[2].size / rootTile.totalChildrenSize();
+            }
+        } else if (this.side2.length > 0) {
+            this.settings.side2Size =
+                rootTile.children[1].size / rootTile.totalChildrenSize();
+        }
+        for (const [tile, box] of this.tileMap) {
+            if (
+                (this.side1.includes(box) && this.side1.length > 1) ||
+                (this.side2.includes(box) && this.side2.length > 1)
+            ) {
+                box.size = tile.size;
+            }
         }
     }
 }
-*/
