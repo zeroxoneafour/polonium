@@ -14,6 +14,8 @@ interface TileWindowEvent {
     desktop: VirtualDesktop;
     activity: Activity;
     output: Output;
+    tile?: Tile;
+    direction?: Direction;
 }
 interface UntileWindowEvent {
     t: "untileWindow";
@@ -42,16 +44,14 @@ interface PlaceWindowEvent {
     output: Output;
     tile: Tile;
     direction?: Direction;
-    // set to true if the window should be inserted at the tiling engine's discretion
-    // (through the insertInActive engine config option)
-    onlyIfInsertInActive?: boolean;
 }
-// use this instead of UpdateTileSizes only when the amount of tiles on screen is changed, triggers rebuild
-interface UpdateTileCountEvent {
-    t: "updateTileCount";
+// set rebuild to false to avoid stuttering tiles when just moving them
+interface UpdateTilesEvent {
+    t: "updateTiles";
     desktop: VirtualDesktop;
     activity: Activity;
     output: Output;
+    rebuild: boolean;
 }
 interface ChangeEngineEvent {
     t: "changeEngine";
@@ -69,6 +69,13 @@ interface ResetEngineEvent {
     activity: Activity;
     output: Output;
 }
+interface WindowActivatedEvent {
+    t: "windowActivated";
+    window: Window;
+    desktop: VirtualDesktop;
+    activity: Activity;
+    output: Output;
+}
 
 export type Event =
     | TileWindowEvent
@@ -77,9 +84,10 @@ export type Event =
     | RebuildDesktopsEvent
     | RemoveWindowEvent
     | PlaceWindowEvent
-    | UpdateTileCountEvent
+    | UpdateTilesEvent
     | ChangeEngineEvent
-    | ResetEngineEvent;
+    | ResetEngineEvent
+    | WindowActivatedEvent;
 
 // post events - these events run after build
 interface SetWindowPropertiesEvent {
@@ -89,12 +97,6 @@ interface SetWindowPropertiesEvent {
     noBorder?: boolean;
 }
 // make update tile sizes run post to avoid rebuilds that can cause jutter
-interface UpdateTileSizesEvent {
-    t: "updateTileSizes";
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
-}
 interface ToggleSettingsMenuEvent {
     t: "toggleSettingsMenu";
     desktop: VirtualDesktop;
@@ -102,10 +104,7 @@ interface ToggleSettingsMenuEvent {
     output: Output;
 }
 
-export type PostEvent =
-    | SetWindowPropertiesEvent
-    | UpdateTileSizesEvent
-    | ToggleSettingsMenuEvent;
+export type PostEvent = SetWindowPropertiesEvent | ToggleSettingsMenuEvent;
 
 // check if two events operate on the same widnow, desktops, and output
 // ev1 must be a tileWindow event and ev2 must be an untileWindow event
@@ -182,7 +181,7 @@ export function createTileEvents(
     desktops?: VirtualDesktop[],
     activities?: Activity[],
     output?: Output,
-): TileWindowEvent[] | UntileWindowEvent[] {
+): TileWindowEvent[] {
     if (desktops === undefined) desktops = window.desktops;
     if (activities === undefined) activities = window.activities;
     if (output === undefined) output = window.output;

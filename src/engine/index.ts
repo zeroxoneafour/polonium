@@ -56,11 +56,14 @@ export class TilingEngine {
         this.engineRootTile = this.engine.buildLayout();
         return this.engineRootTile;
     }
-    addWindow(window: Window): void {
-        return this.engine.addWindow(window);
+    addWindow(window: Window, tile?: Tile, direction?: Direction): void {
+        return this.engine.addWindow(window, tile, direction);
     }
     placeWindow(window: Window, tile: Tile, direction?: Direction) {
         return this.engine.placeWindow(window, tile, direction);
+    }
+    windowActivated(window: Window): boolean {
+        return this.engine.windowActivated(window);
     }
     removeWindow(window: Window): void {
         return this.engine.removeWindow(window);

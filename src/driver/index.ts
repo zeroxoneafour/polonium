@@ -190,7 +190,11 @@ export class Driver {
         return engineWindow;
     }
 
-    addWindow(kwinWindow: KwinWindow): void {
+    addWindow(
+        kwinWindow: KwinWindow,
+        tile?: KwinTile,
+        direction?: Direction,
+    ): void {
         if (this.windowMap.has(kwinWindow)) {
             console().warn(
                 "initializeWindow error - window already exists in map",
@@ -198,9 +202,11 @@ export class Driver {
             return;
         }
         const window = this.initializeWindow(kwinWindow);
-        if (window === undefined) {
-        }
-        this.tilingEngine.addWindow(window);
+        this.tilingEngine.addWindow(
+            window,
+            tile ? this.tileMap.get(tile) : undefined,
+            direction,
+        );
     }
 
     placeWindow(
@@ -217,6 +223,19 @@ export class Driver {
             return;
         }
         this.tilingEngine.placeWindow(window, tile, direction);
+    }
+
+    windowActivated(kwinWindow: KwinWindow): boolean {
+        const engineWindow = this.windowMap.get(kwinWindow);
+        if (engineWindow === undefined) {
+            console().warn(
+                "Window",
+                kwinWindow.resourceClass,
+                "not registered in windowMap",
+            );
+            return false;
+        }
+        return this.tilingEngine.windowActivated(engineWindow);
     }
 
     removeWindow(kwinWindow: KwinWindow): void {
@@ -262,11 +281,12 @@ export class Driver {
     }
 
     updateTileSizesCallback() {
-        ctrl().queuePostEvent({
-            t: "updateTileSizes",
+        ctrl().queueEvent({
+            t: "updateTiles",
             desktop: this.desktop,
             activity: this.activity,
             output: this.output,
+            rebuild: false,
         });
     }
 }

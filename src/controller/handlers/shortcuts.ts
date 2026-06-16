@@ -127,18 +127,18 @@ export class ShortcutsHandler {
         switch (edge) {
             case Edge.BottomEdge:
                 x += tile.absoluteGeometry.width / 2;
-                y += tile.absoluteGeometry.height + tile.padding * 2;
+                y += tile.absoluteGeometry.height + 1;
                 break;
             case Edge.TopEdge:
                 x += tile.absoluteGeometry.width / 2;
-                y -= tile.padding * 2;
+                y -= 1;
                 break;
             case Edge.LeftEdge:
-                x -= tile.padding * 2;
+                x -= 1;
                 y += tile.absoluteGeometry.height / 2;
                 break;
             case Edge.RightEdge:
-                x += tile.absoluteGeometry.width + tile.padding * 2;
+                x += tile.absoluteGeometry.width + 1;
                 y += tile.absoluteGeometry.height / 2;
                 break;
             default:

@@ -97,7 +97,11 @@ export class HalfEngine implements TilingEngineInterface {
         return rootTile;
     }
 
-    addWindow(window: Window) {
+    addWindow(window: Window, tile?: Tile, direction?: Direction): void {
+        if (this.settings.insertInActive && tile !== undefined) {
+            this.placeWindow(window, tile, direction);
+            return;
+        }
         if (!this.settings.swapInsertSide) {
             if (this.side1.length == 0) {
                 this.side1.push(new WindowBox(window));
@@ -173,6 +177,10 @@ export class HalfEngine implements TilingEngineInterface {
                 side.splice(idx, 0, newBox);
             }
         }
+    }
+
+    windowActivated(window: Window): boolean {
+        return false;
     }
 
     updateTiles(rootTile: Tile): void {

@@ -221,6 +221,10 @@ export class ThreeColumnEngine implements TilingEngineInterface {
         }
     }
 
+    windowActivated(window: Window): boolean {
+        return false;
+    }
+
     updateTiles(rootTile: Tile): void {
         if (this.side1.length > 0) {
             this.settings.side1Size =

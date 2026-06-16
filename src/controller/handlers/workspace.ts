@@ -40,51 +40,28 @@ export class WorkspaceHandler {
         // never friggin mind we need a ref map to store "tiled" state across shortcut handler as well
         const windowHandler = ctrl().createWindowHandler(window);
         if (!windowHandler.tiled) return;
-        let desktops = [...window.desktops];
         // for insert in active handling
         // checking the actual config is now deferred to the event handler through onlyIfInsertInActive
         // so that different engines can have different configurations for the option
-        if (
-            this.previousActivated?.tile != null &&
-            window.desktops.includes(this.workspace.currentDesktop) &&
-            window.activities.includes(this.workspace.currentActivity) &&
-            window.output === this.workspace.activeScreen
-        ) {
-            const tile = this.previousActivated?.tile;
-            ctrl().queueEvent({
-                t: "placeWindow",
-                window: window,
-                desktop: this.workspace.currentDesktop,
-                activity: this.workspace.currentActivity,
-                output: this.workspace.activeScreen,
-                tile: tile,
-                direction: directionFromPoint(
-                    tile.absoluteGeometry,
+        for (const ev of createTileEvents(window)) {
+            if (
+                this.previousActivated?.tile != null &&
+                this.previousActivated.activities.includes(ev.activity) &&
+                this.previousActivated.desktops.includes(ev.desktop) &&
+                this.previousActivated.output == ev.output
+            ) {
+                ev.tile = this.previousActivated.tile;
+                ev.direction = directionFromPoint(
+                    ev.tile.absoluteGeometry,
                     this.workspace.cursorPos,
-                ),
-                onlyIfInsertInActive: true,
-            });
-            desktops = desktops.filter(
-                (x) => x !== this.workspace.currentDesktop,
-            );
-        }
-        for (const ev of createTileEvents(
-            window,
-            desktops,
-            window.activities,
-            window.output,
-        )) {
+                );
+            }
             ctrl().queueEvent(ev);
         }
     }
 
     windowRemoved(window: Window) {
-        for (const ev of createUntileEvents(
-            window,
-            window.desktops,
-            window.activities,
-            window.output,
-        )) {
+        for (const ev of createUntileEvents(window)) {
             ctrl().queueEvent(ev);
         }
         ctrl().queueEvent({

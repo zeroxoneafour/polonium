@@ -73,9 +73,11 @@ class Controller {
         const queue = simplifyEvents(this.eventQueue);
         this.eventQueue = new Queue<Event>();
         console().debug("Handling", queue.size, "event(s)");
-        const rebuild = queue.size != 0;
+        let rebuild = false;
         while (!queue.isEmpty) {
-            this.handleEvent(queue.pop()!);
+            if (this.handleEvent(queue.pop()!)) {
+                rebuild = true;
+            }
         }
         if (rebuild) {
             for (const output of this.workspace.screens) {
@@ -101,7 +103,9 @@ class Controller {
         this.processingEvents = false;
     }
 
-    private handleEvent(ev: Event) {
+    // returns whether to rebuild or not
+    // one event returning yes guarantees a rebuild
+    private handleEvent(ev: Event): boolean {
         console().debug("handling event", ev.t);
         switch (ev.t) {
             case "tileWindow": {
@@ -117,8 +121,10 @@ class Controller {
                 );
                 this.getDriver(ev.desktop, ev.activity, ev.output)?.addWindow(
                     ev.window,
+                    ev.tile,
+                    ev.direction,
                 );
-                break;
+                return true;
             }
             case "untileWindow": {
                 if (
@@ -145,71 +151,68 @@ class Controller {
                 if (driver !== undefined && driver.windowMap.has(ev.window)) {
                     driver.removeWindow(ev.window);
                 }
-                break;
+                return true;
             }
             case "updateDrivers": {
                 this.updateDrivers();
-                break;
+                return true;
             }
             case "rebuildDesktops": {
                 // we rebuild them anyway after any event has been registered, this is a blank event that guarantees a rebuild
-                break;
+                return true;
             }
             // call untileWindow before this
             case "removeWindow": {
                 // sometimes this may say "destroying window undefined" but thats ok
                 console().log("destroying window", ev.window.resourceClass);
                 this.windowHandlers.delete(ev.window);
-                break;
+                return false;
             }
             case "placeWindow": {
-                const driver = this.getDriver(
-                    ev.desktop,
-                    ev.activity,
-                    ev.output,
-                );
-                if (driver === undefined) break;
-                const insertInActive = (
-                    driver.tilingEngine.getEngineSettings() as any
-                ).insertInActive;
-                if (ev.onlyIfInsertInActive && insertInActive !== true) {
-                    console().log(
-                        "adding window",
-                        ev.window.resourceClass,
-                        "to desktop",
-                        ev.desktop.name,
-                        "on output",
-                        ev.output.name,
-                        "and activity",
-                        ev.activity,
-                    );
-                    driver.addWindow(ev.window);
-                } else {
-                    console().log(
-                        "placing window",
-                        ev.window.resourceClass,
-                        "in tile at",
-                        ev.tile.absoluteGeometry,
-                    );
-                    driver.placeWindow(ev.window, ev.tile, ev.direction);
-                }
-                break;
-            }
-            case "updateTileCount": {
                 console().log(
-                    "updating tile count for desktop",
+                    "placing window",
+                    ev.window.resourceClass,
+                    "in tile at",
+                    ev.tile.absoluteGeometry,
+                );
+                this.getDriver(ev.desktop, ev.activity, ev.output)?.placeWindow(
+                    ev.window,
+                    ev.tile,
+                    ev.direction,
+                );
+                return true;
+            }
+            case "updateTiles": {
+                console().log(
+                    "updating tiles for desktop",
                     ev.desktop.name,
                     "on output",
                     ev.output.name,
                     "and activity",
                     ev.activity,
                 );
-                this.getDriver(
+                const driver = this.getDriver(
                     ev.desktop,
                     ev.activity,
                     ev.output,
-                )?.updateTiles();
-                break;
+                );
+                if (driver === undefined) break;
+                // sometimes changing tiles updates engine settings so make sure to send out for dbus
+                const before = JSON.stringify(
+                    driver.tilingEngine.getEngineSettings(),
+                );
+                driver.updateTiles();
+                const after = driver.tilingEngine.getEngineSettings();
+                if (before !== JSON.stringify(after)) {
+                    this.dbusHandler?.setSettings(
+                        ev.desktop,
+                        ev.activity,
+                        ev.output,
+                        driver.tilingEngine.engineType,
+                        after,
+                    );
+                }
+                return ev.rebuild;
             }
             case "changeEngine": {
                 console().log(
@@ -226,7 +229,19 @@ class Controller {
                     ev.output,
                 );
                 if (driver === undefined) break;
+                const engine = driver.tilingEngine.engineType;
+                const settings = JSON.stringify(
+                    driver.tilingEngine.getEngineSettings(),
+                );
                 driver.changeTilingEngine(ev.engineType, ev.engineSettings);
+                // only rebuild if something changed
+                if (
+                    engine === driver.tilingEngine.engineType &&
+                    settings ===
+                        JSON.stringify(driver.tilingEngine.getEngineSettings())
+                ) {
+                    return false;
+                }
                 if (this.settingsHandler.isVisible()) {
                     this.showSettingsHandler(driver);
                 }
@@ -239,7 +254,7 @@ class Controller {
                         driver.tilingEngine.getEngineSettings(),
                     );
                 }
-                break;
+                return true;
             }
             case "resetEngine": {
                 console().log(
@@ -256,7 +271,18 @@ class Controller {
                     ev.output,
                 );
                 if (driver === undefined) break;
+                const engine = driver.tilingEngine.engineType;
+                const settings = JSON.stringify(
+                    driver.tilingEngine.getEngineSettings(),
+                );
                 driver.resetTilingEngine();
+                if (
+                    engine === driver.tilingEngine.engineType &&
+                    settings ===
+                        JSON.stringify(driver.tilingEngine.getEngineSettings())
+                ) {
+                    return false;
+                }
                 if (this.settingsHandler.isVisible()) {
                     this.showSettingsHandler(driver);
                 }
@@ -265,9 +291,12 @@ class Controller {
                     ev.activity,
                     ev.output,
                 );
-                break;
+                return true;
             }
         }
+        // this should never be reached
+        console().warn("event type", ev.t, "not handled");
+        return false;
     }
 
     private handlePostEvent(ev: PostEvent) {
@@ -284,37 +313,6 @@ class Controller {
                 }
                 if (ev.noBorder !== undefined) {
                     ev.window.noBorder = ev.noBorder;
-                }
-                break;
-            }
-            case "updateTileSizes": {
-                console().log(
-                    "updating tile sizes for desktop",
-                    ev.desktop.name,
-                    "on output",
-                    ev.output.name,
-                    "and activity",
-                    ev.activity,
-                );
-                const driver = this.getDriver(
-                    ev.desktop,
-                    ev.activity,
-                    ev.output,
-                );
-                if (driver === undefined) break;
-                // some tiling engines (half and threecolumn) change fixed split settings based on resizes
-                // so we update dbus if this is the case
-                const before = driver.tilingEngine.getEngineSettings();
-                driver.updateTiles();
-                const after = driver.tilingEngine.getEngineSettings();
-                if (JSON.stringify(before) !== JSON.stringify(after)) {
-                    this.dbusHandler?.setSettings(
-                        ev.desktop,
-                        ev.activity,
-                        ev.output,
-                        driver.tilingEngine.engineType,
-                        after,
-                    );
                 }
                 break;
             }

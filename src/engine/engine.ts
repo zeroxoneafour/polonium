@@ -19,10 +19,12 @@ export interface TilingEngineInterface {
      */
     buildLayout(): Tile;
     /**
-     * Adds a new window
+     * Adds a new window. Takes completely optional parameters for insertion suggestions.
+     * Unlike placeWindow, insertion is completely at the discretion of the engine.
+     * The extra parameters may be completely ignored if desired.
      * @param window The window
      */
-    addWindow(window: Window): void;
+    addWindow(window: Window, tile?: Tile, direction?: Direction): void;
     /**
      * Places a window into a specific tile. The window is new, ie. it should have been removed beforehand by the driver
      * @param window The window
@@ -30,6 +32,13 @@ export interface TilingEngineInterface {
      * @param direction The direction within the aforementioned tile in which to insert the window (optional)
      */
     placeWindow(window: Window, tile: Tile, direction?: Direction): void;
+    /**
+     * Signals that a window implied to be registered has been activated.
+     * Can be set to just return false if this function isnt useful to the engine.
+     * @param window The window
+     * @returns Whether anything changed because of the activation
+     */
+    windowActivated(window: Window): boolean;
     /**
      * Removes a window that is implied to be registered
      * @param window The window to remove
@@ -83,13 +92,6 @@ export class Tile {
         return childTile;
     }
 
-    // adds a child that will split parallel to the parent. Not really recommeneded
-    addChildParallel(): Tile {
-        const childTile = new Tile(this);
-        childTile.layoutDirection = this.layoutDirection;
-        return childTile;
-    }
-
     // split a tile, aka add two children
     split(): void {
         this.addChild();
@@ -117,6 +119,28 @@ export class Tile {
 
     totalChildrenSize(): number {
         return this.children.reduce((s, t) => s + t.size, 0);
+    }
+
+    toJSON(includeWindows: boolean = false): object {
+        return {
+            layoutDirection: this.layoutDirection,
+            size: this.size,
+            children: this.children.map((c) => c.toJSON()),
+            windows: includeWindows
+                ? this.windows.map((w) => w.id.toString())
+                : undefined,
+        };
+    }
+
+    static fromJSON(json: object | string, parent?: Tile): Tile {
+        const obj = typeof json === "string" ? JSON.parse(json) : json;
+        const tile = new Tile(parent);
+        tile.layoutDirection = obj.layoutDirection;
+        tile.size = obj.size;
+        for (const child of obj.children) {
+            Tile.fromJSON(child, tile);
+        }
+        return tile;
     }
 }
 

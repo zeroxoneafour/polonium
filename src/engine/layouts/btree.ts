@@ -120,7 +120,11 @@ export class BTreeEngine implements TilingEngineInterface {
         return rootTile;
     }
 
-    addWindow(window: Window): void {
+    addWindow(window: Window, tile?: Tile, direction?: Direction): void {
+        if (this.settings.insertInActive && tile !== undefined) {
+            this.placeWindow(window, tile, direction);
+            return;
+        }
         if (this.windowSet.has(window)) return;
         this.windowSet.add(window);
         // no windows case
@@ -196,6 +200,10 @@ export class BTreeEngine implements TilingEngineInterface {
         }
         node.split(insertPoint === 0 ? 1 : 0);
         node.children![insertPoint].window = window;
+    }
+
+    windowActivated(window: Window): boolean {
+        return false;
     }
 
     removeWindow(window: Window): void {

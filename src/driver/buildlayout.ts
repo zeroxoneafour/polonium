@@ -8,9 +8,16 @@ export function buildLayout(
     kwinRootTile: KwinTile,
     engineRootTile: EngineTile,
 ): Map<KwinTile, EngineTile> {
+    if (config().fullRebuild) {
+        while (kwinRootTile.tiles.length > 0) {
+            kwinRootTile.tiles[kwinRootTile.tiles.length - 1].remove();
+        }
+    }
+
     const tileMap = new Map<KwinTile, EngineTile>();
     const queue = new Queue<[KwinTile, EngineTile]>();
     queue.push([kwinRootTile, engineRootTile]);
+
     while (!queue.isEmpty) {
         const [kwinTile, engineTile] = queue.pop()!;
         if (kwinTile == null) {
@@ -60,11 +67,8 @@ export function buildLayout(
 function matchChildren(kwinTile: KwinTile, engineTile: EngineTile): void {
     const layoutDirection = engineTile.layoutDirection;
     // step 1
-    // yk what just nuke all the children and make them later
-    const tileCountToLeave = config().fullRebuild
-        ? 0
-        : engineTile.children.length;
-    while (kwinTile.tiles.length > tileCountToLeave) {
+    // this will be empty if full rebuild
+    while (kwinTile.tiles.length > engineTile.children.length) {
         // if there is only one child left then it will take over for its parent
         kwinTile.tiles[kwinTile.tiles.length - 1].remove();
     }
