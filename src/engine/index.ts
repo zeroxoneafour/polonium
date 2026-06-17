@@ -4,16 +4,20 @@ import { TilingEngineInterface, Window, Tile, Direction } from "./engine";
 import { BTreeEngine } from "./layouts/btree";
 import { HalfEngine } from "./layouts/half";
 import { ThreeColumnEngine } from "./layouts/threecolumn";
+import { PillarEngine } from "./layouts/pillars";
+import { PagerEngine } from "./layouts/pager";
 
 export { Window, Tile, Direction };
 
 export { InsertionStyle as BTreeInsertionStyle } from "./layouts/btree";
+export { InsertionStyle as PillarsInsertionStyle } from "./layouts/pillars";
 
 export enum TilingEngineType {
     BTree = 0,
     Half,
     ThreeColumn,
     Pillars,
+    Pager,
     _Loop,
 }
 
@@ -34,6 +38,12 @@ export class TilingEngine {
                 break;
             case TilingEngineType.ThreeColumn:
                 this.engine = new ThreeColumnEngine();
+                break;
+            case TilingEngineType.Pillars:
+                this.engine = new PillarEngine();
+                break;
+            case TilingEngineType.Pager:
+                this.engine = new PagerEngine();
                 break;
             default:
                 console().warn("Invalid tiling engine type", type);

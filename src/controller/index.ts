@@ -1,4 +1,10 @@
-import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
+import {
+    Output,
+    VirtualDesktop,
+    Window,
+    Activity,
+    ClientAreaOption,
+} from "kwin-api";
 import { Event, PostEvent, simplifyEvents, simplifyPostEvents } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace } from "kwin-api/qml";
@@ -9,7 +15,7 @@ import {
     SettingsHandler,
     DBusHandler,
 } from "./handlers";
-import { Queue } from "../util/queue";
+import { Queue } from "../util";
 import { Console } from "./console";
 import { Driver } from "../driver";
 import { QTimer, Qt } from "kwin-api/qt";
@@ -73,25 +79,24 @@ class Controller {
         const queue = simplifyEvents(this.eventQueue);
         this.eventQueue = new Queue<Event>();
         console().debug("Handling", queue.size, "event(s)");
-        let rebuild = false;
+        const rebuildDesktops = new Set<DesktopIdentifier>();
         while (!queue.isEmpty) {
-            if (this.handleEvent(queue.pop()!)) {
-                rebuild = true;
+            const desktops = this.handleEvent(queue.pop()!);
+            for (const desktop of desktops) {
+                rebuildDesktops.add(desktop);
             }
         }
-        if (rebuild) {
-            for (const output of this.workspace.screens) {
-                const id = desktopId(
-                    this.workspace.currentDesktop,
-                    this.workspace.currentActivity,
-                    output,
-                );
-                console().debug("Rebuilding for output", output.name);
-                if (this.drivers.has(id)) {
-                    this.drivers.get(id)?.buildLayout();
-                } else {
-                    console().error("no driver found for desktop id", id);
-                }
+        for (const id of rebuildDesktops) {
+            const [_desktop, activity, _output] = this.parseDesktopId(id);
+            // dont rebuild for other activities because tiles are shared between them
+            if (activity !== this.workspace.currentActivity) {
+                continue;
+            }
+            console().debug("Rebuilding for desktop id", id);
+            if (this.drivers.has(id)) {
+                this.drivers.get(id)?.buildLayout();
+            } else {
+                console().error("no driver found for desktop id", id);
             }
         }
         const postQueue = simplifyPostEvents(this.postEventQueue);
@@ -103,28 +108,21 @@ class Controller {
         this.processingEvents = false;
     }
 
-    // returns whether to rebuild or not
+    // returns a list of desktopIdentifiers that need a rebuild
     // one event returning yes guarantees a rebuild
-    private handleEvent(ev: Event): boolean {
+    private handleEvent(ev: Event): DesktopIdentifier[] {
         console().debug("handling event", ev.t);
         switch (ev.t) {
             case "tileWindow": {
+                const id = desktopId(ev.desktop, ev.activity, ev.output);
                 console().log(
                     "adding window",
                     ev.window.resourceClass,
                     "to desktop",
-                    ev.desktop.name,
-                    "on output",
-                    ev.output.name,
-                    "and activity",
-                    ev.activity,
+                    id,
                 );
-                this.getDriver(ev.desktop, ev.activity, ev.output)?.addWindow(
-                    ev.window,
-                    ev.tile,
-                    ev.direction,
-                );
-                return true;
+                this.getDriver(id)?.addWindow(ev.window, ev.tile, ev.direction);
+                return [id];
             }
             case "untileWindow": {
                 if (
@@ -133,69 +131,62 @@ class Controller {
                     ev.activity == undefined
                 )
                     break;
+                const id = desktopId(ev.desktop, ev.activity, ev.output);
                 console().log(
                     "removing window",
                     ev.window.resourceClass,
                     "from desktop",
-                    ev.desktop.name,
-                    "on output",
-                    ev.output.name,
-                    "and activity",
-                    ev.activity,
+                    id,
                 );
                 // this doesn't use getDriver because it's plausible that untileWindow could be called when the driver has been removed.
                 // in any case if the driver didn't already exist then removing the window from a new one wouldn't change anything.
-                const driver = this.drivers.get(
-                    desktopId(ev.desktop, ev.activity, ev.output),
-                );
+                const driver = this.drivers.get(id);
                 if (driver !== undefined && driver.windowMap.has(ev.window)) {
                     driver.removeWindow(ev.window);
                 }
-                return true;
+                return [id];
             }
             case "updateDrivers": {
-                this.updateDrivers();
-                return true;
+                return this.updateDrivers();
             }
             case "rebuildDesktops": {
+                // TODO - update for new rebuild system
                 // we rebuild them anyway after any event has been registered, this is a blank event that guarantees a rebuild
-                return true;
+                return [];
             }
             // call untileWindow before this
             case "removeWindow": {
                 // sometimes this may say "destroying window undefined" but thats ok
                 console().log("destroying window", ev.window.resourceClass);
                 this.windowHandlers.delete(ev.window);
-                return false;
+                return [];
             }
             case "placeWindow": {
+                const id = desktopId(ev.desktop, ev.activity, ev.output);
                 console().log(
                     "placing window",
                     ev.window.resourceClass,
                     "in tile at",
                     ev.tile.absoluteGeometry,
                 );
-                this.getDriver(ev.desktop, ev.activity, ev.output)?.placeWindow(
+                this.getDriver(id)?.placeWindow(
                     ev.window,
                     ev.tile,
                     ev.direction,
                 );
-                return true;
+                return [id];
+            }
+            case "windowActivated": {
+                const id = desktopId(ev.desktop, ev.activity, ev.output);
+                if (this.getDriver(id)?.windowActivated(ev.window)) {
+                    return [id];
+                }
+                return [];
             }
             case "updateTiles": {
-                console().log(
-                    "updating tiles for desktop",
-                    ev.desktop.name,
-                    "on output",
-                    ev.output.name,
-                    "and activity",
-                    ev.activity,
-                );
-                const driver = this.getDriver(
-                    ev.desktop,
-                    ev.activity,
-                    ev.output,
-                );
+                const id = desktopId(ev.desktop, ev.activity, ev.output);
+                console().log("updating tiles for desktop", id);
+                const driver = this.getDriver(id);
                 if (driver === undefined) break;
                 // sometimes changing tiles updates engine settings so make sure to send out for dbus
                 const before = JSON.stringify(
@@ -212,23 +203,16 @@ class Controller {
                         after,
                     );
                 }
-                return ev.rebuild;
+                return ev.rebuild ? [id] : [];
             }
             case "changeEngine": {
+                const id = desktopId(ev.desktop, ev.activity, ev.output);
                 console().log(
-                    "changing engine type/settings for desktop",
-                    ev.desktop.name,
-                    "on output",
-                    ev.output.name,
-                    "and activity",
-                    ev.activity,
+                    "changing engine type/settings for desktop id",
+                    id,
                 );
-                const driver = this.getDriver(
-                    ev.desktop,
-                    ev.activity,
-                    ev.output,
-                );
-                if (driver === undefined) break;
+                const driver = this.getDriver(id);
+                if (driver === undefined) return [];
                 const engine = driver.tilingEngine.engineType;
                 const settings = JSON.stringify(
                     driver.tilingEngine.getEngineSettings(),
@@ -240,7 +224,7 @@ class Controller {
                     settings ===
                         JSON.stringify(driver.tilingEngine.getEngineSettings())
                 ) {
-                    return false;
+                    return [];
                 }
                 if (this.settingsHandler.isVisible()) {
                     this.showSettingsHandler(driver);
@@ -254,23 +238,16 @@ class Controller {
                         driver.tilingEngine.getEngineSettings(),
                     );
                 }
-                return true;
+                return [id];
             }
             case "resetEngine": {
+                const id = desktopId(ev.desktop, ev.activity, ev.output);
                 console().log(
-                    "resetting to default engine settings for desktop",
-                    ev.desktop.name,
-                    "on output",
-                    ev.output.name,
-                    "and activity",
-                    ev.activity,
+                    "resetting to default engine settings for desktop id",
+                    id,
                 );
-                const driver = this.getDriver(
-                    ev.desktop,
-                    ev.activity,
-                    ev.output,
-                );
-                if (driver === undefined) break;
+                const driver = this.getDriver(id);
+                if (driver === undefined) return [];
                 const engine = driver.tilingEngine.engineType;
                 const settings = JSON.stringify(
                     driver.tilingEngine.getEngineSettings(),
@@ -281,7 +258,7 @@ class Controller {
                     settings ===
                         JSON.stringify(driver.tilingEngine.getEngineSettings())
                 ) {
-                    return false;
+                    return [];
                 }
                 if (this.settingsHandler.isVisible()) {
                     this.showSettingsHandler(driver);
@@ -291,12 +268,12 @@ class Controller {
                     ev.activity,
                     ev.output,
                 );
-                return true;
+                return [id];
             }
         }
         // this should never be reached
         console().warn("event type", ev.t, "not handled");
-        return false;
+        return [];
     }
 
     private handlePostEvent(ev: PostEvent) {
@@ -348,11 +325,19 @@ class Controller {
     // gets a driver, if it doesn't exist then it calls updateDrivers and tries to get it again.
     // if it still doesn't exist, then it returns undefined.
     private getDriver(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
+        desktop: VirtualDesktop | DesktopIdentifier,
+        activity?: Activity,
+        output?: Output,
     ): Driver | undefined {
-        const id = desktopId(desktop, activity, output);
+        let id;
+        if (typeof desktop === "string") {
+            id = desktop;
+        } else if (activity !== undefined && output !== undefined) {
+            id = desktopId(desktop, activity, output);
+        } else {
+            console().error("Invalid call to getDriver");
+            return undefined;
+        }
         let driver = this.drivers.get(id);
         if (driver !== undefined) return driver;
         console().warn(
@@ -365,7 +350,8 @@ class Controller {
         return driver;
     }
 
-    private updateDrivers() {
+    // returns list of desktopIds to rebuild
+    private updateDrivers(): DesktopIdentifier[] {
         for (const id of this.drivers.keys()) {
             const [desktop, activity, output] = this.parseDesktopId(id);
             if (!desktop || !activity || !output) {
@@ -385,14 +371,21 @@ class Controller {
                 }
             }
         }
+        const ret = [];
         for (const [desktop, activity, output] of allDesktops) {
             const id = desktopId(desktop, activity, output);
             const driver = this.drivers.get(id);
             const rootTile = this.workspace.rootTile(output, desktop);
+            const screenSize = (this.workspace as any).clientArea(
+                ClientAreaOption.MaximizeArea,
+                output,
+                desktop,
+            );
             if (driver === undefined) {
                 console().debug("adding driver", id);
                 const driver = new Driver(
                     rootTile,
+                    screenSize,
                     desktop,
                     activity,
                     output,
@@ -400,12 +393,21 @@ class Controller {
                 );
                 this.drivers.set(id, driver);
                 this.dbusHandler?.getSettings(desktop, activity, output);
+                ret.push(id);
             } else if (!driver.active) {
                 console().debug("reactivating driver", id);
                 driver.active = true;
-                driver.refreshDriver(rootTile, desktop, activity, output);
+                driver.refreshDriver(
+                    rootTile,
+                    screenSize,
+                    desktop,
+                    activity,
+                    output,
+                );
+                ret.push(id);
             }
         }
+        return ret;
     }
 
     private showSettingsHandler(driver: Driver | undefined) {

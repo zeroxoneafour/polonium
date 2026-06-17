@@ -16,9 +16,11 @@ import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
 import { Direction } from "../util/geometry";
 import { BorderSetting } from "../controller/config";
+import { QRect } from "kwin-api/qt";
 
 export class Driver {
     rootTile: KwinTile;
+    screenSize: QRect;
 
     desktop: VirtualDesktop;
     activity: Activity;
@@ -34,6 +36,7 @@ export class Driver {
 
     constructor(
         rootTile: KwinTile,
+        screenSize: QRect,
         desktop: VirtualDesktop,
         activity: Activity,
         output: Output,
@@ -41,6 +44,7 @@ export class Driver {
         engineSettings?: object,
     ) {
         this.rootTile = rootTile;
+        this.screenSize = screenSize;
         this.desktop = desktop;
         this.activity = activity;
         this.output = output;
@@ -53,11 +57,13 @@ export class Driver {
 
     refreshDriver(
         rootTile: KwinTile,
+        screenSize: QRect,
         desktop: VirtualDesktop,
         activity: Activity,
         output: Output,
     ): void {
         this.rootTile = rootTile;
+        this.screenSize = screenSize;
         this.desktop = desktop;
         this.activity = activity;
         this.output = output;
@@ -121,7 +127,11 @@ export class Driver {
         }
         const engineRootTile = this.tilingEngine.buildLayout();
         const previousTileSet = new Set(this.tileMap.keys());
-        this.tileMap = buildLayout(this.rootTile, engineRootTile);
+        this.tileMap = buildLayout(
+            this.rootTile,
+            engineRootTile,
+            this.screenSize,
+        );
 
         const invertedWindowMap = new Map(
             Array.from(this.windowMap, (a) => [a[1], a[0]]),
@@ -293,23 +303,21 @@ export class Driver {
 
 // want to completely separate the engine and kwin, so we set config defaults here not in engine
 function getConfigEngineSettings(engineType: TilingEngineType): object {
-    let ret: object;
     switch (engineType) {
         case TilingEngineType.BTree:
-            ret = config().btreeSettings;
-            break;
+            return config().btreeSettings;
         case TilingEngineType.Half:
-            ret = config().halfSettings;
-            break;
+            return config().halfSettings;
         case TilingEngineType.ThreeColumn:
-            ret = config().threeColumnSettings;
-            break;
+            return config().threeColumnSettings;
+        case TilingEngineType.Pillars:
+            return config().pillarSettings;
+        case TilingEngineType.Pager:
+            return config().pagerSettings;
         default:
             console().error("engine type", engineType, "is invalid");
-            ret = {};
-            break;
+            return {};
     }
-    return ret;
 }
 
 function setTiledProps(window: KwinWindow) {

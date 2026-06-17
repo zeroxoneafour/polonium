@@ -8,6 +8,10 @@
 - Updating docs
 - Better half layout support
 - Three Column layout
+- Better desktop rebuilding
+- Pillars layout
+- Pager layout
+- Updated config page
 
 ## 1.1
 

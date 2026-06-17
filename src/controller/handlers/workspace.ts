@@ -105,6 +105,20 @@ export class WorkspaceHandler {
                 });
             }
         }
+        if (window === null) {
+            return;
+        }
+        for (const desktop of window.desktops) {
+            for (const activity of window.activities) {
+                ctrl().queueEvent({
+                    t: "windowActivated",
+                    window: window,
+                    desktop: desktop,
+                    activity: activity,
+                    output: window.output,
+                });
+            }
+        }
     }
 }
 

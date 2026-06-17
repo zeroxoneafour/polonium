@@ -13,15 +13,7 @@ PlasmaCore.Dialog {
     property var output: ({});
 
     property int engineType: 0;
-    property var engineSettings: ({
-        rotateLayout: false,
-        swapInsertSide: false,
-        middleSplit: 0.5,
-        side1Split: 0.25,
-        side2Split: 0.25,
-        insertionStyle: 0,
-        insertInActive: false,
-    });
+    property var engineSettings: ({});
     
     property rect screenGeometry;
     x: (screenGeometry.x + screenGeometry.width / 2) - width / 2;
@@ -87,7 +79,7 @@ PlasmaCore.Dialog {
                 Layout.fillWidth: true;
             }
             PC3.ComboBox {
-                model: ["Binary Tree", "Half", "Three Column"];
+                model: ["Binary Tree", "Half", "Three Column", "Pillars", "Pager"];
                 currentIndex: root.engineType;
                 popup.y: height;
                 onActivated: (idx) => {
@@ -177,18 +169,35 @@ PlasmaCore.Dialog {
             }
 
             PC3.Label {
-                visible: root.engineSettings.hasOwnProperty("pillars");
+                visible: root.engineSettings.hasOwnProperty("pillarCount");
                 text: "Pillars:";
                 horizontalAlignment: Text.AlignRight;
                 Layout.fillWidth: true;
             }
             PC3.SpinBox {
-                visible: root.engineSettings.hasOwnProperty("pillars");
+                visible: root.engineSettings.hasOwnProperty("pillarCount");
                 from: 1;
                 to: 10;
-                value: root.engineSettings.pillars ?? 3;
+                value: root.engineSettings.pillarCount ?? 3;
                 onValueModified: {
-                    root.engineSettings.pillars = this.value;
+                    root.engineSettings.pillarCount = this.value;
+                    root.saveSettingsFn();
+                }
+            }
+
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("pageWidth");
+                text: "Page Width:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.SpinBox {
+                visible: root.engineSettings.hasOwnProperty("pageWidth");
+                from: 15;
+                to: 20;
+                value: root.engineSettings.pageWidth * 100 ?? 15;
+                onValueModified: {
+                    root.engineSettings.pageWidth = this.value / 100;
                     root.saveSettingsFn();
                 }
             }

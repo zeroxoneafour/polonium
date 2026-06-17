@@ -1,5 +1,9 @@
 import { KWin } from "kwin-api/qml";
-import { BTreeInsertionStyle, TilingEngineType } from "../engine";
+import {
+    BTreeInsertionStyle,
+    PillarsInsertionStyle,
+    TilingEngineType,
+} from "../engine";
 
 export enum LogLevel {
     Error = 0,
@@ -29,6 +33,8 @@ export class Config {
     readonly btreeSettings: object;
     readonly halfSettings: object;
     readonly threeColumnSettings: object;
+    readonly pillarSettings: object;
+    readonly pagerSettings: object;
 
     readonly ignoreWindowClasses: RegExp;
     readonly borders: BorderSetting;
@@ -47,7 +53,6 @@ export class Config {
         this.logLevel = rc("LogLevel", LogLevel.Warn);
 
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);
-
         this.btreeSettings = {
             swapInsertSide: rc("BTreeSwapInsertSide", false),
             rotateLayout: rc("BTreeRotateLayout", false),
@@ -68,6 +73,21 @@ export class Config {
             side1Size: rc("ThreeColumnSide1Size", 0.25),
             side2Size: rc("ThreeColumnSide2Size", 0.25),
             rotateLayout: rc("ThreeColumnRotateLayout", false),
+        };
+        this.pillarSettings = {
+            pillarCount: rc("PillarsPillarCount", 3),
+            swapInsertSide: rc("PillarsSwapInsertSide", false),
+            insertionStyle: rc(
+                "PillarsInsertionStyle",
+                PillarsInsertionStyle.Rows,
+            ),
+            rotateLayout: rc("PillarsRotateLayout", false),
+            insertInActive: rc("PillarsInsertInActive", false),
+        };
+        this.pagerSettings = {
+            pageWidth: rc("PagerPageWidth", 0.15),
+            swapInsertSide: rc("PagerSwapInsertSide", false),
+            rotateLayout: rc("PagerRotateLayout", false),
         };
 
         this.ignoreWindowClasses = new RegExp(

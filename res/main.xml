@@ -28,13 +28,15 @@
         <entry name="ThreeColumnRotateLayout" type="bool"><default>false</default></entry>
         <entry name="ThreeColumnInsertInActive" type="bool"><default>false</default></entry>
 
-        <!--
+        <entry name="PillarsPillarCount" type="int"><default>3</default></entry>
         <entry name="PillarsSwapInsertSide" type="bool"><default>false</default></entry>
-        <entry name="PillarsPillars" type="int"><default>3</default></entry>
         <entry name="PillarsInsertionStyle" type="int"><default>0</default></entry>
         <entry name="PillarsRotateLayout" type="bool"><default>false</default></entry>
         <entry name="PillarsInsertInActive" type="bool"><default>false</default></entry>
-        -->
+
+        <entry name="PagerPageWidth" type="double"><default>0.15</default></entry>
+        <entry name="PagerSwapInsertSide" type="bool"><default>false</default></entry>
+        <entry name="PagerRotateLayout" type="bool"><default>false</default></entry>
 
         <entry name="IgnoreWindowClasses" type="string"><default>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</default></entry>
         <entry name="Borders" type="int"><default>4</default></entry>
