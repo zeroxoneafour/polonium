@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, error::Error, fs::File, io::{BufReader, BufWriter}, path::{Path, PathBuf}};
+use std::{collections::HashMap, env, error::Error, fs::File, io::{BufReader, BufWriter}, path::{Path, PathBuf}, process::Command};
 
 use dbus::blocking::Connection;
 use dbus_crossroads::{Crossroads, Context};
@@ -39,7 +39,17 @@ struct DBusObjects {
     settings: Settings,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {    
+fn main() -> Result<(), Box<dyn Error>> {
+    if env::args().any(|arg| {arg == "--clear-settings"}) {
+        println!("Polonium LOG - clearing dbus settings");
+        write_settings(&HashMap::new(), &get_file_path()).unwrap();
+        println!("Polonium LOG - restarting dbus");
+        Command::new("systemctl")
+            .args(["--user", "restart", "polonium-saver"])
+            .output()
+            .unwrap();
+        return Ok(());
+    }
     let dbus_conn = Connection::new_session()?;
     dbus_conn.request_name("xyz.vaughanm.polonium", false, true, false)?;
     

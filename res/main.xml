@@ -4,8 +4,6 @@
     <group name="">
         <entry name="RebuildDelay" type="int"><default>10</default></entry>
         <entry name="TileResizeAmount" type="int"><default>10</default></entry>
-        <entry name="FullRebuild" type="bool"><default>true</default></entry>
-        <entry name="PreserveOldDrivers" type="bool"><default>true</default></entry>
         <entry name="UseDBusSaver" type="bool"><default>false</default></entry>
 
         <entry name="LogLevel" type="int"><default>1</default></entry>

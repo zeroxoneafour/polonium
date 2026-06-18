@@ -12,6 +12,8 @@
 - Pillars layout
 - Pager layout
 - Updated config page
+- Fix tile resizing
+- Added `--clear-settings` flag to DBus
 
 ## 1.1
 

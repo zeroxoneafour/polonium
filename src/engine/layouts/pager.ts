@@ -14,8 +14,13 @@ class PagerSettings extends BaseEngineSettings {
     rotateLayout: boolean = false;
 }
 
+// have to set a fixer to prevent pageWidth from going below the minimum tile size
+// right now its 0.15 but hopefully someday it will be zero
+const floatingPointFix = 0.00001;
+
 export class PagerEngine implements TilingEngineInterface {
     private settings: PagerSettings = new PagerSettings();
+    private pageWidth: number = this.settings.pageWidth + floatingPointFix;
     private windows: Window[] = [];
     private activeWindowIdx: number = 0;
 
@@ -24,6 +29,7 @@ export class PagerEngine implements TilingEngineInterface {
     }
     setEngineSettings(settings: object): void {
         this.settings.setProps(settings);
+        this.pageWidth = this.settings.pageWidth + floatingPointFix;
     }
 
     buildLayout(): Tile {
@@ -40,9 +46,9 @@ export class PagerEngine implements TilingEngineInterface {
             const tile = rootTile.addChild();
             tile.windows.push(this.windows[i]);
             if (i == this.activeWindowIdx) {
-                tile.size = (1 - this.settings.pageWidth * (len - 1)) * len;
+                tile.size = (1 - this.pageWidth * (len - 1)) * len;
             } else {
-                tile.size = this.settings.pageWidth * len;
+                tile.size = this.pageWidth * len;
             }
         }
         return rootTile;

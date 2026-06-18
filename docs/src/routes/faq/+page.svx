@@ -23,6 +23,8 @@ If you would like to use Krohnkite, [here is the link](https://store.kde.org/p/2
 Clone [the repo](https://github.com/zeroxoneafour/polonium) and run `make dbus`.
 This requires Rust to be installed. Prebuilt executables will come soon maybe.
 
+You can reset your settings by running `polonium-saver --clear-settings`.
+
 ## Will you add some feature I want?
 
 Yes, probably! Open an [issue](https://github.com/zeroxoneafour/polonium/issues)

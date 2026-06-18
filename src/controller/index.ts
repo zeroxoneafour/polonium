@@ -355,11 +355,10 @@ class Controller {
         for (const id of this.drivers.keys()) {
             const [desktop, activity, output] = this.parseDesktopId(id);
             if (!desktop || !activity || !output) {
-                console().debug("removing driver", id);
-                if (config().preserveOldDrivers && this.drivers.has(id)) {
-                    this.drivers.get(id)!.active = false;
-                } else {
-                    this.drivers.delete(id);
+                console().debug("deactivating driver", id);
+                const driver = this.drivers.get(id);
+                if (driver !== undefined) {
+                    driver.active = false;
                 }
             }
         }
@@ -376,16 +375,10 @@ class Controller {
             const id = desktopId(desktop, activity, output);
             const driver = this.drivers.get(id);
             const rootTile = this.workspace.rootTile(output, desktop);
-            const screenSize = (this.workspace as any).clientArea(
-                ClientAreaOption.MaximizeArea,
-                output,
-                desktop,
-            );
             if (driver === undefined) {
                 console().debug("adding driver", id);
                 const driver = new Driver(
                     rootTile,
-                    screenSize,
                     desktop,
                     activity,
                     output,
@@ -397,13 +390,7 @@ class Controller {
             } else if (!driver.active) {
                 console().debug("reactivating driver", id);
                 driver.active = true;
-                driver.refreshDriver(
-                    rootTile,
-                    screenSize,
-                    desktop,
-                    activity,
-                    output,
-                );
+                driver.refreshDriver(rootTile, desktop, activity, output);
                 ret.push(id);
             }
         }

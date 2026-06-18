@@ -72,6 +72,9 @@ PlasmaCore.Dialog {
 
         GridLayout {
             columns: 2;
+            // change biggestLabel to be the id of whatever label is biggest
+            Layout.preferredWidth: biggestLabel.implicitWidth * 2;
+            Layout.alignment: Qt.AlignHCenter;
 
             PC3.Label {
                 text: "Engine:";
@@ -232,6 +235,7 @@ PlasmaCore.Dialog {
             }
 
             PC3.Label {
+                id: biggestLabel;
                 visible: root.engineSettings.hasOwnProperty("insertInActive");
                 text: "Insert in Active Tile:";
                 horizontalAlignment: Text.AlignRight;

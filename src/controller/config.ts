@@ -22,8 +22,6 @@ export enum BorderSetting {
 export class Config {
     readonly rebuildDelay: number;
     readonly tileResizeAmount: number;
-    readonly fullRebuild: boolean;
-    readonly preserveOldDrivers: boolean;
     readonly useDBusSaver: boolean;
 
     readonly logLevel: LogLevel;
@@ -46,8 +44,6 @@ export class Config {
 
         this.rebuildDelay = rc("RebuildDelay", 10);
         this.tileResizeAmount = rc("TileResizeAmount", 10);
-        this.fullRebuild = rc("FullRebuild", true);
-        this.preserveOldDrivers = rc("PreserveOldDrivers", true);
         this.useDBusSaver = rc("UseDBusSaver", false);
 
         this.logLevel = rc("LogLevel", LogLevel.Warn);

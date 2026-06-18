@@ -1,21 +1,13 @@
 // driver/buildlayout.ts - A function so nice we have it twice
-import { Edge, Tile as KwinTile, LayoutDirection } from "kwin-api";
+import { Tile as KwinTile, LayoutDirection } from "kwin-api";
 import { Tile as EngineTile } from "../engine";
 import { Queue } from "../util";
-import { config, console, qt } from "../controller";
-import { QRect } from "kwin-api/qt";
+import { console, qt } from "../controller";
 
 export function buildLayout(
     kwinRootTile: KwinTile,
     engineRootTile: EngineTile,
-    screenSize: QRect,
 ): Map<KwinTile, EngineTile> {
-    if (config().fullRebuild) {
-        while (kwinRootTile.tiles.length > 0) {
-            kwinRootTile.tiles[kwinRootTile.tiles.length - 1].remove();
-        }
-    }
-
     const tileMap = new Map<KwinTile, EngineTile>();
     const queue = new Queue<[KwinTile, EngineTile]>();
     queue.push([kwinRootTile, engineRootTile]);
@@ -52,7 +44,7 @@ export function buildLayout(
             }
             queue.push([kwinTile, engineTile.children[0]]);
         } else {
-            matchChildren(kwinTile, engineTile, screenSize);
+            matchChildren(kwinTile, engineTile);
         }
 
         if (engineTile.children.length > 1) {
@@ -66,15 +58,11 @@ export function buildLayout(
 
 // matches children count and sizing using following steps -
 // 1 - removes old children
-// 2 - properly sizes all but last of current children (only done if older children remain)
-// 3 - adds new children, sizing the second to last child after each add
-// 4 - sizes last tile
+// 2 - size to minimum all but last of current children (only done if older children remain)
+// 3 - adds new children, sizing to minimum the second to last child after each add
+// 4 - correctly sizes all tiles in reverse order
 // config().fullRebuild controls whether all children or only extras are removed
-function matchChildren(
-    kwinTile: KwinTile,
-    engineTile: EngineTile,
-    screenSize: QRect,
-): void {
+function matchChildren(kwinTile: KwinTile, engineTile: EngineTile): void {
     const layoutDirection = engineTile.layoutDirection;
     // step 1
     // this will be empty if full rebuild
@@ -85,38 +73,58 @@ function matchChildren(
     if (engineTile.children.length === 0) return;
     // step 2
     for (let i = 0; i < kwinTile.tiles.length - 1; i += 1) {
-        setChildRelativeSize(kwinTile, engineTile, i, screenSize);
+        setChildMinSize(kwinTile, i);
     }
     // step 3
     while (kwinTile.tiles.length < engineTile.children.length) {
         if (kwinTile.tiles.length == 0) {
             kwinTile.split(layoutDirection);
-            setChildRelativeSize(kwinTile, engineTile, 0, screenSize);
+            setChildMinSize(kwinTile, 0);
         } else {
             kwinTile.tiles[kwinTile.tiles.length - 1].split(layoutDirection);
-            setChildRelativeSize(
-                kwinTile,
-                engineTile,
-                kwinTile.tiles.length - 2,
-                screenSize,
-            );
+            setChildMinSize(kwinTile, kwinTile.tiles.length - 2);
         }
     }
     // step 4
-    setChildRelativeSize(
-        kwinTile,
-        engineTile,
-        kwinTile.tiles.length - 1,
-        screenSize,
+    for (let i = kwinTile.tiles.length - 1; i >= 0; i -= 1) {
+        setChildRelativeSize(kwinTile, engineTile, i);
+    }
+}
+
+function setChildMinSize(kwinTile: KwinTile, index: number) {
+    // set higher than 0.15 to avoid floating point issues
+    const minSize = 0.15001;
+
+    console().debug("setMinChildSize on idx", index);
+    const kwinChild = kwinTile.tiles[index];
+    const parentGeom = kwinTile.relativeGeometry;
+    console().debug("previous dimensions", kwinChild.relativeGeometry);
+
+    const geom = qt().rect(
+        parentGeom.x,
+        parentGeom.y,
+        parentGeom.width,
+        parentGeom.height,
     );
+    if (kwinTile.layoutDirection === LayoutDirection.Horizontal) {
+        geom.width *= minSize;
+        geom.x += geom.width * index;
+    } else if (kwinTile.layoutDirection === LayoutDirection.Vertical) {
+        geom.height *= minSize;
+        geom.y += geom.height * index;
+    }
+
+    console().debug("target dimensions", geom);
+    kwinChild.relativeGeometry = geom;
+    console().debug("new dimensions", kwinChild.relativeGeometry);
 }
 
 function setChildRelativeSize(
     kwinTile: KwinTile,
     engineTile: EngineTile,
     index: number,
-    screenSize: QRect,
 ): void {
+    console().debug("setChildRelativeSize on idx", index);
     const totalSize = engineTile.totalChildrenSize();
     const kwinChild = kwinTile.tiles[index];
     const engineChild = engineTile.children[index];
@@ -150,6 +158,8 @@ function setChildRelativeSize(
         geom.y += previousChildrenSize;
     }
     console().debug("target dimensions -", geom);
+    kwinChild.relativeGeometry = geom;
+    /*
     // we cant even just set it so we use resizeByPixels in combination with the screen size
     // x
     const resizeX = Math.floor((geom.x - oldGeom.x) * screenSize.width);
@@ -175,5 +185,6 @@ function setChildRelativeSize(
     if (resizeH != 0) {
         kwinChild.resizeByPixels(resizeH, Edge.BottomEdge);
     }
+    */
     console().debug("final dimensions -", kwinChild.relativeGeometry);
 }

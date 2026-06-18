@@ -14,13 +14,11 @@ import {
 } from "../engine";
 import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
-import { Direction } from "../util/geometry";
+import { Direction } from "../util";
 import { BorderSetting } from "../controller/config";
-import { QRect } from "kwin-api/qt";
 
 export class Driver {
     rootTile: KwinTile;
-    screenSize: QRect;
 
     desktop: VirtualDesktop;
     activity: Activity;
@@ -36,7 +34,6 @@ export class Driver {
 
     constructor(
         rootTile: KwinTile,
-        screenSize: QRect,
         desktop: VirtualDesktop,
         activity: Activity,
         output: Output,
@@ -44,7 +41,6 @@ export class Driver {
         engineSettings?: object,
     ) {
         this.rootTile = rootTile;
-        this.screenSize = screenSize;
         this.desktop = desktop;
         this.activity = activity;
         this.output = output;
@@ -57,13 +53,11 @@ export class Driver {
 
     refreshDriver(
         rootTile: KwinTile,
-        screenSize: QRect,
         desktop: VirtualDesktop,
         activity: Activity,
         output: Output,
     ): void {
         this.rootTile = rootTile;
-        this.screenSize = screenSize;
         this.desktop = desktop;
         this.activity = activity;
         this.output = output;
@@ -127,11 +121,7 @@ export class Driver {
         }
         const engineRootTile = this.tilingEngine.buildLayout();
         const previousTileSet = new Set(this.tileMap.keys());
-        this.tileMap = buildLayout(
-            this.rootTile,
-            engineRootTile,
-            this.screenSize,
-        );
+        this.tileMap = buildLayout(this.rootTile, engineRootTile);
 
         const invertedWindowMap = new Map(
             Array.from(this.windowMap, (a) => [a[1], a[0]]),

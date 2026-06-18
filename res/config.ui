@@ -36,13 +36,23 @@
          <string>General</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_10">
-         <item row="3" column="3">
-          <widget class="QCheckBox" name="kcfg_PreserveOldDrivers">
+         <item row="5" column="2" colspan="2">
+          <spacer name="generalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="3">
+          <widget class="QCheckBox" name="kcfg_UseDBusSaver">
            <property name="text">
             <string/>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -53,17 +63,7 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
-          <widget class="QLabel" name="fullRebuildLabel">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Increases lag but ensures tiles in groups of 3 or more are properly sized.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Run Full Tile Rebuild</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="3">
+         <item row="4" column="3">
           <widget class="QComboBox" name="kcfg_LogLevel">
            <property name="currentIndex">
             <number>1</number>
@@ -90,64 +90,7 @@
            </item>
           </widget>
          </item>
-         <item row="6" column="2">
-          <widget class="QLabel" name="logLevelLabel">
-           <property name="text">
-            <string>Log Level</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="3">
-          <widget class="QCheckBox" name="kcfg_FullRebuild">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Increases lag but ensures tiles in groups of 3 or more are properly sized.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="3">
-          <widget class="QCheckBox" name="kcfg_UseDBusSaver">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QLabel" name="preserveOldDriversLabel">
-           <property name="text">
-            <string>Preserve Old Drivers</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QSpinBox" name="kcfg_TileResizeAmount">
-           <property name="suffix">
-            <string>px</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>1000</number>
-           </property>
-           <property name="value">
-            <number>10</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="tileResizeAmountLabel">
-           <property name="text">
-            <string>Tile Resize Amount</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
+         <item row="2" column="2">
           <widget class="QLabel" name="useDBusSaver">
            <property name="text">
             <string>Use DBus Saver</string>
@@ -170,7 +113,37 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="2" colspan="2">
+         <item row="1" column="3">
+          <widget class="QSpinBox" name="kcfg_TileResizeAmount">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="QLabel" name="logLevelLabel">
+           <property name="text">
+            <string>Log Level</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QLabel" name="tileResizeAmountLabel">
+           <property name="text">
+            <string>Tile Resize Amount</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2" colspan="2">
           <widget class="QLabel" name="debugTitle">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -185,19 +158,6 @@
             <set>Qt::AlignmentFlag::AlignCenter</set>
            </property>
           </widget>
-         </item>
-         <item row="7" column="2" colspan="2">
-          <spacer name="generalSpacer">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </widget>

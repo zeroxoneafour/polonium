@@ -6,8 +6,6 @@ Configuration is accessed through the KWin Scripts settings menu.
 
 * Rebuild Delay - How long no events must occur before event processing happens. Keep this low for responsiveness.
 * Tile Resize Amount - How much to resize tiles by when using the resizing shortcuts.
-* Run Full Tile Rebuild - Whether to fully reset layout when rebuilding tiles. Turn off for more responsiveness if you don't care much about accurate tile sizes.
-* Preserve Old Drivers - Whether to preserve drivers after screen/desktop/activity disconnect. Recommended to keep on.
 * Use DBus Saver - Turn on to enable DBus interaction with `polonium-saver`.
 
 ### Debug
