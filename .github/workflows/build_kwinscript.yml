@@ -17,7 +17,7 @@ jobs:
                   submodules: recursive
 
             - name: Install dependencies
-              run: sudo apt-get install -y npm cargo
+              run: sudo apt-get install -y npm cargo libdbus-1-dev
 
             - name: Build kwinscript
               run: make build
