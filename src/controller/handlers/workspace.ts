@@ -21,9 +21,6 @@ export class WorkspaceHandler {
         this.workspace.windowRemoved.connect(this.windowRemoved.bind(this));
         this.workspace.windowActivated.connect(this.windowActivated.bind(this));
 
-        this.workspace.currentDesktopChanged.connect(
-            this.rebuildDesktops.bind(this),
-        );
         this.workspace.currentActivityChanged.connect(
             this.rebuildDesktops.bind(this),
         );

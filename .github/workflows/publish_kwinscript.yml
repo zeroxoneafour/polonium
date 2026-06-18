@@ -20,12 +20,13 @@ jobs:
                   submodules: recursive
 
             - name: Install dependencies
-              run: sudo apt-get install -y npm
+              run: sudo apt-get install -y npm cargo
 
-            - name: Build with make
-              run: |
-                  make build
-                  sha256sum polonium.kwinscript > polonium.kwinscript.sha256sum
+            - name: Build kwinscript
+              run: make build
+
+            - name: Build dbus-saver
+              run: make dbus-build
 
             - name: Create release
               run: |
@@ -35,4 +36,5 @@ jobs:
                     --prerelease \
                     --title "Development build" \
                     --notes "Get the latest version with all the new bugs and features." \
-                    polonium.kwinscript*
+                    polonium.kwinscript \
+                    dbus-saver/target/release/polonium-saver

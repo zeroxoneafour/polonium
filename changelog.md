@@ -14,6 +14,7 @@
 - Updated config page
 - Fix tile resizing
 - Added `--clear-settings` flag to DBus
+- Keep master setting for Half layout
 
 ## 1.1
 

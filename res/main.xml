@@ -19,6 +19,7 @@
         <entry name="HalfMiddleSplit" type="double"><default>0.5</default></entry>
         <entry name="HalfRotateLayout" type="bool"><default>false</default></entry>
         <entry name="HalfInsertInActive" type="bool"><default>false</default></entry>
+        <entry name="HalfKeepMaster" type="bool"><default>false</default></entry>
 
         <entry name="ThreeColumnSwapInsertSide" type="bool"><default>false</default></entry>
         <entry name="ThreeColumnSide1Size" type="double"><default>0.25</default></entry>

@@ -17,16 +17,22 @@ jobs:
                   submodules: recursive
 
             - name: Install dependencies
-              run: sudo apt-get install -y npm
+              run: sudo apt-get install -y npm cargo
 
-            - name: Build with make
+            - name: Build kwinscript
               run: make build
 
-            - name: Upload a Build Artifact
+            - name: Build dbus-saver
+              run: make dbus-build
+
+            - name: Upload kwinscript
               uses: actions/upload-artifact@v7
               with:
-                  # Artifact name
                   name: polonium.kwinscript
-                  # A file, directory or wildcard pattern that describes what to upload
                   path: ./polonium.kwinscript
-                  # The desired behavior if no files are found using the provided path.
+
+            - name: Upload dbus-saver
+              uses: actions/upload-artifact@v7
+              with:
+                  name: polonium-saver
+                  path: ./dbus-saver/target/release/polonium-saver

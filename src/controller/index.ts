@@ -150,9 +150,19 @@ class Controller {
                 return this.updateDrivers();
             }
             case "rebuildDesktops": {
-                // TODO - update for new rebuild system
-                // we rebuild them anyway after any event has been registered, this is a blank event that guarantees a rebuild
-                return [];
+                const ids = [];
+                for (const desktop of this.workspace.desktops) {
+                    for (const output of this.workspace.screens) {
+                        ids.push(
+                            desktopId(
+                                desktop,
+                                this.workspace.currentActivity,
+                                output,
+                            ),
+                        );
+                    }
+                }
+                return ids;
             }
             // call untileWindow before this
             case "removeWindow": {

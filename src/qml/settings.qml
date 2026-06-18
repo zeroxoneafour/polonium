@@ -1,6 +1,5 @@
 import QtQuick;
 import QtQuick.Layouts;
-import QtQuick.Controls as QC;
 import org.kde.kwin;
 import org.kde.plasma.components as PC3;
 import org.kde.plasma.core as PlasmaCore;
@@ -230,6 +229,21 @@ PlasmaCore.Dialog {
                 popup.y: height;
                 onActivated: (idx) => {
                     root.engineSettings.insertionStyle = idx;
+                    root.saveSettingsFn();
+                }
+            }
+
+            PC3.Label {
+                visible: root.engineSettings.hasOwnProperty("keepMaster");
+                text: "Keep Master:";
+                horizontalAlignment: Text.AlignRight;
+                Layout.fillWidth: true;
+            }
+            PC3.CheckBox {
+                visible: root.engineSettings.hasOwnProperty("keepMaster");
+                checked: root.engineSettings.keepMaster ?? false;
+                onClicked: {
+                    root.engineSettings.keepMaster = !root.engineSettings.keepMaster;
                     root.saveSettingsFn();
                 }
             }

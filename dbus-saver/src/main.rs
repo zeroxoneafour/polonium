@@ -1,7 +1,15 @@
-use std::{collections::HashMap, env, error::Error, fs::File, io::{BufReader, BufWriter}, path::{Path, PathBuf}, process::Command};
+use std::{
+    collections::HashMap,
+    env,
+    error::Error,
+    fs::File,
+    io::{BufReader, BufWriter},
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use dbus::blocking::Connection;
-use dbus_crossroads::{Crossroads, Context};
+use dbus_crossroads::{Context, Crossroads};
 
 fn get_file_path() -> PathBuf {
     let mut path = String::new();
@@ -40,7 +48,7 @@ struct DBusObjects {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    if env::args().any(|arg| {arg == "--clear-settings"}) {
+    if env::args().any(|arg| arg == "--clear-settings") {
         println!("Polonium LOG - clearing dbus settings");
         write_settings(&HashMap::new(), &get_file_path()).unwrap();
         println!("Polonium LOG - restarting dbus");
@@ -52,28 +60,46 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let dbus_conn = Connection::new_session()?;
     dbus_conn.request_name("xyz.vaughanm.polonium", false, true, false)?;
-    
+
     let mut dbus_cr = Crossroads::new();
 
     let saver_token = dbus_cr.register("xyz.vaughanm.polonium", |b| {
-        b.method("GetSettings", ("desktopId",), ("desktopId","settingsBundle",), move |_ctx: &mut Context, objs: &mut DBusObjects, (desktop_id,): (String,)| {
-            let settings_bundle = if let Some(reply) = objs.settings.get(&desktop_id) {
-                reply.clone()
-            } else {
-                String::from("{}")
-            };
-            Ok((desktop_id, settings_bundle,))
-        });
-        b.method("SetSettings", ("desktopId","settingsBundle",), (), move |_ctx: &mut Context, objs: &mut DBusObjects, (desktop_id, settings_bundle,): (String,String,)| {
-            objs.settings.insert(desktop_id.clone(), settings_bundle.clone());
-            write_settings(&objs.settings, &objs.file_path).unwrap();
-            Ok(())
-        });
-        b.method("ResetSettings", ("desktopId",), (), move |_ctx: &mut Context, objs: &mut DBusObjects, (desktop_id,): (String,)| {
-            objs.settings.remove(&desktop_id);
-            write_settings(&objs.settings, &objs.file_path).unwrap();
-            Ok(())
-        });
+        b.method(
+            "GetSettings",
+            ("desktopId",),
+            ("desktopId", "settingsBundle"),
+            move |_ctx: &mut Context, objs: &mut DBusObjects, (desktop_id,): (String,)| {
+                let settings_bundle = if let Some(reply) = objs.settings.get(&desktop_id) {
+                    reply.clone()
+                } else {
+                    String::from("{}")
+                };
+                Ok((desktop_id, settings_bundle))
+            },
+        );
+        b.method(
+            "SetSettings",
+            ("desktopId", "settingsBundle"),
+            (),
+            move |_ctx: &mut Context,
+                  objs: &mut DBusObjects,
+                  (desktop_id, settings_bundle): (String, String)| {
+                objs.settings
+                    .insert(desktop_id.clone(), settings_bundle.clone());
+                write_settings(&objs.settings, &objs.file_path).unwrap();
+                Ok(())
+            },
+        );
+        b.method(
+            "ResetSettings",
+            ("desktopId",),
+            (),
+            move |_ctx: &mut Context, objs: &mut DBusObjects, (desktop_id,): (String,)| {
+                objs.settings.remove(&desktop_id);
+                write_settings(&objs.settings, &objs.file_path).unwrap();
+                Ok(())
+            },
+        );
     });
 
     let file_path = get_file_path();

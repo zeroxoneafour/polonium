@@ -24,6 +24,7 @@ class HalfEngineSettings extends BaseEngineSettings {
     swapInsertSide: boolean = false;
     rotateLayout: boolean = false;
     insertInActive: boolean = false;
+    keepMaster: boolean = false;
 }
 
 export class HalfEngine implements TilingEngineInterface {
@@ -37,7 +38,27 @@ export class HalfEngine implements TilingEngineInterface {
         return this.settings.getProps();
     }
     setEngineSettings(settings: object): void {
+        const prevSwapSide = this.settings.swapInsertSide;
         this.settings.setProps(settings);
+        // if keepMaster changed but not swapInsertSide then move windows out of dominant tile
+        if (
+            this.settings.keepMaster &&
+            prevSwapSide === this.settings.swapInsertSide
+        ) {
+            // remove windows from old master side
+            const [masterSide, otherSide] = this.settings.swapInsertSide
+                ? [this.side2, this.side1]
+                : [this.side1, this.side2];
+            while (masterSide.length > 1) {
+                const box = masterSide.splice(1, 1);
+                otherSide.push(...box);
+            }
+        } else if (prevSwapSide !== this.settings.swapInsertSide) {
+            // just switch sides if keepmaster and the sides switched
+            const tmp = this.side1;
+            this.side1 = this.side2;
+            this.side2 = tmp;
+        }
     }
 
     buildLayout(): Tile {
@@ -171,10 +192,24 @@ export class HalfEngine implements TilingEngineInterface {
                 side.push(newBox);
             }
         } else {
-            if (direction & Direction.Down) {
-                side.splice(idx + 1, 0, newBox);
+            // if keepmaster and inserting into master tile, then swap the master tile for the new one
+            // and move master into the other side
+            if (
+                this.settings.keepMaster &&
+                ((side == this.side1 && !this.settings.swapInsertSide) ||
+                    (side == this.side2 && this.settings.swapInsertSide))
+            ) {
+                const oldBox = side.pop();
+                side.push(newBox);
+                if (oldBox !== undefined) {
+                    otherSide.push(oldBox);
+                }
             } else {
-                side.splice(idx, 0, newBox);
+                if (direction & Direction.Down) {
+                    side.splice(idx + 1, 0, newBox);
+                } else {
+                    side.splice(idx, 0, newBox);
+                }
             }
         }
     }

@@ -63,6 +63,7 @@ export class Config {
             middleSplit: rc("HalfMiddleSplit", 0.5),
             rotateLayout: rc("HalfRotateLayout", false),
             insertInActive: rc("HalfInsertInActive", false),
+            keepMaster: rc("HalfKeepMaster", false),
         };
         this.threeColumnSettings = {
             swapInsertSide: rc("ThreeColumnSwapInsertSide", false),

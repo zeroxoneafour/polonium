@@ -32,8 +32,9 @@ Configuration is accessed through the KWin Scripts settings menu.
 ### Half
 
 * Swap Insert Side - Swaps which side new windows are inserted into.
-* Middle Split - Percentage of layout to be given to the right side.
+* Middle Split - Percentage of layout to be given to the left side.
 * Rotate Layout - Rotates the layout to be vertical.
+* Keep Master - Maintains one window in the dominant side of the stack.
 * Insert New Windows in Active Tile - Adds new windows into the currently focused tile.
 
 ### Three Column
@@ -42,6 +43,14 @@ Configuration is accessed through the KWin Scripts settings menu.
 * Side 1 Size - Percentage of layout to be given to the left side.
 * Side 2 Size - Percentage of layout to be given to the right side.
 * Rotate Layout - Rotates the layout to be vertical.
+
+### Pillars
+
+* TODO
+
+### Pager
+
+* TODO
 
 ## Windows
 

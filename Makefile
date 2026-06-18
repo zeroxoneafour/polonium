@@ -69,6 +69,9 @@ dbus:
 	install -m 644 -D -t $(XDG_DATA_HOME)/dbus-1/services dbus-saver/xyz.vaughanm.polonium.service
 	sed -i 's|^Exec=polonium-saver$$|Exec=$(CARGO_HOME)/bin/polonium-saver|' $(XDG_DATA_HOME)/dbus-1/services/xyz.vaughanm.polonium.service
 
+dbus-build:
+	cd dbus-saver && cargo build --release
+
 docs: docs-build
 
 docs-build: node_modules
