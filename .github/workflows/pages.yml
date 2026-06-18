@@ -13,8 +13,10 @@ jobs:
             - name: Checkout repo
               uses: actions/checkout@v6
 
-            - name: Install dependencies
-              run: sudo apt-get install -y npm
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: latest
 
             - name: Build with make
               run: make docs
