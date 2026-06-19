@@ -361,6 +361,9 @@ class Controller {
         );
         this.updateDrivers();
         driver = this.drivers.get(id);
+        if (driver === undefined) {
+            console().error("driver was still not found for id", id);
+        }
         return driver;
     }
 

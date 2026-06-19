@@ -124,27 +124,30 @@ export class ShortcutsHandler {
         if (tile == rootTile) return null;
         let x = tile.absoluteGeometry.x;
         let y = tile.absoluteGeometry.y;
+        // kwin fucking up math somehow so add 2 instead of 1 for offset
         switch (edge) {
             case Edge.BottomEdge:
                 x += tile.absoluteGeometry.width / 2;
-                y += tile.absoluteGeometry.height + 1;
+                y += tile.absoluteGeometry.height + 2;
                 break;
             case Edge.TopEdge:
                 x += tile.absoluteGeometry.width / 2;
-                y -= 1;
+                y -= 2;
                 break;
             case Edge.LeftEdge:
-                x -= 1;
+                x -= 2;
                 y += tile.absoluteGeometry.height / 2;
                 break;
             case Edge.RightEdge:
-                x += tile.absoluteGeometry.width + 1;
+                x += tile.absoluteGeometry.width + 2;
                 y += tile.absoluteGeometry.height / 2;
                 break;
             default:
                 return null;
         }
-        return rootTile.pick(qt().point(x, y));
+        const point = qt().point(Math.floor(x), Math.floor(y));
+        console().debug("selecting tile for point", point);
+        return rootTile.pick(point);
     }
 
     activateInDirection(edge: Edge) {
@@ -156,20 +159,28 @@ export class ShortcutsHandler {
         }
         const targetTile = this.getTileInDirection(currentTile, rootTile, edge);
         if (targetTile == null) return;
+        console().log(
+            "activateInDirection geom -",
+            targetTile.absoluteGeometry,
+        );
         if (targetTile.windows.length == 0) return;
         this.workspace.activeWindow = targetTile.windows[0];
     }
 
     placeInDirection(edge: Edge) {
-        const currentTile = this.workspace.activeWindow?.tile;
-        if (currentTile == null) return;
+        const window = this.workspace.activeWindow;
+        if (window === null) {
+            return;
+        }
+        const currentTile = window.tile;
+        if (currentTile === null) return;
         let rootTile = currentTile;
         while (rootTile.parent != null) {
             rootTile = rootTile.parent!;
         }
         const targetTile = this.getTileInDirection(currentTile, rootTile, edge);
         if (targetTile == null) return;
-        let direction = Direction.None;
+        let direction: Direction | undefined = undefined;
         switch (edge) {
             case Edge.TopEdge:
                 direction = Direction.Vertical;
@@ -195,7 +206,7 @@ export class ShortcutsHandler {
             const targetCenter =
                 targetTile.absoluteGeometry.x +
                 targetTile.absoluteGeometry.width / 2;
-            if (currentCenter > targetCenter) {
+            if (currentCenter > targetCenter && direction !== undefined) {
                 direction |= Direction.Right;
             }
         } else if (edge & Edge.LeftEdge || edge & Edge.RightEdge) {
@@ -206,11 +217,10 @@ export class ShortcutsHandler {
                 targetTile.absoluteGeometry.y +
                 targetTile.absoluteGeometry.height / 2;
             // same thing for left/right primary but up means smaller y
-            if (currentCenter > targetCenter) {
+            if (currentCenter > targetCenter && direction !== undefined) {
                 direction |= Direction.Down;
             }
         }
-        const window = this.workspace.activeWindow!;
         ctrl().queueEvent({
             t: "placeWindow",
             window: window,
