@@ -12,7 +12,7 @@ export const enum Direction {
 
 // translates direction from horizontal split tiles => vertical split tiles
 // afaik this is one way and im not making it another way too bc its too hard
-export function translateDirection(d: Direction): Direction {
+export function rotateDirection(d: Direction): Direction {
     let ret = Direction.None;
     if (!(d & Direction.Vertical)) ret |= Direction.Vertical;
     if (d & Direction.Right) ret |= Direction.Down;

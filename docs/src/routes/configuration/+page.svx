@@ -15,9 +15,11 @@ Configuration is accessed through the KWin Scripts settings menu.
 ## Engine
 
 * Default Engine - The default tiling engine to use.
-    * BTree - Binary tree engine.
-    * Half - Master-stack split engine.
-    * ThreeColumn - Centered master-stack with two stacks.
+    * BTree - Binary tree engine
+    * Half - Master-stack split engine
+    * ThreeColumn - Centered master-stack with two stacks
+    * Pillars - Several stacks of windows
+    * Pager - Focused layout with active window as dominant
 
 ### Binary Tree
 
@@ -46,11 +48,21 @@ Configuration is accessed through the KWin Scripts settings menu.
 
 ### Pillars
 
-* TODO
+* Pillar Count - How many pillars there should be.
+* Swap Insert Side - Swaps which side new windows are inserted into.
+* Rotate Layout - Rotates the layout to be vertical.
+* Insertion Style - Sets how new windows should be inserted.
+    * Rows - Insert left-to-right, going down after a row is full.
+    * Snake - Insert first left-to-right then the other way, going down after a row is full.
+    * Rows Up - Insert left-to-right, going up after a row is full.
+    * Snake Up - Insert first left-to-right then the other way, going up after a row is full.
+* Insert New Windows in Active Tile - Adds new windows into the currently focused tile.
 
 ### Pager
 
-* TODO
+* Page Width - The relative width of minimized pages. As of right now, cannot be below 0.15.
+* Swap Insert Side - Swaps which side new windows are inserted into.
+* Rotate Layout - Rotates the layout to be vertical.
 
 ## Windows
 

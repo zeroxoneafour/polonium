@@ -1,6 +1,6 @@
 // half.ts - Tiling engine for the half/split layout
 
-import { translateDirection } from "../../util/geometry";
+import { rotateDirection } from "../../util/geometry";
 import {
     Tile,
     Window,
@@ -161,7 +161,7 @@ export class HalfEngine implements TilingEngineInterface {
             direction = Direction.Vertical;
         }
         if (this.settings.rotateLayout) {
-            direction = translateDirection(direction);
+            direction = rotateDirection(direction);
         }
         if (this.tileMap.get(tile)?.window === window) {
             return;

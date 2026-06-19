@@ -2,7 +2,7 @@ import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
 import { config, console, controller as ctrl } from "..";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
-import { directionFromPoint } from "../../util/geometry";
+import { directionFromPoint } from "../../util";
 
 export class WindowHandler {
     window: Window;

@@ -27,6 +27,7 @@ export class Driver {
     tileMap: Map<KwinTile, EngineTile> = new Map();
     windowMap: Map<KwinWindow, EngineWindow> = new Map();
     windowsToUnmanage: KwinWindow[] = [];
+    savedActiveWindow: KwinWindow | null = null;
 
     tilingEngine: TilingEngine;
 
@@ -207,6 +208,11 @@ export class Driver {
             tile ? this.tileMap.get(tile) : undefined,
             direction,
         );
+        // sometimes windowActivated is called before addWindow so rectify that here
+        if (this.savedActiveWindow === kwinWindow) {
+            // return value doesnt matter as we rebuild on add regardless
+            this.tilingEngine.windowActivated(window);
+        }
     }
 
     placeWindow(
@@ -223,16 +229,18 @@ export class Driver {
             return;
         }
         this.tilingEngine.placeWindow(window, tile, direction);
+        // see comments in addWindow
+        if (this.savedActiveWindow === kwinWindow) {
+            this.tilingEngine.windowActivated(window);
+        }
     }
 
     windowActivated(kwinWindow: KwinWindow): boolean {
+        this.savedActiveWindow = kwinWindow;
         const engineWindow = this.windowMap.get(kwinWindow);
         if (engineWindow === undefined) {
-            console().warn(
-                "Window",
-                kwinWindow.resourceClass,
-                "not registered in windowMap",
-            );
+            // dont panic as windowActivated may be called before addWindow
+            // so we resolve this with savedActiveWindow in place/addWindow
             return false;
         }
         return this.tilingEngine.windowActivated(engineWindow);

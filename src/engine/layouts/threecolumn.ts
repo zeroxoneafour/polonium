@@ -1,6 +1,6 @@
 // threecolumn.ts - Three columns idk bro
 
-import { translateDirection } from "../../util/geometry";
+import { rotateDirection } from "../../util";
 import {
     Tile,
     Window,
@@ -174,7 +174,7 @@ export class ThreeColumnEngine implements TilingEngineInterface {
             direction = Direction.Vertical;
         }
         if (this.settings.rotateLayout) {
-            direction = translateDirection(direction);
+            direction = rotateDirection(direction);
         }
         if (this.tileMap.get(tile)?.window === window) {
             return;

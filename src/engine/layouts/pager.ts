@@ -1,8 +1,10 @@
 // pager.ts - Tiling engine for pager (monocle-like) layout
 
+import { rotateDirection } from "../../util";
 import {
     BaseEngineSettings,
     Direction,
+    LayoutDirection,
     Tile,
     TilingEngineInterface,
     Window,
@@ -34,6 +36,11 @@ export class PagerEngine implements TilingEngineInterface {
 
     buildLayout(): Tile {
         const rootTile = new Tile();
+        if (this.settings.rotateLayout) {
+            rootTile.layoutDirection = LayoutDirection.Vertical;
+        } else {
+            rootTile.layoutDirection = LayoutDirection.Horizontal;
+        }
         const len = this.windows.length;
         if (len == 0) {
             return rootTile;
@@ -55,11 +62,31 @@ export class PagerEngine implements TilingEngineInterface {
     }
 
     addWindow(window: Window) {
-        this.windows.push(window);
+        if (!this.settings.swapInsertSide) {
+            this.windows.push(window);
+        } else {
+            this.windows.splice(0, 0, window);
+        }
     }
 
     placeWindow(window: Window, tile: Tile, direction?: Direction): void {
-        this.addWindow(window);
+        if (direction === undefined) {
+            direction = Direction.None;
+        }
+        if (this.settings.rotateLayout) {
+            direction = rotateDirection(direction);
+        }
+        if (tile.windows.length == 0 || tile.windows.includes(window)) {
+            return;
+        }
+        if (this.windows.includes(window)) {
+            this.removeWindow(window);
+        }
+        let idx = this.windows.findIndex((w) => tile.windows.includes(w));
+        if (direction & Direction.Right) {
+            idx += 1;
+        }
+        this.windows.splice(idx, 0, window);
     }
 
     windowActivated(window: Window): boolean {
