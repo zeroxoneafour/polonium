@@ -24,7 +24,7 @@ export class PagerEngine implements TilingEngineInterface {
     private settings: PagerSettings = new PagerSettings();
     private pageWidth: number = this.settings.pageWidth + floatingPointFix;
     private windows: Window[] = [];
-    private activeWindowIdx: number = 0;
+    private activeWindowIdx: number = -1;
 
     getEngineSettings(): object {
         return this.settings.getProps();
@@ -99,7 +99,14 @@ export class PagerEngine implements TilingEngineInterface {
     }
 
     removeWindow(window: Window) {
-        this.windows.splice(this.windows.indexOf(window), 1);
+        const idx = this.windows.indexOf(window);
+        if (idx == -1) {
+            return;
+        }
+        if (this.activeWindowIdx == idx) {
+            this.activeWindowIdx = -1;
+        }
+        this.windows.splice(idx, 1);
     }
 
     updateTiles(rootTile: Tile): void {}

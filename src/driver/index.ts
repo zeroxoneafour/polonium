@@ -263,26 +263,21 @@ export class Driver {
 
     // as of right now, can only update sizes (ie cannot add/remove tiles)
     updateTiles(): void {
-        const oldTotalChildrenSizes = new Map<EngineTile, number>();
-        for (const engineTile of this.tileMap.values()) {
-            oldTotalChildrenSizes.set(
-                engineTile,
-                engineTile.totalChildrenSize(),
-            );
-        }
         for (const [kwinTile, engineTile] of this.tileMap) {
             if (kwinTile.parent == null || engineTile.parent == null) continue;
             let size: number;
             if (
                 engineTile.parent.layoutDirection === LayoutDirection.Horizontal
             ) {
-                size = kwinTile.relativeGeometry.width /=
+                size = kwinTile.relativeGeometry.width /
                     kwinTile.parent.relativeGeometry.width;
             } else {
-                size = kwinTile.relativeGeometry.height /=
+                size = kwinTile.relativeGeometry.height /
                     kwinTile.parent.relativeGeometry.height;
             }
-            size *= oldTotalChildrenSizes.get(engineTile.parent)!;
+            // use static sizing based at 1 instead of dynamic sizing
+            // the resulting tiles will have a totalChildrenSize == children.length
+            size *= engineTile.parent.children.length;
             engineTile.size = size;
         }
         this.tilingEngine.updateTiles(this.tileMap.get(this.rootTile)!);

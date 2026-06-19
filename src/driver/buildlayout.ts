@@ -61,7 +61,6 @@ export function buildLayout(
 // 2 - size to minimum all but last of current children (only done if older children remain)
 // 3 - adds new children, sizing to minimum the second to last child after each add
 // 4 - correctly sizes all tiles in reverse order
-// config().fullRebuild controls whether all children or only extras are removed
 function matchChildren(kwinTile: KwinTile, engineTile: EngineTile): void {
     const layoutDirection = engineTile.layoutDirection;
     // step 1
