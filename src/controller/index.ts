@@ -81,7 +81,11 @@ class Controller {
         console().debug("Handling", queue.size, "event(s)");
         const rebuildDesktops = new Set<DesktopIdentifier>();
         while (!queue.isEmpty) {
-            const desktops = this.handleEvent(queue.pop()!);
+            const ev = queue.pop();
+            if (ev === undefined) {
+                break;
+            }
+            const desktops = this.handleEvent(ev);
             for (const desktop of desktops) {
                 rebuildDesktops.add(desktop);
             }
