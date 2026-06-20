@@ -120,6 +120,20 @@ export class Driver {
             console().warn("root tile is null on active driver");
             return;
         }
+
+        // remove non-extant windows or windows that are not on the desktop/activity/output
+        // should prevent ghost tiles even if other code is buggy
+        for (const [kwinWindow, _ew] of this.windowMap) {
+            if (
+                !ctrl().windowExists(kwinWindow) ||
+                !kwinWindow.desktops.includes(this.desktop) ||
+                !kwinWindow.activities.includes(this.activity) ||
+                kwinWindow.output !== this.output
+            ) {
+                console().warn("invalid window in windowMap");
+                this.removeWindow(kwinWindow);
+            }
+        }
         const engineRootTile = this.tilingEngine.buildLayout();
         const previousTileSet = new Set(this.tileMap.keys());
         this.tileMap = buildLayout(this.rootTile, engineRootTile);
@@ -127,7 +141,7 @@ export class Driver {
         const invertedWindowMap = new Map(
             Array.from(this.windowMap, (a) => [a[1], a[0]]),
         );
-        const tiledWindowsList: KwinWindow[] = [];
+        const tiledWindows: Set<KwinWindow> = new Set();
         for (const [kwinTile, engineTile] of this.tileMap) {
             // set callbacks on tiles that do not have callbacks set
             if (!previousTileSet.has(kwinTile)) {
@@ -137,41 +151,43 @@ export class Driver {
             }
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
-                if (
-                    kwinWindow != undefined &&
-                    ctrl().windowExists(kwinWindow)
-                ) {
-                    setTiledProps(kwinWindow);
-                    if (kwinWindow.tile !== kwinTile)
-                        kwinTile.manage(kwinWindow);
-                    //setWindowSize(kwinWindow, kwinTile);
-                    tiledWindowsList.push(kwinWindow);
+                if (kwinWindow === undefined) {
+                    continue;
                 }
+                setTiledProps(kwinWindow);
+                if (kwinWindow.tile !== kwinTile) kwinTile.manage(kwinWindow);
+                //setWindowSize(kwinWindow, kwinTile);
+                tiledWindows.add(kwinWindow);
             }
         }
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
-            if (!tiledWindowsList.includes(kwinWindow)) {
-                if (ctrl().windowExists(kwinWindow)) {
-                    setUntiledProps(kwinWindow);
-                    if (
-                        kwinWindow.tile != null &&
-                        this.tileMap.has(kwinWindow.tile)
-                    ) {
-                        kwinWindow.tile.unmanage(kwinWindow);
-                    }
-                }
-            }
-        }
-        // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
-        for (const kwinWindow of this.windowsToUnmanage) {
-            if (ctrl().windowExists(kwinWindow)) {
-                setUntiledProps(kwinWindow);
+            if (!tiledWindows.has(kwinWindow)) {
+                // dont set untiled props if the tile isnt null and this driver doesnt manage it
+                // (in all likelihood another driver does)
                 if (
                     kwinWindow.tile != null &&
                     this.tileMap.has(kwinWindow.tile)
                 ) {
                     kwinWindow.tile.unmanage(kwinWindow);
+                    setUntiledProps(kwinWindow);
+                } else if (kwinWindow.tile == null) {
+                    setUntiledProps(kwinWindow);
+                }
+            }
+        }
+        // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
+        for (const kwinWindow of this.windowsToUnmanage) {
+            // we dont sanitize this for windowExists (unlike for windowMap) so double check
+            if (ctrl().windowExists(kwinWindow)) {
+                if (
+                    kwinWindow.tile != null &&
+                    this.tileMap.has(kwinWindow.tile)
+                ) {
+                    kwinWindow.tile.unmanage(kwinWindow);
+                    setUntiledProps(kwinWindow);
+                } else if (kwinWindow.tile == null) {
+                    setUntiledProps(kwinWindow);
                 }
             }
         }

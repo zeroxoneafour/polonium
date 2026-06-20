@@ -15,6 +15,7 @@
 - Fix tile resizing
 - Added `--clear-settings` flag to DBus
 - Keep master setting for Half layout
+- Fix event simplification and Stack/Queue bugs
 
 ## 1.1
 

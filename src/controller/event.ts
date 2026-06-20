@@ -131,9 +131,6 @@ function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
 export function simplifyEvents(oldEvents: Queue<Event>): Queue<Event> {
     const newEvents = new Queue<Event>();
     for (const ev of oldEvents) {
-        if (newEvents.some((e) => eventsAreSame(ev, e))) {
-            continue;
-        }
         if (ev.t == "tileWindow" || ev.t == "untileWindow") {
             const parallelEventIdx = newEvents.indexOf((e) => {
                 if (ev.t == "tileWindow" && e.t == "untileWindow") {
@@ -148,6 +145,11 @@ export function simplifyEvents(oldEvents: Queue<Event>): Queue<Event> {
             if (parallelEventIdx != -1) {
                 newEvents.removeAtIndex(parallelEventIdx);
             }
+        }
+        // code that continues must go below code that removes other events,
+        // as if it continues too early then events are not cancelled evenly
+        if (newEvents.some((e) => eventsAreSame(ev, e))) {
+            continue;
         }
         // filter out changeEngine events with two undefineds
         if (
@@ -184,7 +186,7 @@ export function createTileEvents(
     if (desktops === undefined) desktops = window.desktops;
     if (activities === undefined) activities = window.activities;
     if (output === undefined) output = window.output;
-    const ret = [];
+    const ret: TileWindowEvent[] = [];
     for (const desktop of desktops) {
         for (const activity of activities) {
             ret.push({
@@ -197,7 +199,7 @@ export function createTileEvents(
         }
     }
     // force return
-    return ret as any;
+    return ret;
 }
 
 export function createUntileEvents(
@@ -209,7 +211,7 @@ export function createUntileEvents(
     if (desktops === undefined) desktops = window.desktops;
     if (activities === undefined) activities = window.activities;
     if (output === undefined) output = window.output;
-    const ret = [];
+    const ret: UntileWindowEvent[] = [];
     for (const desktop of desktops) {
         for (const activity of activities) {
             ret.push({
@@ -221,5 +223,5 @@ export function createUntileEvents(
             });
         }
     }
-    return ret as any;
+    return ret;
 }

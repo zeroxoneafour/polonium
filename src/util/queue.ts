@@ -66,7 +66,14 @@ export class Queue<T> extends StackLike<T> {
         if (node === null) return undefined;
         if (prevNode !== null) {
             prevNode.next = node.next;
+            if (node === this.tail) {
+                this.tail = prevNode;
+            }
+        } else {
+            // no real need for an if here (as if prevNode === null then node is head)
+            this.head = node.next;
         }
+        this.count -= 1;
         return node.value;
     }
 

@@ -59,7 +59,10 @@ export class Stack<T> extends StackLike<T> {
         if (node === null) return undefined;
         if (prevNode !== null) {
             prevNode.next = node.next;
+        } else {
+            this.head = node.next;
         }
+        this.count -= 1;
         return node.value;
     }
 

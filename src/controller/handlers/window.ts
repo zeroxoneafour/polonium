@@ -99,6 +99,11 @@ export class WindowHandler {
             this.window.resourceClass,
         );
 
+        console().debug(
+            "new desktops -",
+            this.window.desktops.map((x) => x.id),
+        );
+
         const previousDesktops = [...this.previousDesktops];
         this.previousDesktops = [...this.window.desktops];
         if (!this.tiled) return;
