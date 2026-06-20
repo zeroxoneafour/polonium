@@ -16,6 +16,7 @@
 - Added `--clear-settings` flag to DBus
 - Keep master setting for Half layout
 - Fix event simplification and Stack/Queue bugs
+- Use index pointers for stack based layouts
 
 ## 1.1
 

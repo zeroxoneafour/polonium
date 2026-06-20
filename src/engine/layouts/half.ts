@@ -9,15 +9,7 @@ import {
     BaseEngineSettings,
     LayoutDirection,
 } from "../engine";
-
-class WindowBox {
-    window: Window;
-    size: number = 1;
-
-    constructor(window: Window) {
-        this.window = window;
-    }
-}
+import { WindowBox } from "./stackingcommon";
 
 class HalfEngineSettings extends BaseEngineSettings {
     middleSplit: number = 0.5;
@@ -28,7 +20,7 @@ class HalfEngineSettings extends BaseEngineSettings {
 }
 
 export class HalfEngine implements TilingEngineInterface {
-    tileMap: Map<Tile, WindowBox> = new Map();
+    tileMap: Map<Tile, [WindowBox[], number]> = new Map();
     side1: WindowBox[] = [];
     side2: WindowBox[] = [];
 
@@ -78,11 +70,12 @@ export class HalfEngine implements TilingEngineInterface {
             } else {
                 rootTile.layoutDirection = LayoutDirection.Horizontal;
             }
-            for (const box of dominantSide) {
+            for (let i = 0; i < dominantSide.length; i += 1) {
+                const box = dominantSide[i];
                 const tile = rootTile.addChild();
                 tile.windows.push(box.window);
                 tile.size = box.size;
-                this.tileMap.set(tile, box);
+                this.tileMap.set(tile, [dominantSide, i]);
             }
             return rootTile;
         }
@@ -91,13 +84,14 @@ export class HalfEngine implements TilingEngineInterface {
         side1Tile.size = this.settings.middleSplit * 2;
         if (this.side1.length == 1) {
             side1Tile.windows.push(this.side1[0].window);
-            this.tileMap.set(side1Tile, this.side1[0]);
+            this.tileMap.set(side1Tile, [this.side1, 0]);
         } else {
-            for (const box of this.side1) {
+            for (let i = 0; i < this.side1.length; i += 1) {
+                const box = this.side1[i];
                 const tile = side1Tile.addChild();
                 tile.windows.push(box.window);
                 tile.size = box.size;
-                this.tileMap.set(tile, box);
+                this.tileMap.set(tile, [this.side1, i]);
             }
         }
 
@@ -105,13 +99,14 @@ export class HalfEngine implements TilingEngineInterface {
         side2Tile.size = (1 - this.settings.middleSplit) * 2;
         if (this.side2.length == 1) {
             side2Tile.windows.push(this.side2[0].window);
-            this.tileMap.set(side2Tile, this.side2[0]);
+            this.tileMap.set(side2Tile, [this.side2, 0]);
         } else {
-            for (const box of this.side2) {
+            for (let i = 0; i < this.side2.length; i += 1) {
+                const box = this.side2[i];
                 const tile = side2Tile.addChild();
                 tile.windows.push(box.window);
                 tile.size = box.size;
-                this.tileMap.set(tile, box);
+                this.tileMap.set(tile, [this.side2, i]);
             }
         }
 
@@ -163,7 +158,12 @@ export class HalfEngine implements TilingEngineInterface {
         if (this.settings.rotateLayout) {
             direction = rotateDirection(direction);
         }
-        if (this.tileMap.get(tile)?.window === window) {
+        const target = this.tileMap.get(tile);
+        if (target === undefined) {
+            this.addWindow(window);
+            return;
+        }
+        if (target[0][target[1]]?.window === window) {
             return;
         }
         if (
@@ -172,16 +172,15 @@ export class HalfEngine implements TilingEngineInterface {
         ) {
             this.removeWindow(window);
         }
-        const targetBox = this.tileMap.get(tile);
-        if (targetBox == undefined) {
-            this.addWindow(window);
-            return;
-        }
         const newBox = new WindowBox(window);
-        const [side, otherSide] = this.side1.includes(targetBox)
-            ? [this.side1, this.side2]
-            : [this.side2, this.side1];
-        const idx = side.indexOf(targetBox);
+        const [side, otherSide] =
+            this.side1 === target[0]
+                ? [this.side1, this.side2]
+                : [this.side2, this.side1];
+        let idx = target[1];
+        if (idx >= side.length) {
+            idx = side.length - 1;
+        }
         if (otherSide.length == 0) {
             // if side == side 2 and inserting in right or vice versa then push box to other side, else push to same side
             // complex xor but it makes sense in practice trust me
@@ -223,11 +222,12 @@ export class HalfEngine implements TilingEngineInterface {
             this.settings.middleSplit =
                 rootTile.children[0].size / rootTile.totalChildrenSize();
         }
-        for (const [tile, box] of this.tileMap) {
-            if (
-                (this.side1.includes(box) && this.side1.length > 1) ||
-                (this.side2.includes(box) && this.side2.length > 1)
-            ) {
+        for (const [tile, boxPointer] of this.tileMap) {
+            const box = boxPointer[0][boxPointer[1]];
+            if (box === undefined) {
+                continue;
+            }
+            if (boxPointer[0].length > 1) {
                 box.size = tile.size;
             }
         }

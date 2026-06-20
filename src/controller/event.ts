@@ -105,12 +105,11 @@ interface ToggleSettingsMenuEvent {
 
 export type PostEvent = SetWindowPropertiesEvent | ToggleSettingsMenuEvent;
 
-// check if two events operate on the same widnow, desktops, and output
-// ev1 must be a tileWindow event and ev2 must be an untileWindow event
-function eventsAreParallel(
-    ev1: TileWindowEvent,
-    ev2: UntileWindowEvent,
-): boolean {
+// check if two events operate on the same window, desktops, and output
+function eventsAreParallel<
+    T1 extends TileWindowEvent | PlaceWindowEvent | UntileWindowEvent,
+    T2 extends TileWindowEvent | PlaceWindowEvent | UntileWindowEvent,
+>(ev1: T1, ev2: T2): boolean {
     if (ev1.window !== ev2.window) return false;
     if (ev1.output !== ev2.output) return false;
     if (ev1.activity !== ev2.activity) return false;
@@ -131,12 +130,18 @@ function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
 export function simplifyEvents(oldEvents: Queue<Event>): Queue<Event> {
     const newEvents = new Queue<Event>();
     for (const ev of oldEvents) {
-        if (ev.t == "tileWindow" || ev.t == "untileWindow") {
+        if (
+            ev.t == "tileWindow" ||
+            ev.t == "untileWindow" ||
+            ev.t == "placeWindow"
+        ) {
             const parallelEventIdx = newEvents.indexOf((e) => {
-                if (ev.t == "tileWindow" && e.t == "untileWindow") {
+                if (
+                    e.t == "tileWindow" ||
+                    e.t == "untileWindow" ||
+                    e.t == "placeWindow"
+                ) {
                     return eventsAreParallel(ev, e);
-                } else if (e.t == "tileWindow" && ev.t == "untileWindow") {
-                    return eventsAreParallel(e, ev);
                 } else {
                     return false;
                 }

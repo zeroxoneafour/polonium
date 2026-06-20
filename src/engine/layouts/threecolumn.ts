@@ -9,15 +9,7 @@ import {
     BaseEngineSettings,
     LayoutDirection,
 } from "../engine";
-
-class WindowBox {
-    window: Window;
-    size: number = 1;
-
-    constructor(window: Window) {
-        this.window = window;
-    }
-}
+import { WindowBox } from "./stackingcommon";
 
 class ThreeColumnEngineSettings extends BaseEngineSettings {
     side1Size: number = 0.25;
@@ -27,7 +19,10 @@ class ThreeColumnEngineSettings extends BaseEngineSettings {
 }
 
 export class ThreeColumnEngine implements TilingEngineInterface {
-    tileMap: Map<Tile, WindowBox> = new Map();
+    // this is what I came up with
+    // [WindowBox[], number] - Side and index of tile
+    // boolean - true if center, false if invalid
+    tileMap: Map<Tile, [WindowBox[], number] | boolean> = new Map();
     side1: WindowBox[] = [];
     center: WindowBox | null = null;
     side2: WindowBox[] = [];
@@ -64,7 +59,7 @@ export class ThreeColumnEngine implements TilingEngineInterface {
         if (this.side1.length == 0 && this.side2.length == 0) {
             if (this.center !== null) {
                 rootTile.windows.push(this.center.window);
-                this.tileMap.set(rootTile, this.center);
+                this.tileMap.set(rootTile, true);
             }
             return rootTile;
         }
@@ -74,13 +69,14 @@ export class ThreeColumnEngine implements TilingEngineInterface {
             side1Tile.size = this.settings.side1Size * 3;
             if (this.side1.length == 1) {
                 side1Tile.windows.push(this.side1[0].window);
-                this.tileMap.set(side1Tile, this.side1[0]);
+                this.tileMap.set(side1Tile, [this.side1, 0]);
             } else {
-                for (const box of this.side1) {
+                for (let i = 0; i < this.side1.length; i += 1) {
+                    const box = this.side1[i];
                     const tile = side1Tile.addChild();
                     tile.windows.push(box.window);
                     tile.size = box.size;
-                    this.tileMap.set(tile, box);
+                    this.tileMap.set(tile, [this.side1, i]);
                 }
             }
         }
@@ -93,7 +89,7 @@ export class ThreeColumnEngine implements TilingEngineInterface {
             this.side2.length > 0 ? this.settings.side2Size * 3 : 0;
         if (this.center !== null) {
             centerTile.windows.push(this.center.window);
-            this.tileMap.set(centerTile, this.center);
+            this.tileMap.set(centerTile, true);
         }
 
         if (this.side2.length > 0) {
@@ -101,13 +97,14 @@ export class ThreeColumnEngine implements TilingEngineInterface {
             side2Tile.size = this.settings.side2Size * 3;
             if (this.side2.length == 1) {
                 side2Tile.windows.push(this.side2[0].window);
-                this.tileMap.set(side2Tile, this.side2[0]);
+                this.tileMap.set(side2Tile, [this.side2, 0]);
             } else {
-                for (const box of this.side2) {
+                for (let i = 0; i < this.side2.length; i += 1) {
+                    const box = this.side2[i];
                     const tile = side2Tile.addChild();
                     tile.windows.push(box.window);
                     tile.size = box.size;
-                    this.tileMap.set(tile, box);
+                    this.tileMap.set(tile, [this.side2, i]);
                 }
             }
         }
@@ -124,11 +121,11 @@ export class ThreeColumnEngine implements TilingEngineInterface {
         const lengthDiff = this.side1.length - this.side2.length;
         if (
             (lengthDiff == 0 && this.settings.swapInsertSide) ||
-            lengthDiff < 0
+            lengthDiff > 0
         ) {
-            this.side1.push(box);
-        } else {
             this.side2.push(box);
+        } else {
+            this.side1.push(box);
         }
     }
 
@@ -176,7 +173,15 @@ export class ThreeColumnEngine implements TilingEngineInterface {
         if (this.settings.rotateLayout) {
             direction = rotateDirection(direction);
         }
-        if (this.tileMap.get(tile)?.window === window) {
+        const target = this.tileMap.get(tile);
+        if (target === undefined || target === false) {
+            this.addWindow(window);
+            return;
+        }
+        if (
+            (target === true && this.center.window === window) ||
+            (target !== true && target[0][target[1]]?.window === window)
+        ) {
             return;
         }
         if (
@@ -186,38 +191,28 @@ export class ThreeColumnEngine implements TilingEngineInterface {
         ) {
             this.removeWindow(window);
         }
-        const targetBox = this.tileMap.get(tile);
-        if (targetBox == undefined) {
-            this.addWindow(window);
-            return;
-        }
         const newBox = new WindowBox(window);
-        if (targetBox === this.center) {
+        if (target === true) {
             // if there are no windows in the chosen side, then add it to that side
             if (!(direction & Direction.Right) && this.side1.length == 0) {
                 this.side1.push(newBox);
             } else if (direction & Direction.Right && this.side2.length == 0) {
                 this.side2.push(newBox);
-                // if inserted into right side of center and there are windows in right, push center to the left stack
-            } else if (direction & Direction.Right) {
-                this.side1.push(this.center);
-                this.center = newBox;
-                // if inserted into left side and there are windows in left, push center into right stack
             } else {
-                this.side2.push(this.center);
+                // otherwise simply readd center as a new window
+                const oldCenter = this.center;
                 this.center = newBox;
+                this.addWindow(oldCenter.window);
             }
         } else {
-            // normal half style insertion (but even less complex!) if just putting in on side
-            const side = this.side1.includes(targetBox)
-                ? this.side1
-                : this.side2;
-            const idx = side.indexOf(targetBox);
-            if (direction & Direction.Down) {
-                side.splice(idx + 1, 0, newBox);
-            } else {
-                side.splice(idx, 0, newBox);
+            let idx = target[1];
+            if (idx >= target[0].length) {
+                idx = target[0].length - 1;
             }
+            if (direction & Direction.Down) {
+                idx += 1;
+            }
+            target[0].splice(idx, 0, newBox);
         }
     }
 
@@ -237,11 +232,15 @@ export class ThreeColumnEngine implements TilingEngineInterface {
             this.settings.side2Size =
                 rootTile.children[1].size / rootTile.totalChildrenSize();
         }
-        for (const [tile, box] of this.tileMap) {
-            if (
-                (this.side1.includes(box) && this.side1.length > 1) ||
-                (this.side2.includes(box) && this.side2.length > 1)
-            ) {
+        for (const [tile, boxPointer] of this.tileMap) {
+            if (boxPointer === true || boxPointer === false) {
+                continue;
+            }
+            const box = boxPointer[0][boxPointer[1]];
+            if (box === undefined) {
+                continue;
+            }
+            if (boxPointer[0].length > 1) {
                 box.size = tile.size;
             }
         }
