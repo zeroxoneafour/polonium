@@ -1,4 +1,10 @@
-import { Output, VirtualDesktop, Window, Activity, MaximizeMode } from "kwin-api";
+import {
+    Output,
+    VirtualDesktop,
+    Window,
+    Activity,
+    MaximizeMode,
+} from "kwin-api";
 import { config, console, controller as ctrl } from "..";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
@@ -27,7 +33,7 @@ export class WindowHandler {
         this.wantsTiled = this.tiled;
         // we dont know if it is false but it probably is
         this.maximized = false;
-        
+
         this.window.desktopsChanged.connect(this.desktopsChanged.bind(this));
         this.window.activitiesChanged.connect(
             this.activitiesChanged.bind(this),
@@ -38,7 +44,9 @@ export class WindowHandler {
             this.fullscreenChanged.bind(this),
         );
         this.window.minimizedChanged.connect(this.minimizedChanged.bind(this));
-        this.window.maximizedAboutToChange.connect(this.maximizedChanged.bind(this));
+        this.window.maximizedAboutToChange.connect(
+            this.maximizedChanged.bind(this),
+        );
 
         this.window.interactiveMoveResizeStepped.connect(
             this.interactiveMoveResizeStepped.bind(this),
@@ -136,7 +144,7 @@ export class WindowHandler {
             "fullscreen changed on window",
             this.window.resourceClass,
         );
-        if (this.window.fullScreen && this.tiled) {
+        if (!this.canBeTiled() && this.tiled) {
             this.tiled = false;
             for (const ev of createUntileEvents(this.window)) {
                 ctrl().queueEvent(ev);
@@ -165,7 +173,7 @@ export class WindowHandler {
             "minimized changed on window",
             this.window.resourceClass,
         );
-        if (this.window.minimized && this.tiled) {
+        if (!this.canBeTiled() && this.tiled) {
             this.tiled = false;
             for (const ev of createUntileEvents(this.window)) {
                 ctrl().queueEvent(ev);
@@ -183,7 +191,7 @@ export class WindowHandler {
             this.window.resourceClass,
         );
         this.maximized = state !== MaximizeMode.MaximizeRestore;
-        if (this.maximized && this.tiled) {
+        if (!this.canBeTiled() && this.tiled) {
             this.tiled = false;
             for (const ev of createUntileEvents(this.window)) {
                 ctrl().queueEvent(ev);
@@ -267,6 +275,10 @@ export class WindowHandler {
     }
 
     canBeTiled(): boolean {
-        return !(this.window.fullScreen || this.window.minimized || this.maximized);
+        return !(
+            this.window.fullScreen ||
+            this.window.minimized ||
+            this.maximized
+        );
     }
 }
