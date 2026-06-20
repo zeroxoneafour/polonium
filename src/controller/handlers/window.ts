@@ -1,4 +1,4 @@
-import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
+import { Output, VirtualDesktop, Window, Activity, MaximizeMode } from "kwin-api";
 import { config, console, controller as ctrl } from "..";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
@@ -11,6 +11,7 @@ export class WindowHandler {
     previousOutput: Output;
     tiled: boolean;
     wantsTiled: boolean;
+    maximized: boolean;
 
     workspace: Workspace;
 
@@ -24,7 +25,9 @@ export class WindowHandler {
 
         this.tiled = this.startTiled();
         this.wantsTiled = this.tiled;
-
+        // we dont know if it is false but it probably is
+        this.maximized = false;
+        
         this.window.desktopsChanged.connect(this.desktopsChanged.bind(this));
         this.window.activitiesChanged.connect(
             this.activitiesChanged.bind(this),
@@ -35,6 +38,7 @@ export class WindowHandler {
             this.fullscreenChanged.bind(this),
         );
         this.window.minimizedChanged.connect(this.minimizedChanged.bind(this));
+        this.window.maximizedAboutToChange.connect(this.maximizedChanged.bind(this));
 
         this.window.interactiveMoveResizeStepped.connect(
             this.interactiveMoveResizeStepped.bind(this),
@@ -173,6 +177,24 @@ export class WindowHandler {
             }
         }
     }
+    maximizedChanged(state: MaximizeMode) {
+        console().debug(
+            "maximized state changed on window",
+            this.window.resourceClass,
+        );
+        this.maximized = state !== MaximizeMode.MaximizeRestore;
+        if (this.maximized && this.tiled) {
+            this.tiled = false;
+            for (const ev of createUntileEvents(this.window)) {
+                ctrl().queueEvent(ev);
+            }
+        } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
+            this.tiled = true;
+            for (const ev of createTileEvents(this.window)) {
+                ctrl().queueEvent(ev);
+            }
+        }
+    }
 
     // use this instead of tileChanged because tileChanged does what it wants
     // use stepped instead of started as there can be some delay setting window.tile to null
@@ -245,6 +267,6 @@ export class WindowHandler {
     }
 
     canBeTiled(): boolean {
-        return !(this.window.fullScreen || this.window.minimized);
+        return !(this.window.fullScreen || this.window.minimized || this.maximized);
     }
 }
