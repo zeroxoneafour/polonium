@@ -269,15 +269,17 @@ export class Driver {
             if (
                 engineTile.parent.layoutDirection === LayoutDirection.Horizontal
             ) {
-                size = kwinTile.relativeGeometry.width /
+                size =
+                    kwinTile.relativeGeometry.width /
                     kwinTile.parent.relativeGeometry.width;
             } else {
-                size = kwinTile.relativeGeometry.height /
+                size =
+                    kwinTile.relativeGeometry.height /
                     kwinTile.parent.relativeGeometry.height;
             }
             // use static sizing based at 1 instead of dynamic sizing
             // the resulting tiles will have a totalChildrenSize == children.length
-            size *= engineTile.parent.children.length;
+            size *= kwinTile.parent.tiles.length;
             engineTile.size = size;
         }
         this.tilingEngine.updateTiles(this.tileMap.get(this.rootTile)!);

@@ -27,6 +27,21 @@ export class ShortcutsHandler {
             .activated.connect(
                 this.setEngineType.bind(this, TilingEngineType.Half),
             );
+        this.shortcuts
+            .setEngineThreeColumn()
+            .activated.connect(
+                this.setEngineType.bind(this, TilingEngineType.ThreeColumn),
+            );
+        this.shortcuts
+            .setEnginePillars()
+            .activated.connect(
+                this.setEngineType.bind(this, TilingEngineType.Pillars),
+            );
+        this.shortcuts
+            .setEnginePager()
+            .activated.connect(
+                this.setEngineType.bind(this, TilingEngineType.Pager),
+            );
 
         this.shortcuts
             .activateBelow()

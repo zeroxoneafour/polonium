@@ -2,7 +2,7 @@
 
 ## What layouts are supported?
 
-Right now, we have Binary Tree, Half, Three Column, and Pillars layouts.
+Right now, we have Binary Tree, Half, Three Column, Pillars, and Pager layouts.
 They are highly [configurable](../configuration) and can emulate several other layout styles.
 
 Particularly, master-stack can be built with Half and dwindle/spiral can be built with BTree.
@@ -21,7 +21,9 @@ If you would like to use Krohnkite, [here is the link](https://store.kde.org/p/2
 ## How to use the DBus saver feature?
 
 Clone [the repo](https://github.com/zeroxoneafour/polonium) and run `make dbus`.
-This requires Rust to be installed. Prebuilt executables will come soon maybe.
+This requires Rust to be installed.
+
+If you do not have Rust, download a prebuilt binary from GitHub and follow the Makefile to install it.
 
 You can reset your settings by running `polonium-saver --clear-settings`.
 

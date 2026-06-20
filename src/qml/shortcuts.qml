@@ -27,7 +27,6 @@ Item {
         text: "Polonium: Use Binary Tree Engine";
         sequence: "";
     }
-
     function setEngineHalf() {
         return setEngineHalfObj;
     }
@@ -38,6 +37,37 @@ Item {
         text: "Polonium: Use Half Engine";
         sequence: "";
     }
+    function setEngineThreeColumn() {
+        return setEngineThreeColumnObj;
+    }
+    ShortcutHandler {
+        id: setEngineThreeColumnObj;
+        
+        name: "PoloniumSetEngineThreeColumn";
+        text: "Polonium: Use Three Column Engine";
+        sequence: "";
+    }
+    function setEnginePillars() {
+        return setEnginePillarsObj;
+    }
+    ShortcutHandler {
+        id: setEnginePillarsObj;
+        
+        name: "PoloniumSetEnginePillars";
+        text: "Polonium: Use Pillars Engine";
+        sequence: "";
+    }
+    function setEnginePager() {
+        return setEnginePagerObj;
+    }
+    ShortcutHandler {
+        id: setEnginePagerObj;
+        
+        name: "PoloniumSetEnginePager";
+        text: "Polonium: Use Pager Engine";
+        sequence: "";
+    }
+
 
     function activateAbove() {
         return activateAboveObj;
