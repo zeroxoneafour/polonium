@@ -4,6 +4,10 @@ VERSION = 1.1.0
 PKGFILE = $(NAME).kwinscript
 PKGDIR = pkg
 
+CARGO_HOME ?= $(HOME)/.cargo
+XDG_CONFIG_HOME ?= $(HOME)/.config
+XDG_DATA_HOME ?= $(HOME)/.local/share
+
 .NOTPARALLEL: all
 
 all: build install cleanall
@@ -17,6 +21,7 @@ install:
 	kpackagetool6 -t KWin/Script -s $(NAME) \
 		&& kpackagetool6 -t KWin/Script -u $(PKGFILE) \
 		|| kpackagetool6 -t KWin/Script -i $(PKGFILE)
+	install -m 644 -D -t $(XDG_DATA_HOME)/applications res/polonium-settings.desktop
 
 clean: $(PKGDIR)
 	rm -r $(PKGDIR)
@@ -57,10 +62,6 @@ $(PKGDIR):
 	mkdir -p $(PKGDIR)/contents/code
 	mkdir $(PKGDIR)/contents/config
 	mkdir $(PKGDIR)/contents/ui
-
-CARGO_HOME ?= $(HOME)/.cargo
-XDG_CONFIG_HOME ?= $(HOME)/.config
-XDG_DATA_HOME ?= $(HOME)/.local/share
 
 dbus:
 	cd dbus-saver && cargo install --path .

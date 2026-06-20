@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Polonium Settings
+Comment=Opens Polonium per-desktop settings
+Exec=qdbus-qt6 org.kde.kglobalaccel /component/kwin invokeShortcut "PoloniumToggleSettingsMenu"
+Icon=preferences-system-windows-effect-presentwindows
+Terminal=false
+Type=Application
+Categories=Settings;
