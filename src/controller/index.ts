@@ -157,13 +157,15 @@ class Controller {
                 const ids = [];
                 for (const desktop of this.workspace.desktops) {
                     for (const output of this.workspace.screens) {
-                        ids.push(
-                            desktopId(
-                                desktop,
-                                this.workspace.currentActivity,
-                                output,
-                            ),
+                        const id = desktopId(
+                            desktop,
+                            this.workspace.currentActivity,
+                            output,
                         );
+                        // make sure the driver exists and if it doesnt try to create it
+                        if (this.getDriver(id) !== undefined) {
+                            ids.push(id);
+                        }
                     }
                 }
                 return ids;

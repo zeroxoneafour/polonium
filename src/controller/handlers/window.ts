@@ -70,6 +70,9 @@ export class WindowHandler {
         if (config().ignoreWindowClasses.test(this.window.resourceClass)) {
             return false;
         }
+        if (config().ignoreWindowCaptions.test(this.window.caption)) {
+            return false;
+        }
         return true;
     }
 

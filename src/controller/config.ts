@@ -11,12 +11,12 @@ export enum LogLevel {
     Log,
     Debug,
 }
-export enum BorderSetting {
-    NoBorders = 0,
-    BorderFloating,
-    BorderActive,
-    BorderFloatingActive,
-    BorderAll,
+export enum Borders {
+    None = 0,
+    Floating,
+    Active,
+    FloatingActive,
+    All,
 }
 
 export class Config {
@@ -34,8 +34,10 @@ export class Config {
     readonly pillarSettings: object;
     readonly pagerSettings: object;
 
+    readonly rawRegex: boolean;
     readonly ignoreWindowClasses: RegExp;
-    readonly borders: BorderSetting;
+    readonly ignoreWindowCaptions: RegExp;
+    readonly borders: Borders;
     readonly tiledWindowsBelow: boolean;
     readonly tilePopups: boolean;
 
@@ -87,17 +89,31 @@ export class Config {
             rotateLayout: rc("PagerRotateLayout", false),
         };
 
-        this.ignoreWindowClasses = new RegExp(
-            rc(
-                "IgnoreWindowClasses",
-                "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
-            )
-                .split(",")
-                .map((x) => x.trim())
-                .join("|"),
+        this.rawRegex = rc("RawRegex", false);
+        let ignoreWindowClasses = rc(
+            "IgnoreWindowClasses",
+            "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
         );
-        this.borders = rc("Borders", BorderSetting.BorderAll);
+        if (!this.rawRegex) {
+            ignoreWindowClasses = commaRegex(ignoreWindowClasses);
+            ignoreWindowClasses = "^" + ignoreWindowClasses + "$";
+        }
+        this.ignoreWindowClasses = new RegExp(ignoreWindowClasses);
+        let ignoreWindowCaptions = rc("IgnoreWindowCaptions", "");
+        if (!this.rawRegex) {
+            ignoreWindowCaptions = commaRegex(ignoreWindowCaptions);
+            ignoreWindowCaptions = "^" + ignoreWindowCaptions + "$";
+        }
+        this.ignoreWindowCaptions = new RegExp(ignoreWindowCaptions);
+        this.borders = rc("Borders", Borders.All);
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.tilePopups = rc("TilePopups", false);
     }
+}
+
+function commaRegex(str: string): string {
+    return str
+        .split(",")
+        .map((x) => x.trim())
+        .join("|");
 }

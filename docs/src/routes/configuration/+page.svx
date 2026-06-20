@@ -67,9 +67,13 @@ Configuration is accessed through the KWin Scripts settings menu.
 ## Windows
 
 Note that all text fields accept regex.
-Commas are replaced with regex OR statements for backwards compatibility and readability.
+Commas are replaced with regex OR statements (`|`) for backwards compatibility and readability.
+Additionally, the regex is wrapped with `^` and `$` to prevent empty matching.
 
-* Do Not Tile Window Classes - If a window class matches this regex, it will not be tiled.
+* Igore Window Classes - If a window class matches this regex, it will not be tiled.
+* Ignore Window Captions - If a window caption (title) matches this regex, it will not be tiled.
+* Raw Regex - If true, then commas will not be converted into regex ORs and the regex will not be wrapped.
+    * Use with caution as empty strings will match everything!
 * Borders - How window borders should be distributed.
 * Place Tiled Windows Below - Whether tiled windows should be forced below floating/fullscreen ones.
 * Tile Popup Windows - Whether to tile popup windows.

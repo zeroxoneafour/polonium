@@ -1,7 +1,7 @@
 import { Workspace } from "kwin-api/qml";
 import { config, console, controller as ctrl } from "..";
 import { Window } from "kwin-api";
-import { BorderSetting } from "../config";
+import { Borders } from "../config";
 import { createTileEvents, createUntileEvents } from "../event";
 import { directionFromPoint } from "../../util";
 
@@ -76,34 +76,35 @@ export class WorkspaceHandler {
         ctrl().queueEvent({ t: "updateDrivers" });
     }
 
-    windowActivated(window: Window) {
+    windowActivated(window: Window | null) {
         this.previousActivated = this.currentActivated;
         this.currentActivated = window;
+        const borders = config().borders;
         if (
-            config().borders == BorderSetting.BorderActive ||
-            config().borders == BorderSetting.BorderFloatingActive
+            this.previousActivated !== null &&
+            (borders === Borders.Active ||
+                (borders === Borders.FloatingActive &&
+                    windowIsTiled(this.previousActivated)))
         ) {
-            if (windowIsTiled(window)) {
-                ctrl().queuePostEvent({
-                    t: "setWindowProperties",
-                    window: window,
-                    noBorder: false,
-                });
-            }
-            if (
-                this.previousActivated != null &&
-                (windowIsTiled(this.previousActivated) ||
-                    config().borders == BorderSetting.BorderActive)
-            ) {
-                ctrl().queuePostEvent({
-                    t: "setWindowProperties",
-                    window: this.previousActivated,
-                    noBorder: true,
-                });
-            }
+            ctrl().queuePostEvent({
+                t: "setWindowProperties",
+                window: this.previousActivated,
+                noBorder: true,
+            });
         }
         if (window === null) {
             return;
+        }
+        if (
+            (borders === Borders.Active ||
+                borders === Borders.FloatingActive) &&
+            windowIsTiled(window)
+        ) {
+            ctrl().queuePostEvent({
+                t: "setWindowProperties",
+                window: window,
+                noBorder: false,
+            });
         }
         for (const desktop of window.desktops) {
             for (const activity of window.activities) {

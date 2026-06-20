@@ -15,7 +15,7 @@ import {
 import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
 import { Direction } from "../util";
-import { BorderSetting } from "../controller/config";
+import { Borders } from "../controller/config";
 
 export class Driver {
     rootTile: KwinTile;
@@ -335,7 +335,13 @@ function setTiledProps(window: KwinWindow) {
     if (config().tiledWindowsBelow) {
         window.keepBelow = true;
     }
-    if (config().borders != BorderSetting.BorderAll) {
+    if (
+        config().borders === Borders.Floating ||
+        config().borders === Borders.None ||
+        ((config().borders === Borders.Active ||
+            config().borders === Borders.FloatingActive) &&
+            !window.active)
+    ) {
         window.noBorder = true;
     }
     window.setMaximize(false, false);
@@ -346,8 +352,8 @@ function setUntiledProps(window: KwinWindow) {
         window.keepBelow = false;
     }
     if (
-        config().borders != BorderSetting.NoBorders &&
-        config().borders != BorderSetting.BorderActive
+        config().borders === Borders.Floating ||
+        config().borders === Borders.FloatingActive
     ) {
         window.noBorder = false;
     }
