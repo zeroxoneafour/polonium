@@ -1,11 +1,12 @@
+import { Output, VirtualDesktop, Window, Activity } from "kwin-api";
 import {
-    Output,
-    VirtualDesktop,
-    Window,
-    Activity,
-    ClientAreaOption,
-} from "kwin-api";
-import { Event, PostEvent, simplifyEvents, simplifyPostEvents } from "./event";
+    Event,
+    PostEvent,
+    simplifyEvents,
+    simplifyPostEvents,
+    DesktopIdentifier,
+    desktopId,
+} from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace } from "kwin-api/qml";
 import {
@@ -113,13 +114,18 @@ class Controller {
         this.postEventQueue = new Queue<PostEvent>();
         console().debug("Handling", postQueue.size, "post event(s)");
         while (!postQueue.isEmpty) {
-            this.handlePostEvent(postQueue.pop()!);
+            const ev = postQueue.pop();
+            if (ev === undefined) {
+                break;
+            }
+            this.handlePostEvent(ev);
         }
         this.processingEvents = false;
     }
 
     // returns a list of desktopIdentifiers that need a rebuild
     // one event returning yes guarantees a rebuild
+    // error handling - break in case statement to exit and log error message
     private handleEvent(ev: Event): DesktopIdentifier[] {
         console().debug("handling event", ev.t);
         switch (ev.t) {
@@ -133,7 +139,7 @@ class Controller {
                 );
                 const driver = this.getDriver(id);
                 if (driver === undefined) {
-                    return [];
+                    break;
                 }
                 driver.addWindow(ev.window, ev.tile, ev.direction);
                 return [id];
@@ -156,7 +162,7 @@ class Controller {
                 // in any case if the driver didn't already exist then removing the window from a new one wouldn't change anything.
                 const driver = this.drivers.get(id);
                 if (driver === undefined || !driver.hasWindow(ev.window)) {
-                    return [];
+                    break;
                 }
                 driver.removeWindow(ev.window);
                 return [id];
@@ -198,14 +204,18 @@ class Controller {
                 );
                 const driver = this.getDriver(id);
                 if (driver === undefined) {
-                    return [];
+                    break;
                 }
                 driver.placeWindow(ev.window, ev.tile, ev.direction);
                 return [id];
             }
             case "windowActivated": {
                 const id = desktopId(ev.desktop, ev.activity, ev.output);
-                if (this.getDriver(id)?.windowActivated(ev.window)) {
+                const driver = this.getDriver(id);
+                if (driver === undefined) {
+                    break;
+                }
+                if (ev.window != null && driver.windowActivated(ev.window)) {
                     return [id];
                 }
                 return [];
@@ -215,19 +225,20 @@ class Controller {
                 console().log("updating tiles for desktop", id);
                 const driver = this.getDriver(id);
                 if (driver === undefined) {
-                    return [];
+                    break;
                 }
                 // sometimes changing tiles updates engine settings so make sure to send out for dbus
-                const before = JSON.stringify(driver.getEngineSettings());
+                const oldSettings = JSON.stringify(driver.getEngineSettings());
                 driver.updateTiles();
-                const after = driver.getEngineSettings();
-                if (before !== JSON.stringify(after)) {
+                const settings = driver.getEngineSettings();
+                // dont need to update dialog as it should be impossible to update tiles with it open
+                if (oldSettings !== JSON.stringify(settings)) {
                     this.dbusHandler?.setSettings(
                         ev.desktop,
                         ev.activity,
                         ev.output,
                         driver.getEngineType(),
-                        after,
+                        settings,
                     );
                 }
                 return ev.rebuild ? [id] : [];
@@ -240,15 +251,17 @@ class Controller {
                 );
                 const driver = this.getDriver(id);
                 if (driver === undefined) {
-                    return [];
+                    break;
                 }
-                const engine = driver.getEngineType();
-                const settings = JSON.stringify(driver.getEngineSettings());
+                const oldEngine = driver.getEngineType();
+                const oldSettings = JSON.stringify(driver.getEngineSettings());
                 driver.changeTilingEngine(ev.engineType, ev.engineSettings);
                 // only rebuild if something changed
+                const engine = driver.getEngineType();
+                const settings = driver.getEngineSettings();
                 if (
-                    engine === driver.getEngineType() &&
-                    settings === JSON.stringify(driver.getEngineSettings())
+                    oldEngine === engine &&
+                    oldSettings === JSON.stringify(settings)
                 ) {
                     return [];
                 }
@@ -257,8 +270,8 @@ class Controller {
                         ev.desktop,
                         ev.activity,
                         ev.output,
-                        driver.getEngineType(),
-                        driver.getEngineSettings(),
+                        engine,
+                        settings,
                     );
                 }
                 if (ev.noDBusUpdate === undefined || !ev.noDBusUpdate) {
@@ -266,8 +279,8 @@ class Controller {
                         ev.desktop,
                         ev.activity,
                         ev.output,
-                        driver.getEngineType(),
-                        driver.getEngineSettings(),
+                        engine,
+                        settings,
                     );
                 }
                 return [id];
@@ -280,10 +293,10 @@ class Controller {
                 );
                 const driver = this.getDriver(id);
                 if (driver === undefined) {
-                    return [];
+                    break;
                 }
-                const engine = driver.getEngineType();
-                const settings = JSON.stringify(driver.getEngineSettings());
+                const oldEngine = driver.getEngineType();
+                const oldSettings = JSON.stringify(driver.getEngineSettings());
                 driver.resetTilingEngine();
                 // reset dbus handler regardless of if anything changes
                 this.dbusHandler?.resetSettings(
@@ -291,9 +304,11 @@ class Controller {
                     ev.activity,
                     ev.output,
                 );
+                const engine = driver.getEngineType();
+                const settings = driver.getEngineSettings();
                 if (
-                    engine === driver.getEngineType() &&
-                    settings === JSON.stringify(driver.getEngineSettings())
+                    oldEngine === engine &&
+                    oldSettings === JSON.stringify(settings)
                 ) {
                     return [];
                 }
@@ -302,15 +317,18 @@ class Controller {
                         ev.desktop,
                         ev.activity,
                         ev.output,
-                        driver.getEngineType(),
-                        driver.getEngineSettings(),
+                        engine,
+                        settings,
                     );
                 }
                 return [id];
             }
+            default: {
+                console().error("invalid event type", (ev as any).t);
+                return [];
+            }
         }
-        // this should never be reached
-        console().warn("event type", ev.t, "not handled");
+        console().error("event type", ev.t, "failed to execute");
         return [];
     }
 
@@ -318,7 +336,9 @@ class Controller {
         console().debug("handling post event", ev.t);
         switch (ev.t) {
             case "setWindowProperties": {
-                if (!this.windowExists(ev.window)) break;
+                if (!this.windowExists(ev.window)) {
+                    break;
+                }
                 console().log(
                     "setting properties for window",
                     ev.window.resourceClass,
@@ -329,32 +349,38 @@ class Controller {
                 if (ev.noBorder !== undefined) {
                     ev.window.noBorder = ev.noBorder;
                 }
-                break;
+                return;
             }
             case "toggleSettingsMenu": {
                 console().log("toggling settings menu");
                 if (this.settingsHandler.isVisible()) {
                     this.settingsHandler.hide();
-                } else {
-                    const driver = this.getDriver(
-                        ev.desktop,
-                        ev.activity,
-                        ev.output,
-                    );
-                    if (driver === undefined) {
-                        break;
-                    }
-                    this.settingsHandler.show(
-                        ev.desktop,
-                        ev.activity,
-                        ev.output,
-                        driver.getEngineType(),
-                        driver.getEngineSettings(),
-                    );
+                    return;
                 }
-                break;
+                const driver = this.getDriver(
+                    ev.desktop,
+                    ev.activity,
+                    ev.output,
+                );
+                if (driver === undefined) {
+                    break;
+                }
+                this.settingsHandler.show(
+                    ev.desktop,
+                    ev.activity,
+                    ev.output,
+                    driver.getEngineType(),
+                    driver.getEngineSettings(),
+                );
+                return;
+            }
+            default: {
+                console().error("invalid post event type", (ev as any).t);
+                return;
             }
         }
+        console().error("post event type", ev.t, "failed to execute");
+        return;
     }
 
     parseDesktopId(
@@ -476,14 +502,4 @@ export function config(): Config {
 }
 export function qt(): Qt {
     return qtObject;
-}
-
-// js can only map off of concrete types (ex. strings)
-type DesktopIdentifier = string;
-export function desktopId(
-    desktop: VirtualDesktop,
-    activity: Activity,
-    output: Output,
-): DesktopIdentifier {
-    return `{"d":"${desktop.id}","a":"${activity}","o":"${output.name}"}`;
 }

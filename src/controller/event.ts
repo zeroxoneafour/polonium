@@ -230,3 +230,12 @@ export function createUntileEvents(
     }
     return ret;
 }
+
+export type DesktopIdentifier = string;
+export function desktopId(
+    desktop: VirtualDesktop,
+    activity: Activity,
+    output: Output,
+): DesktopIdentifier {
+    return `{"d":"${desktop.id}","a":"${activity}","o":"${output.name}"}`;
+}

@@ -1,5 +1,6 @@
 import { Activity, Output, VirtualDesktop } from "kwin-api";
-import { console, controller as ctrl, desktopId } from "..";
+import { console, controller as ctrl } from "..";
+import { DesktopIdentifier, desktopId } from "../event";
 import { TilingEngineType } from "../../engine";
 import { DBus as DBusQml } from "../../extern";
 
@@ -51,7 +52,9 @@ export class DBusHandler {
             settingsBundleStr,
         );
         try {
-            const desktopId = ctrl().parseDesktopId(desktopIdStr as string);
+            const desktopId = ctrl().parseDesktopId(
+                desktopIdStr as DesktopIdentifier,
+            );
             if (desktopId.some((x) => x === undefined)) return;
             const settingsBundle = JSON.parse(
                 settingsBundleStr as string,
