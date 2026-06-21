@@ -18,10 +18,6 @@ import { Direction } from "../util";
 import { Borders } from "../controller/config";
 
 export class Driver {
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
-
     private engineRootTile: EngineTile | null = null;
     private tileMap: Map<KwinTile, EngineTile> = new Map();
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
@@ -30,47 +26,11 @@ export class Driver {
 
     private tilingEngine: TilingEngine;
 
-    active: boolean = true;
-
-    constructor(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
-        engineType: TilingEngineType,
-        engineSettings?: object,
-    ) {
-        this.desktop = desktop;
-        this.activity = activity;
-        this.output = output;
-
+    constructor(engineType: TilingEngineType, engineSettings?: object) {
         if (engineSettings === undefined) {
             engineSettings = getConfigEngineSettings(engineType);
         }
         this.tilingEngine = new TilingEngine(engineType, engineSettings);
-    }
-
-    refreshDriver(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
-    ): void {
-        this.desktop = desktop;
-        this.activity = activity;
-        this.output = output;
-
-        // remove invalid windows
-        for (const [kwinWindow, engineWindow] of this.windowMap) {
-            if (kwinWindow == null || !ctrl().windowExists(kwinWindow)) {
-                if (
-                    kwinWindow.desktops.includes(this.desktop) ||
-                    kwinWindow.activities.includes(this.activity) ||
-                    kwinWindow.output == this.output
-                )
-                    continue;
-                this.tilingEngine.removeWindow(engineWindow);
-                this.windowMap.delete(kwinWindow);
-            }
-        }
     }
 
     private setEngineType(
@@ -122,20 +82,26 @@ export class Driver {
         }
     }
 
-    buildLayout(rootTile: KwinTile): void {
+    buildLayout(
+        rootTile: KwinTile,
+        desktop: VirtualDesktop,
+        activity: Activity,
+        output: Output,
+    ): void {
         // remove non-extant windows or windows that are not on the desktop/activity/output
-        // should prevent ghost tiles even if other code is buggy
+        // should prevent ghost tiles even if code elsewhere is buggy
         for (const [kwinWindow, _ew] of this.windowMap) {
             if (
                 !ctrl().windowExists(kwinWindow) ||
-                !kwinWindow.desktops.includes(this.desktop) ||
-                !kwinWindow.activities.includes(this.activity) ||
-                kwinWindow.output !== this.output
+                !kwinWindow.desktops.includes(desktop) ||
+                !kwinWindow.activities.includes(activity) ||
+                kwinWindow.output !== output
             ) {
                 console().warn("invalid window in windowMap");
                 this.removeWindow(kwinWindow);
             }
         }
+
         this.engineRootTile = this.tilingEngine.buildLayout();
         const previousTileSet = new Set(this.tileMap.keys());
         this.tileMap = buildLayout(rootTile, this.engineRootTile);
@@ -148,7 +114,12 @@ export class Driver {
             // set callbacks on tiles that do not have callbacks set
             if (!previousTileSet.has(kwinTile)) {
                 kwinTile.relativeGeometryChanged.connect(
-                    this.updateTileSizesCallback.bind(this),
+                    this.updateTileSizesCallback.bind(
+                        this,
+                        desktop,
+                        activity,
+                        output,
+                    ),
                 );
             }
             for (const engineWindow of engineTile.windows) {
@@ -307,12 +278,16 @@ export class Driver {
         this.tilingEngine.updateTiles(this.engineRootTile);
     }
 
-    updateTileSizesCallback() {
+    updateTileSizesCallback(
+        desktop: VirtualDesktop,
+        activity: Activity,
+        output: Output,
+    ) {
         ctrl().queueEvent({
             t: "updateTiles",
-            desktop: this.desktop,
-            activity: this.activity,
-            output: this.output,
+            desktop: desktop,
+            activity: activity,
+            output: output,
             rebuild: false,
         });
     }
