@@ -2,6 +2,13 @@
 
 ## 1.2
 
+### 1.2.1
+
+- Fix issue with setting reset
+- Try to work around ultra-rare bug where output passed as undefined (kwin bug?)
+
+### 1.2.0
+
 - Add depth-first binary tree (dwindle) and spiral
 - Add insert into active window
 - Double buffer active windows

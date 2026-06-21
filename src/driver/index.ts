@@ -18,30 +18,27 @@ import { Direction } from "../util";
 import { Borders } from "../controller/config";
 
 export class Driver {
-    rootTile: KwinTile;
-
     desktop: VirtualDesktop;
     activity: Activity;
     output: Output;
 
-    tileMap: Map<KwinTile, EngineTile> = new Map();
-    windowMap: Map<KwinWindow, EngineWindow> = new Map();
-    windowsToUnmanage: KwinWindow[] = [];
-    savedActiveWindow: KwinWindow | null = null;
+    private engineRootTile: EngineTile | null = null;
+    private tileMap: Map<KwinTile, EngineTile> = new Map();
+    private windowMap: Map<KwinWindow, EngineWindow> = new Map();
+    private windowsToUnmanage: KwinWindow[] = [];
+    private savedActiveWindow: KwinWindow | null = null;
 
-    tilingEngine: TilingEngine;
+    private tilingEngine: TilingEngine;
 
     active: boolean = true;
 
     constructor(
-        rootTile: KwinTile,
         desktop: VirtualDesktop,
         activity: Activity,
         output: Output,
         engineType: TilingEngineType,
         engineSettings?: object,
     ) {
-        this.rootTile = rootTile;
         this.desktop = desktop;
         this.activity = activity;
         this.output = output;
@@ -53,12 +50,10 @@ export class Driver {
     }
 
     refreshDriver(
-        rootTile: KwinTile,
         desktop: VirtualDesktop,
         activity: Activity,
         output: Output,
     ): void {
-        this.rootTile = rootTile;
         this.desktop = desktop;
         this.activity = activity;
         this.output = output;
@@ -105,6 +100,18 @@ export class Driver {
         }
     }
 
+    hasWindow(kwinWindow: KwinWindow): boolean {
+        return this.windowMap.has(kwinWindow);
+    }
+
+    getEngineType(): TilingEngineType {
+        return this.tilingEngine.engineType;
+    }
+
+    getEngineSettings(): object {
+        return this.tilingEngine.getEngineSettings();
+    }
+
     resetTilingEngine(): void {
         const defaultEngine = config().defaultEngine;
         const defaultSettings = getConfigEngineSettings(defaultEngine);
@@ -115,12 +122,7 @@ export class Driver {
         }
     }
 
-    buildLayout(): void {
-        if (this.rootTile == null) {
-            console().warn("root tile is null on active driver");
-            return;
-        }
-
+    buildLayout(rootTile: KwinTile): void {
         // remove non-extant windows or windows that are not on the desktop/activity/output
         // should prevent ghost tiles even if other code is buggy
         for (const [kwinWindow, _ew] of this.windowMap) {
@@ -134,9 +136,9 @@ export class Driver {
                 this.removeWindow(kwinWindow);
             }
         }
-        const engineRootTile = this.tilingEngine.buildLayout();
+        this.engineRootTile = this.tilingEngine.buildLayout();
         const previousTileSet = new Set(this.tileMap.keys());
-        this.tileMap = buildLayout(this.rootTile, engineRootTile);
+        this.tileMap = buildLayout(rootTile, this.engineRootTile);
 
         const invertedWindowMap = new Map(
             Array.from(this.windowMap, (a) => [a[1], a[0]]),
@@ -279,6 +281,10 @@ export class Driver {
 
     // as of right now, can only update sizes (ie cannot add/remove tiles)
     updateTiles(): void {
+        if (this.engineRootTile === null) {
+            console().warn("updateTiles called, but engine layout not built");
+            return;
+        }
         for (const [kwinTile, engineTile] of this.tileMap) {
             if (kwinTile.parent == null || engineTile.parent == null) continue;
             let size: number;
@@ -298,7 +304,7 @@ export class Driver {
             size *= kwinTile.parent.tiles.length;
             engineTile.size = size;
         }
-        this.tilingEngine.updateTiles(this.tileMap.get(this.rootTile)!);
+        this.tilingEngine.updateTiles(this.engineRootTile);
     }
 
     updateTileSizesCallback() {
