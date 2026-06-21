@@ -269,6 +269,12 @@ class Controller {
                     driver.tilingEngine.getEngineSettings(),
                 );
                 driver.resetTilingEngine();
+                // reset dbus handler regardless of if anything changes
+                this.dbusHandler?.resetSettings(
+                    ev.desktop,
+                    ev.activity,
+                    ev.output,
+                );
                 if (
                     engine === driver.tilingEngine.engineType &&
                     settings ===
@@ -279,11 +285,6 @@ class Controller {
                 if (this.settingsHandler.isVisible()) {
                     this.showSettingsHandler(driver);
                 }
-                this.dbusHandler?.resetSettings(
-                    ev.desktop,
-                    ev.activity,
-                    ev.output,
-                );
                 return [id];
             }
         }
