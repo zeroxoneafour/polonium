@@ -440,8 +440,12 @@ class Controller {
     }
 
     // sometimes the window can be destroyed before rebuild but the ref will still exist, so make sure it exists before calling stuff on it
-    windowExists(window: Window): boolean {
-        return this.workspace.windows.includes(window);
+    windowExists(window: Window | null | undefined): boolean {
+        return (
+            window !== null &&
+            window !== undefined &&
+            this.workspace.windows.includes(window)
+        );
     }
 }
 

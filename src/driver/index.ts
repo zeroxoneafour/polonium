@@ -152,16 +152,14 @@ export class Driver {
         // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
         for (const kwinWindow of this.windowsToUnmanage) {
             // we dont sanitize this for windowExists (unlike for windowMap) so double check
-            if (ctrl().windowExists(kwinWindow)) {
-                if (
-                    kwinWindow.tile != null &&
-                    this.tileMap.has(kwinWindow.tile)
-                ) {
-                    kwinWindow.tile.unmanage(kwinWindow);
-                    setUntiledProps(kwinWindow);
-                } else if (kwinWindow.tile == null) {
-                    setUntiledProps(kwinWindow);
-                }
+            if (!ctrl().windowExists(kwinWindow)) {
+                continue;
+            }
+            if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
+                kwinWindow.tile.unmanage(kwinWindow);
+                setUntiledProps(kwinWindow);
+            } else if (kwinWindow.tile == null) {
+                setUntiledProps(kwinWindow);
             }
         }
         this.windowsToUnmanage = [];
@@ -240,7 +238,7 @@ export class Driver {
         if (engineWindow === undefined) {
             console().warn(
                 "Window",
-                kwinWindow.resourceClass,
+                kwinWindow?.resourceClass,
                 "not registered in windowMap",
             );
             return;
