@@ -6,6 +6,7 @@
 
 - Fix issue with setting reset
 - Try to work around ultra-rare bug where output passed as undefined (kwin bug?)
+- Improve stack based layout keyboard shortcuts
 
 ### 1.2.0
 
