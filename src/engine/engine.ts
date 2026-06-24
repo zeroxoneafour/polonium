@@ -78,7 +78,6 @@ export class Tile {
         if (this.parent == null) {
             return;
         }
-        this.parent.children.push(this);
     }
 
     // adds a child that will split perpendicularly to the parent. Returns the child
@@ -88,6 +87,7 @@ export class Tile {
             splitDirection = LayoutDirection.Vertical;
         }
         const childTile = new Tile(this);
+        this.children.push(childTile);
         childTile.layoutDirection = splitDirection;
         return childTile;
     }
@@ -128,13 +128,21 @@ export class Tile {
             children: this.children.map((c) => c.toJSON()),
             windows: includeWindows
                 ? this.windows.map((w) => w.id.toString())
-                : undefined,
+                : [],
         };
     }
 
     static fromJSON(json: object | string, parent?: Tile): Tile {
-        const obj = typeof json === "string" ? JSON.parse(json) : json;
         const tile = new Tile(parent);
+        if (parent != null) {
+            parent.children.push(tile);
+        }
+        let obj;
+        try {
+            obj = typeof json === "string" ? JSON.parse(json) : json;
+        } catch (_e) {
+            return tile;
+        }
         tile.layoutDirection = obj.layoutDirection;
         tile.size = obj.size;
         for (const child of obj.children) {

@@ -129,9 +129,9 @@ export class HalfEngine implements TilingEngineInterface {
     }
 
     removeWindow(window: Window) {
-        let [side, otherSide] = this.side1.some((x) => x.window == window) ?
-            [this.side1, this.side2] :
-            [this.side2, this.side1];
+        let [side, otherSide] = this.side1.some((x) => x.window == window)
+            ? [this.side1, this.side2]
+            : [this.side2, this.side1];
         let idx = side.findIndex((x) => x.window == window);
         if (idx == -1) {
             return;

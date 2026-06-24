@@ -4,11 +4,13 @@ import {
     Window,
     Activity,
     MaximizeMode,
+    Tile,
 } from "kwin-api";
 import { config, console, controller as ctrl } from "..";
 import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
 import { directionFromPoint } from "../../util";
+import { DragPolicy } from "../config";
 
 export class WindowHandler {
     window: Window;
@@ -18,6 +20,8 @@ export class WindowHandler {
     tiled: boolean;
     wantsTiled: boolean;
     maximized: boolean;
+    wasTiledBeforeMove: boolean = false;
+    previousTile: Tile | null = null;
 
     workspace: Workspace;
 
@@ -48,12 +52,17 @@ export class WindowHandler {
             this.maximizedChanged.bind(this),
         );
 
+        this.window.interactiveMoveResizeStarted.connect(
+            this.interactiveMoveResizeStarted.bind(this),
+        );
         this.window.interactiveMoveResizeStepped.connect(
             this.interactiveMoveResizeStepped.bind(this),
         );
         this.window.interactiveMoveResizeFinished.connect(
             this.interactiveMoveResizeFinished.bind(this),
         );
+
+        this.window.tileChanged.connect(this.tileChanged.bind(this));
     }
 
     startTiled(): boolean {
@@ -212,23 +221,39 @@ export class WindowHandler {
         }
     }
 
-    // use this instead of tileChanged because tileChanged does what it wants
-    // use stepped instead of started as there can be some delay setting window.tile to null
+    // multiple step move resize -
+    // if tiled and in a tile, then when move started, set is moving flag to true
+    // then if it leaves the tile in a later step, untile it
+    // after all that, if
+    interactiveMoveResizeStarted() {
+        this.wasTiledBeforeMove = this.window.tile != null;
+    }
     interactiveMoveResizeStepped() {
-        if (!(this.tiled && this.canBeTiled() && this.window.tile == null))
+        if (!this.tiled || !this.canBeTiled() || this.window.tile != null) {
             return;
-        console().debug(
-            "move/resize stepped (first step) on window",
-            this.window.resourceClass,
-        );
+        }
+        if (!this.wasTiledBeforeMove) {
+            return;
+        }
+        console().debug("move started on window", this.window.resourceClass);
         this.tiled = false;
+        if (config().windowDragPolicy == DragPolicy.Never) {
+            this.wantsTiled = false;
+        }
         for (const ev of createUntileEvents(this.window)) {
             ctrl().queueEvent(ev);
         }
     }
-
     interactiveMoveResizeFinished() {
-        if (!(this.wantsTiled && this.canBeTiled() && !this.tiled)) return;
+        if (!this.wantsTiled || !this.canBeTiled() || this.tiled) {
+            return;
+        }
+        if (
+            !this.wasTiledBeforeMove &&
+            config().windowDragPolicy == DragPolicy.Tiled
+        ) {
+            return;
+        }
         console().debug(
             "move/resize finished on window",
             this.window.resourceClass,
@@ -270,7 +295,9 @@ export class WindowHandler {
         }
         // for other activities, just tile dont place
         for (const activity of this.window.activities) {
-            if (activity === this.workspace.currentActivity) continue;
+            if (activity === this.workspace.currentActivity) {
+                continue;
+            }
             for (const ev of createTileEvents(
                 this.window,
                 this.window.desktops,
@@ -280,6 +307,23 @@ export class WindowHandler {
                 ctrl().queueEvent(ev);
             }
         }
+    }
+
+    // this only tracks manual insertion into a tile
+    tileChanged(tile: Tile) {
+        if (this.previousTile == null && tile != null) {
+            for (const desktop of this.window.desktops) {
+                ctrl().queueEvent({
+                    t: "placeWindow",
+                    window: this.window,
+                    desktop: desktop,
+                    activity: this.workspace.currentActivity,
+                    output: this.window.output,
+                    tile: tile,
+                });
+            }
+        }
+        this.previousTile = tile;
     }
 
     canBeTiled(): boolean {

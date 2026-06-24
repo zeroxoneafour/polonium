@@ -16,10 +16,12 @@ import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
 import { Direction } from "../util";
 import { Borders } from "../controller/config";
+import { updateTiles } from "./updatetiles";
 
 export class Driver {
     private engineRootTile: EngineTile | null = null;
     private tileMap: Map<KwinTile, EngineTile> = new Map();
+    private hookedTiles: Set<KwinTile> = new Set();
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
     private windowsToUnmanage: KwinWindow[] = [];
     private savedActiveWindow: KwinWindow | null = null;
@@ -103,8 +105,13 @@ export class Driver {
         }
 
         this.engineRootTile = this.tilingEngine.buildLayout();
-        const previousTileSet = new Set(this.tileMap.keys());
         this.tileMap = buildLayout(rootTile, this.engineRootTile);
+        // clean out old hooked (callback set) tiles
+        for (const hookedTile of this.hookedTiles) {
+            if (!this.tileMap.has(hookedTile)) {
+                this.hookedTiles.delete(hookedTile);
+            }
+        }
 
         const invertedWindowMap = new Map(
             Array.from(this.windowMap, (a) => [a[1], a[0]]),
@@ -112,7 +119,7 @@ export class Driver {
         const tiledWindows: Set<KwinWindow> = new Set();
         for (const [kwinTile, engineTile] of this.tileMap) {
             // set callbacks on tiles that do not have callbacks set
-            if (!previousTileSet.has(kwinTile)) {
+            if (!this.hookedTiles.has(kwinTile)) {
                 kwinTile.relativeGeometryChanged.connect(
                     this.updateTileSizesCallback.bind(
                         this,
@@ -121,6 +128,15 @@ export class Driver {
                         output,
                     ),
                 );
+                kwinTile.childTilesChanged.connect(
+                    this.updateTileCountCallback.bind(
+                        this,
+                        desktop,
+                        activity,
+                        output,
+                    ),
+                );
+                this.hookedTiles.add(kwinTile);
             }
             for (const engineWindow of engineTile.windows) {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
@@ -254,26 +270,8 @@ export class Driver {
             console().warn("updateTiles called, but engine layout not built");
             return;
         }
-        for (const [kwinTile, engineTile] of this.tileMap) {
-            if (kwinTile.parent == null || engineTile.parent == null) continue;
-            let size: number;
-            if (
-                engineTile.parent.layoutDirection === LayoutDirection.Horizontal
-            ) {
-                size =
-                    kwinTile.relativeGeometry.width /
-                    kwinTile.parent.relativeGeometry.width;
-            } else {
-                size =
-                    kwinTile.relativeGeometry.height /
-                    kwinTile.parent.relativeGeometry.height;
-            }
-            // use static sizing based at 1 instead of dynamic sizing
-            // the resulting tiles will have a totalChildrenSize == children.length
-            size *= kwinTile.parent.tiles.length;
-            engineTile.size = size;
-        }
-        this.tilingEngine.updateTiles(this.engineRootTile);
+        const tile = updateTiles(this.engineRootTile, this.tileMap);
+        this.tilingEngine.updateTiles(tile);
     }
 
     updateTileSizesCallback(
@@ -287,6 +285,21 @@ export class Driver {
             activity: activity,
             output: output,
             rebuild: false,
+        });
+    }
+    // when updating tile count we want to rebuild as for most engines this is an error
+    // for kwin this is fine though
+    updateTileCountCallback(
+        desktop: VirtualDesktop,
+        activity: Activity,
+        output: Output,
+    ) {
+        ctrl().queueEvent({
+            t: "updateTiles",
+            desktop: desktop,
+            activity: activity,
+            output: output,
+            rebuild: true,
         });
     }
 }
@@ -304,6 +317,9 @@ function getConfigEngineSettings(engineType: TilingEngineType): object {
             return config().pillarSettings;
         case TilingEngineType.Pager:
             return config().pagerSettings;
+        case TilingEngineType.KWin:
+            // no settings for kwin
+            return {};
         default:
             console().error("engine type", engineType, "is invalid");
             return {};

@@ -43,5 +43,6 @@
         <entry name="Borders" type="int"><default>4</default></entry>
         <entry name="TiledWindowsBelow" type="bool"><default>true</default></entry>
         <entry name="TilePopups" type="bool"><default>false</default></entry>
+        <entry name="WindowDragPolicy" type="int"><default>1</default></entry>
     </group>
 </kcfg>

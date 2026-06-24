@@ -183,6 +183,11 @@
              <string>Pager</string>
             </property>
            </item>
+           <item>
+            <property name="text">
+             <string>KWin</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item row="1" column="0">
@@ -672,6 +677,36 @@
              </item>
             </layout>
            </widget>
+           <widget class="QWidget" name="kwinTab">
+            <attribute name="title">
+             <string>KWin</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_7">
+             <item row="0" column="0">
+              <widget class="QLabel" name="kwinInfoLabel">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;KWin serves as a default untiled engine.&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Tiles can be edited using the KWin tile editor.&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;No settings are available for this engine.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <spacer name="kwinVerticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>208</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -681,17 +716,10 @@
          <string>Windows</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_5">
-         <item row="7" column="1">
-          <widget class="QCheckBox" name="kcfg_TilePopups">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
+         <item row="3" column="2">
           <widget class="QLineEdit" name="kcfg_IgnoreWindowCaptions"/>
          </item>
-         <item row="6" column="1">
+         <item row="6" column="2">
           <widget class="QCheckBox" name="kcfg_TiledWindowsBelow">
            <property name="text">
             <string/>
@@ -701,7 +729,14 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="0" colspan="2">
+         <item row="4" column="0">
+          <widget class="QLabel" name="rawRegexLabel">
+           <property name="text">
+            <string>Use Raw Regex</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0" colspan="3">
           <spacer name="windowsVerticalSpacer">
            <property name="orientation">
             <enum>Qt::Orientation::Vertical</enum>
@@ -714,7 +749,14 @@
            </property>
           </spacer>
          </item>
-         <item row="2" column="1">
+         <item row="4" column="2">
+          <widget class="QCheckBox" name="kcfg_RawRegex">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
           <widget class="QLineEdit" name="kcfg_IgnoreWindowClasses">
            <property name="text">
             <string>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</string>
@@ -735,6 +777,36 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="0" colspan="3">
+          <widget class="QLabel" name="regexInfoLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>All text fields accept regex. Read manual for more details.</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="tilePopupsLabel">
+           <property name="text">
+            <string>Tile Popup Windows</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="2">
+          <widget class="QCheckBox" name="kcfg_TilePopups">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
          <item row="2" column="0">
           <widget class="QLabel" name="ignoreWindowClassesLabel">
            <property name="text">
@@ -749,7 +821,14 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="8" column="0">
+          <widget class="QLabel" name="windowDragPolicyLabel">
+           <property name="text">
+            <string>Window Dragging Policy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="2">
           <widget class="QComboBox" name="kcfg_Borders">
            <property name="minimumSize">
             <size>
@@ -787,41 +866,26 @@
            </item>
           </widget>
          </item>
-         <item row="7" column="0">
-          <widget class="QLabel" name="tilePopupsLabel">
-           <property name="text">
-            <string>Tile Popup Windows</string>
+         <item row="8" column="2">
+          <widget class="QComboBox" name="kcfg_WindowDragPolicy">
+           <property name="currentIndex">
+            <number>1</number>
            </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QLabel" name="regexInfoLabel">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>All text fields accept regex. Read manual for more details.</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignmentFlag::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="rawRegexLabel">
-           <property name="text">
-            <string>Use Raw Regex</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QCheckBox" name="kcfg_RawRegex">
-           <property name="text">
-            <string/>
-           </property>
+           <item>
+            <property name="text">
+             <string>Always Tile</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Only Retile</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Never Tile</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>

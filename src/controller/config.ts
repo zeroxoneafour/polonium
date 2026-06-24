@@ -18,6 +18,11 @@ export enum Borders {
     FloatingActive,
     All,
 }
+export enum DragPolicy {
+    Always = 0,
+    Tiled,
+    Never,
+}
 
 export class Config {
     readonly rebuildDelay: number;
@@ -40,6 +45,7 @@ export class Config {
     readonly borders: Borders;
     readonly tiledWindowsBelow: boolean;
     readonly tilePopups: boolean;
+    readonly windowDragPolicy: DragPolicy;
 
     constructor(kwinApi: KWin) {
         const rc = kwinApi.readConfig;
@@ -108,6 +114,7 @@ export class Config {
         this.borders = rc("Borders", Borders.All);
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.tilePopups = rc("TilePopups", false);
+        this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
     }
 }
 

@@ -6,6 +6,7 @@ import { HalfEngine } from "./layouts/half";
 import { ThreeColumnEngine } from "./layouts/threecolumn";
 import { PillarEngine } from "./layouts/pillars";
 import { PagerEngine } from "./layouts/pager";
+import { KwinEngine } from "./layouts/kwin";
 
 export { Window, Tile, Direction };
 
@@ -18,6 +19,7 @@ export enum TilingEngineType {
     ThreeColumn,
     Pillars,
     Pager,
+    KWin,
     _Loop,
 }
 
@@ -44,6 +46,9 @@ export class TilingEngine {
                 break;
             case TilingEngineType.Pager:
                 this.engine = new PagerEngine();
+                break;
+            case TilingEngineType.KWin:
+                this.engine = new KwinEngine();
                 break;
             default:
                 console().warn("Invalid tiling engine type", type);

@@ -20,6 +20,7 @@ Configuration is accessed through the KWin Scripts settings menu.
     * ThreeColumn - Centered master-stack with two stacks
     * Pillars - Several stacks of windows
     * Pager - Focused layout with active window as dominant
+    * KWin - Untiled layout with KWin vanilla tile support
 
 ### Binary Tree
 
@@ -64,6 +65,10 @@ Configuration is accessed through the KWin Scripts settings menu.
 * Swap Insert Side - Swaps which side new windows are inserted into.
 * Rotate Layout - Rotates the layout to be vertical.
 
+### KWin
+
+No settings are available for this layout. Configuration is done via the KWin tile editor.
+
 ## Windows
 
 Note that all text fields accept regex.
@@ -77,3 +82,4 @@ Additionally, the regex is wrapped with `^` and `$` to prevent empty matching.
 * Borders - How window borders should be distributed.
 * Place Tiled Windows Below - Whether tiled windows should be forced below floating/fullscreen ones.
 * Tile Popup Windows - Whether to tile popup windows.
+* Window Dragging Policy - How dragged windows should be treated.
