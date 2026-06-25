@@ -10,7 +10,7 @@ import {
     LayoutDirection,
 } from "../engine";
 
-import { WindowBox } from "./stackingcommon";
+import { BoxIndex, WindowBox } from "./stackingcommon";
 
 class Pillar {
     boxes: WindowBox[] = [];
@@ -37,7 +37,7 @@ class PillarEngineSettings extends BaseEngineSettings {
 
 export class PillarEngine implements TilingEngineInterface {
     // first number is pillar, second is index within pillar
-    tileMap: Map<Tile, [number, number]> = new Map();
+    tileMap: Map<Tile, BoxIndex> = new Map();
     pillars: Pillar[] = [];
 
     settings = new PillarEngineSettings();
@@ -78,8 +78,7 @@ export class PillarEngine implements TilingEngineInterface {
             : LayoutDirection.Horizontal;
         this.tileMap.clear();
 
-        for (let i = 0; i < this.pillars.length; i += 1) {
-            const pillar = this.pillars[i];
+        for (const pillar of this.pillars) {
             let pillarTile = rootTile;
             if (this.pillars.length > 1) {
                 pillarTile = rootTile.addChild();
@@ -87,14 +86,14 @@ export class PillarEngine implements TilingEngineInterface {
             }
             if (pillar.boxes.length == 1) {
                 pillarTile.windows.push(pillar.boxes[0].window);
-                this.tileMap.set(pillarTile, [i, 0]);
+                this.tileMap.set(pillarTile, new BoxIndex(pillar.boxes, 0));
             } else {
-                for (let j = 0; j < pillar.boxes.length; j += 1) {
-                    const box = pillar.boxes[j];
+                for (let i = 0; i < pillar.boxes.length; i += 1) {
+                    const box = pillar.boxes[i];
                     const tile = pillarTile.addChild();
                     tile.windows.push(box.window);
                     tile.size = box.size;
-                    this.tileMap.set(tile, [i, j]);
+                    this.tileMap.set(tile, new BoxIndex(pillar.boxes, i));
                 }
             }
         }
@@ -181,21 +180,31 @@ export class PillarEngine implements TilingEngineInterface {
         if (tile.windows.includes(window)) {
             return;
         }
-        for (const pillar of this.pillars) {
-            if (pillar.boxes.some((b) => b.window === window)) {
-                this.removeWindow(window);
-                break;
-            }
-        }
-        const newBox = new WindowBox(window);
         const target = this.tileMap.get(tile);
-        if (target === undefined) {
+        if (target?.box === undefined) {
             return;
         }
+        for (const [_tile, idx] of this.tileMap) {
+            const box = idx.box;
+            if (box?.window !== window) {
+                continue;
+            }
+            if (idx.boxes !== target.boxes) {
+                this.removeWindow(box.window);
+            } else {
+                idx.box = target.box;
+                target.box = box;
+                return;
+            }
+            break;
+        }
+        const newBox = new WindowBox(window);
         // i made it more efficient lets go
-        let pillarIdx = target[0];
+        let pillarIdx = this.pillars.findIndex((x) => x.boxes === target.boxes);
         if (pillarIdx >= this.pillars.length) {
             pillarIdx = this.pillars.length - 1;
+        } else if (pillarIdx < 0) {
+            pillarIdx = 0;
         }
         if (this.pillars.length < this.settings.pillarCount) {
             let idx = pillarIdx;
@@ -208,7 +217,7 @@ export class PillarEngine implements TilingEngineInterface {
             return;
         }
         const pillar = this.pillars[pillarIdx];
-        let boxIdx = target[1];
+        let boxIdx = target.index;
         if (boxIdx >= pillar.boxes.length) {
             boxIdx = pillar.boxes.length - 1;
         }
