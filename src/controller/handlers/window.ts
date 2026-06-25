@@ -232,7 +232,11 @@ export class WindowHandler {
         if (!this.tiled || !this.canBeTiled() || this.window.tile != null) {
             return;
         }
-        if (!this.wasTiledBeforeMove) {
+        // if the policy is never retile then untile regardless of previous tile status
+        if (
+            !this.wasTiledBeforeMove &&
+            config().windowDragPolicy !== DragPolicy.Never
+        ) {
             return;
         }
         console().debug("move started on window", this.window.resourceClass);

@@ -67,7 +67,16 @@ Item {
         text: "Polonium: Use Pager Engine";
         sequence: "";
     }
-
+    function setEngineKWin() {
+        return setEngineKWinObj;
+    }
+    ShortcutHandler {
+        id: setEngineKWinObj;
+        
+        name: "PoloniumSetEngineKWin";
+        text: "Polonium: Use KWin Engine";
+        sequence: "";
+    }
 
     function activateAbove() {
         return activateAboveObj;

@@ -27,6 +27,12 @@ If you do not have Rust, download a prebuilt binary from GitHub and follow the M
 
 You can reset your settings by running `polonium-saver --clear-settings`.
 
+## Shortcuts are duplicated after updating!
+
+KDE does not remove old shortcuts when updating a script. As the update renamed most of the shortcuts,
+you will have to remove the old ones manually. I recommend resetting them by removing all the lines in
+`~/.config/kglobalshortcutsrc` that contain the text `Polonium`.
+
 ## Will you add some feature I want?
 
 Yes, probably! Open an [issue](https://github.com/zeroxoneafour/polonium/issues)

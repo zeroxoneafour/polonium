@@ -42,6 +42,11 @@ export class ShortcutsHandler {
             .activated.connect(
                 this.setEngineType.bind(this, TilingEngineType.Pager),
             );
+        this.shortcuts
+            .setEngineKWin()
+            .activated.connect(
+                this.setEngineType.bind(this, TilingEngineType.KWin),
+            );
 
         this.shortcuts
             .activateBelow()

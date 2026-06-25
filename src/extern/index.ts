@@ -27,6 +27,7 @@ export interface Shortcuts {
     setEngineThreeColumn(): ShortcutHandler;
     setEnginePillars(): ShortcutHandler;
     setEnginePager(): ShortcutHandler;
+    setEngineKWin(): ShortcutHandler;
 
     activateAbove(): ShortcutHandler;
     activateBelow(): ShortcutHandler;
