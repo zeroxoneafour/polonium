@@ -182,6 +182,7 @@ export class PillarEngine implements TilingEngineInterface {
         }
         const target = this.tileMap.get(tile);
         if (target?.box === undefined) {
+            this.addWindow(window);
             return;
         }
         for (const [_tile, idx] of this.tileMap) {
