@@ -6,6 +6,8 @@ import {
     simplifyPostEvents,
     DesktopIdentifier,
     desktopId,
+    GetCurrentEngineEvent,
+    
 } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace } from "kwin-api/qml";
@@ -21,6 +23,7 @@ import { Console } from "./console";
 import { Driver } from "../driver";
 import { QTimer, Qt } from "kwin-api/qt";
 import { Config } from "./config";
+import { TilingEngineType } from "../engine";
 
 class Controller {
     private workspace: Workspace;
@@ -473,6 +476,10 @@ class Controller {
             this.workspace.windows.includes(window)
         );
     }
+  // avoid making driver instance public and get current tiling layout to enable cycling
+  getCurrentEngineType(type:GetCurrentEngineEvent): TilingEngineType | undefined {
+    return this.getDriver(type.desktop, type.activity, type.output)?.getEngineType();
+  }
 }
 
 let controllerObj: Controller;
