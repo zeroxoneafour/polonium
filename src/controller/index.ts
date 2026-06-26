@@ -21,6 +21,7 @@ import { Console } from "./console";
 import { Driver } from "../driver";
 import { QTimer, Qt } from "kwin-api/qt";
 import { Config } from "./config";
+import { TilingEngineType } from "../engine";
 
 class Controller {
     private workspace: Workspace;
@@ -472,6 +473,16 @@ class Controller {
             window !== undefined &&
             this.workspace.windows.includes(window)
         );
+    }
+    // avoid making driver instance public and get current tiling layout to enable cycling
+    getEngineType(
+        desktop: VirtualDesktop,
+        activity: Activity,
+        output: Output,
+    ): TilingEngineType | undefined {
+        return this.drivers
+            .get(desktopId(desktop, activity, output))
+            ?.getEngineType();
     }
 }
 

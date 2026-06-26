@@ -220,12 +220,22 @@ Item {
         text: "Polonium: Toggle Settings Menu";
         sequence: "Meta+\\";
     }
-
-    /*
-    function getRotateLayout() {
-        return rotateLayout;
+ 
+    function cycleEngine() {
+        return cycleEngineObj;
     }
     ShortcutHandler {
+        id: cycleEngineObj;
+        
+        name: "PoloniumCycleEngine";
+        text: "Polonium: Cycle Engine";
+        sequence: "Meta+|";
+    }
+    /*
+        function getRotateLayout() {
+        return rotateLayout;
+    }
+        ShortcutHandler {
         id: rotateLayout;
 
         name: "PoloniumRotateLayout";
@@ -233,17 +243,7 @@ Item {
         sequence: "";
     }
     
-    function getCycleEngine() {
-        return cycleEngine;
-    }
-    ShortcutHandler {
-        id: cycleEngine;
-        
-        name: "PoloniumCycleEngine";
-        text: "Polonium: Cycle Engine";
-        sequence: "Meta+|";
-    }
-    
+
     function getSwitchThreeColumn() {
         return switchThreeColumn;
     }
@@ -275,6 +275,6 @@ Item {
         name: "PoloniumSwitchKwin";
         text: "Polonium: Use KWin Engine";
         sequence: "";
-    }
-    */
+      }
+      */
 }

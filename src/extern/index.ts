@@ -45,6 +45,7 @@ export interface Shortcuts {
     resizeRight(): ShortcutHandler;
 
     toggleSettingsMenu(): ShortcutHandler;
+    cycleEngine(): ShortcutHandler;
 }
 
 export interface Settings extends QObject {

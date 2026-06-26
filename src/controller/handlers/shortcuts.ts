@@ -108,6 +108,10 @@ export class ShortcutsHandler {
         this.shortcuts
             .toggleSettingsMenu()
             .activated.connect(this.toggleSettingsMenu.bind(this));
+
+        this.shortcuts
+            .cycleEngine()
+            .activated.connect(this.cycleEngine.bind(this));
     }
 
     toggleActiveTiling() {
@@ -269,5 +273,20 @@ export class ShortcutsHandler {
             activity: this.workspace.currentActivity,
             output: this.workspace.activeScreen,
         });
+    }
+
+    cycleEngine() {
+        const current = ctrl().getEngineType(
+            this.workspace.currentDesktop,
+            this.workspace.currentActivity,
+            this.workspace.activeScreen,
+        );
+        if (current === undefined) {
+            // Should never happen, but it's better for code quality
+            // that we assume that it can and we handle the error without assumption.
+            return;
+        }
+        const next = (current + 1) % TilingEngineType._Loop;
+        this.setEngineType(next);
     }
 }
