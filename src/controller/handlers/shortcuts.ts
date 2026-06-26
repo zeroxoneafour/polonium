@@ -108,12 +108,11 @@ export class ShortcutsHandler {
         this.shortcuts
             .toggleSettingsMenu()
             .activated.connect(this.toggleSettingsMenu.bind(this));
-        
-        this.shortcuts
-            .getCycleEngine()
-            .activated.connect(this.cycleEngine.bind(this));
 
-  }
+        this.shortcuts
+            .cycleEngine()
+            .activated.connect(this.cycleEngine.bind(this));
+    }
 
     toggleActiveTiling() {
         const window = this.workspace.activeWindow;
@@ -230,7 +229,7 @@ export class ShortcutsHandler {
                 currentTile.absoluteGeometry.width / 2;
             const targetCenter =
                 targetTile.absoluteGeometry.x +
-              targetTile.absoluteGeometry.width / 2;
+                targetTile.absoluteGeometry.width / 2;
             if (currentCenter > targetCenter && direction !== undefined) {
                 direction |= Direction.Right;
             }
@@ -277,12 +276,17 @@ export class ShortcutsHandler {
     }
 
     cycleEngine() {
-    const current = ctrl().getCurrentEngineType({
-        desktop: this.workspace.currentDesktop,
-        activity: this.workspace.currentActivity,
-        output: this.workspace.activeScreen,
-    }) ?? TilingEngineType.BTree;
-    const next = (current + 1) % TilingEngineType._Loop;
-    this.setEngineType(next);
-}
+        const current = ctrl().getEngineType(
+            this.workspace.currentDesktop,
+            this.workspace.currentActivity,
+            this.workspace.activeScreen,
+        );
+        if (current === undefined) {
+            // Should never happen, but it's better for code quality
+            // that we assume that it can and we handle the error without assumption.
+            return;
+        }
+        const next = (current + 1) % TilingEngineType._Loop;
+        this.setEngineType(next);
+    }
 }

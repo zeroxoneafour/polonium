@@ -6,8 +6,6 @@ import {
     simplifyPostEvents,
     DesktopIdentifier,
     desktopId,
-    GetCurrentEngineEvent,
-    
 } from "./event";
 import { QmlApi, QmlObjects } from "../extern";
 import { Workspace } from "kwin-api/qml";
@@ -476,10 +474,16 @@ class Controller {
             this.workspace.windows.includes(window)
         );
     }
-  // avoid making driver instance public and get current tiling layout to enable cycling
-  getCurrentEngineType(type:GetCurrentEngineEvent): TilingEngineType | undefined {
-    return this.getDriver(type.desktop, type.activity, type.output)?.getEngineType();
-  }
+    // avoid making driver instance public and get current tiling layout to enable cycling
+    getEngineType(
+        desktop: VirtualDesktop,
+        activity: Activity,
+        output: Output,
+    ): TilingEngineType | undefined {
+        return this.drivers
+            .get(desktopId(desktop, activity, output))
+            ?.getEngineType();
+    }
 }
 
 let controllerObj: Controller;

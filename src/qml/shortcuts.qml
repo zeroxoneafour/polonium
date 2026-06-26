@@ -221,11 +221,11 @@ Item {
         sequence: "Meta+\\";
     }
  
-    function getCycleEngine() {
-        return cycleEngine;
+    function cycleEngine() {
+        return cycleEngineObj;
     }
     ShortcutHandler {
-        id: cycleEngine;
+        id: cycleEngineObj;
         
         name: "PoloniumCycleEngine";
         text: "Polonium: Cycle Engine";

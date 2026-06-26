@@ -76,7 +76,6 @@ interface WindowActivatedEvent {
     output: Output;
 }
 
-
 export type Event =
     | TileWindowEvent
     | UntileWindowEvent
@@ -104,14 +103,7 @@ interface ToggleSettingsMenuEvent {
     output: Output;
 }
 
-
 export type PostEvent = SetWindowPropertiesEvent | ToggleSettingsMenuEvent;
-
-export interface GetCurrentEngineEvent {
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
-}
 
 // check if two events operate on the same window, desktops, and output
 function eventsAreParallel<
