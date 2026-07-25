@@ -1,7 +1,4 @@
-import {
-    Tile as KwinTile,
-    Window as KwinWindow,
-} from "kwin-api";
+import { Tile as KwinTile, Window as KwinWindow } from "kwin-api";
 import {
     Tile as EngineTile,
     Window as EngineWindow,
