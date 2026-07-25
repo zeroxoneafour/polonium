@@ -242,15 +242,15 @@ class Controller {
         let tiled = false;
         const ret = [];
         for (const oldDisplay of oldDisplays) {
-            if (newDisplays.some((d) => d.equals(oldDisplay))) {
-                continue;
-            }
             const driver = this.getDriver(oldDisplay);
             if (driver === undefined) {
                 continue;
             }
             if (driver.isWindowTiled(window)) {
                 tiled = true;
+            }
+            if (newDisplays.some((d) => d.equals(oldDisplay))) {
+                continue;
             }
             driver.removeWindow(window);
             ret.push(oldDisplay);

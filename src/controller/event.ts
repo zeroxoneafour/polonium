@@ -2,6 +2,7 @@ import { Output, Tile, VirtualDesktop, Window, Activity } from "kwin-api";
 import { TilingEngineType } from "../engine";
 import { Queue, Direction } from "../util";
 import { QPoint } from "kwin-api/qt";
+import { Workspace } from "kwin-api/qml";
 
 export type DisplaySymbol = Symbol;
 
@@ -9,6 +10,12 @@ export class Display {
     readonly desktop: VirtualDesktop;
     readonly activity: Activity;
     readonly output: Output;
+
+    private static workspace: Workspace | undefined;
+
+    static setWorkspace(workspace: Workspace): void {
+        this.workspace = workspace;
+    }
 
     constructor(desktop: VirtualDesktop, activity: Activity, output: Output) {
         this.desktop = desktop;
@@ -48,7 +55,8 @@ export class Display {
     }
 
     static *generateWindow(window: Window): Iterable<Display> {
-        for (const desktop of window.desktops) {
+        const desktops = window.onAllDesktops ? this.workspace?.desktops ?? [] : window.desktops;
+        for (const desktop of desktops) {
             for (const activity of window.activities) {
                 yield new Display(desktop, activity, window.output);
             }

@@ -96,7 +96,7 @@ export class Driver {
         for (const [kwinWindow, _ew] of this.windowMap) {
             if (
                 !ctrl().windowExists(kwinWindow) ||
-                !kwinWindow.desktops.includes(display.desktop) ||
+                !(kwinWindow.desktops.includes(display.desktop) || kwinWindow.onAllDesktops) ||
                 !kwinWindow.activities.includes(display.activity) ||
                 kwinWindow.output !== display.output
             ) {
