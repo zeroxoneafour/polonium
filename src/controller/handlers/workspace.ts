@@ -2,7 +2,6 @@ import { Workspace } from "kwin-api/qml";
 import { config, console, controller as ctrl } from "..";
 import { Window } from "kwin-api";
 import { Borders } from "../config";
-import { createTileEvents, createUntileEvents } from "../event";
 import { directionFromPoint } from "../../util";
 
 export class WorkspaceHandler {
@@ -33,43 +32,33 @@ export class WorkspaceHandler {
     }
 
     windowAdded(window: Window) {
-        // this _should_ not garbage collect I think while the window exists... no ref map needed?
-        // never friggin mind we need a ref map to store "tiled" state across shortcut handler as well
-        const windowHandler = ctrl().createWindowHandler(window);
-        if (!windowHandler.tiled) return;
-        // for insert in active handling
-        // checking the actual config is now deferred to the event handler through onlyIfInsertInActive
-        // so that different engines can have different configurations for the option
-        for (const ev of createTileEvents(window)) {
-            if (
-                this.previousActivated?.tile != null &&
-                this.previousActivated.activities.includes(ev.activity) &&
-                this.previousActivated.desktops.includes(ev.desktop) &&
-                this.previousActivated.output == ev.output
-            ) {
-                ev.tile = this.previousActivated.tile;
-                ev.direction = directionFromPoint(
-                    ev.tile.absoluteGeometry,
-                    this.workspace.cursorPos,
-                );
-            }
-            ctrl().queueEvent(ev);
+        let tile,
+            direction = undefined;
+        if (this.previousActivated?.tile != null) {
+            tile = this.previousActivated.tile;
+            direction = directionFromPoint(
+                tile.absoluteGeometry,
+                this.workspace.cursorPos,
+            );
         }
+        ctrl().queueEvent({
+            t: "newWindow",
+            window: window,
+            tile: tile,
+            direction: direction,
+        });
     }
 
     windowRemoved(window: Window) {
-        for (const ev of createUntileEvents(window)) {
-            ctrl().queueEvent(ev);
-        }
         ctrl().queueEvent({
-            t: "removeWindow",
+            t: "deleteWindow",
             window: window,
         });
     }
 
     rebuildDesktops() {
         // never mind we still have to do stuff
-        ctrl().queueEvent({ t: "rebuildDesktops" });
+        ctrl().queueEvent({ t: "rebuildDisplays" });
     }
 
     updateDrivers() {
@@ -77,8 +66,10 @@ export class WorkspaceHandler {
     }
 
     windowActivated(window: Window | null) {
+        // eventually we should move border setting entirely into the controller/driver
         this.previousActivated = this.currentActivated;
         this.currentActivated = window;
+        /*
         const borders = config().borders;
         if (
             this.previousActivated !== null &&
@@ -92,9 +83,11 @@ export class WorkspaceHandler {
                 noBorder: true,
             });
         }
+        */
         if (window === null) {
             return;
         }
+        /*
         if (
             (borders === Borders.Active ||
                 borders === Borders.FloatingActive) &&
@@ -106,21 +99,10 @@ export class WorkspaceHandler {
                 noBorder: false,
             });
         }
-        for (const desktop of window.desktops) {
-            for (const activity of window.activities) {
-                ctrl().queueEvent({
-                    t: "windowActivated",
-                    window: window,
-                    desktop: desktop,
-                    activity: activity,
-                    output: window.output,
-                });
-            }
-        }
+        */
+        ctrl().queueEvent({
+            t: "windowActivated",
+            window: window,
+        });
     }
-}
-
-// undefined if the window handler is undefined (ie window was either never registered or has been destroyed)
-function windowIsTiled(window: Window): boolean | undefined {
-    return window.tile != null || ctrl().getWindowHandler(window)?.tiled;
 }

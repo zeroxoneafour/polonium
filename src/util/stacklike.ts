@@ -48,4 +48,13 @@ export abstract class StackLike<T> implements Iterable<T> {
         }
         return -1;
     }
+
+    find(fn: (x: T) => boolean): T | undefined {
+        for (const x of this) {
+            if (fn(x)) {
+                return x;
+            }
+        }
+        return undefined;
+    }
 }

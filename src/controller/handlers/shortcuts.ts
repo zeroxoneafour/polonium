@@ -2,7 +2,7 @@ import { Workspace } from "kwin-api/qml";
 import { Shortcuts } from "../../extern";
 import { config, console, controller as ctrl, qt } from "..";
 import { Direction, TilingEngineType } from "../../engine";
-import { createTileEvents, createUntileEvents } from "../event";
+import { Display } from "../event";
 import { Edge, Tile } from "kwin-api";
 
 export class ShortcutsHandler {
@@ -119,27 +119,29 @@ export class ShortcutsHandler {
         if (window == null) return;
         const windowHandler = ctrl().getWindowHandler(window);
         if (windowHandler == undefined) return;
-        if (windowHandler.tiled) {
+        if (ctrl().isWindowTiled(window)) {
             windowHandler.wantsTiled = false;
-            windowHandler.tiled = false;
-            for (const ev of createUntileEvents(window)) {
-                ctrl().queueEvent(ev);
-            }
+            ctrl().queueEvent({
+                t: "untileWindow",
+                window: window,
+            });
         } else {
             windowHandler.wantsTiled = true;
-            windowHandler.tiled = true;
-            for (const ev of createTileEvents(window)) {
-                ctrl().queueEvent(ev);
-            }
+            ctrl().queueEvent({
+                t: "tileWindow",
+                window: window,
+            });
         }
     }
 
     setEngineType(engineType: TilingEngineType) {
         ctrl().queueEvent({
             t: "changeEngine",
-            desktop: this.workspace.currentDesktop,
-            activity: this.workspace.currentActivity,
-            output: this.workspace.activeScreen,
+            display: new Display(
+                this.workspace.currentDesktop,
+                this.workspace.currentActivity,
+                this.workspace.activeScreen,
+            ),
             engineType: engineType,
         });
     }
@@ -248,9 +250,6 @@ export class ShortcutsHandler {
         ctrl().queueEvent({
             t: "placeWindow",
             window: window,
-            desktop: this.workspace.currentDesktop,
-            activity: this.workspace.currentActivity,
-            output: window.output,
             tile: targetTile,
             direction: direction,
         });
@@ -269,17 +268,21 @@ export class ShortcutsHandler {
     toggleSettingsMenu() {
         ctrl().queuePostEvent({
             t: "toggleSettingsMenu",
-            desktop: this.workspace.currentDesktop,
-            activity: this.workspace.currentActivity,
-            output: this.workspace.activeScreen,
+            display: new Display(
+                this.workspace.currentDesktop,
+                this.workspace.currentActivity,
+                this.workspace.activeScreen,
+            ),
         });
     }
 
     cycleEngine() {
         const current = ctrl().getEngineType(
-            this.workspace.currentDesktop,
-            this.workspace.currentActivity,
-            this.workspace.activeScreen,
+            new Display(
+                this.workspace.currentDesktop,
+                this.workspace.currentActivity,
+                this.workspace.activeScreen,
+            ),
         );
         if (current === undefined) {
             // Should never happen, but it's better for code quality

@@ -7,17 +7,19 @@ import {
     Tile,
 } from "kwin-api";
 import { config, console, controller as ctrl } from "..";
-import { createTileEvents, createUntileEvents } from "../event";
 import { Workspace } from "kwin-api/qml";
 import { directionFromPoint } from "../../util";
 import { DragPolicy } from "../config";
 
 export class WindowHandler {
     window: Window;
-    previousDesktops: VirtualDesktop[];
-    previousActivities: Activity[];
-    previousOutput: Output;
-    tiled: boolean;
+    /**
+     * This basically means that the window may not be tiled (even the handler knows this),
+     * but it wishes to be tiled whenever possible.
+     *
+     * Ex. A window is fullscreened, it is not tiled but after it leaves fullscreen it wants to be tiled again.
+     * Or if a window is moving and it wants to be tiled after the move is finished.
+     */
     wantsTiled: boolean;
     maximized: boolean;
     wasTiledBeforeMove: boolean = false;
@@ -29,20 +31,13 @@ export class WindowHandler {
         this.window = window;
         this.workspace = workspace;
 
-        this.previousDesktops = [...window.desktops];
-        this.previousActivities = [...window.activities];
-        this.previousOutput = window.output;
-
-        this.tiled = this.startTiled();
-        this.wantsTiled = this.tiled;
+        this.wantsTiled = this.startTiled();
         // we dont know if it is false but it probably is
         this.maximized = false;
 
-        this.window.desktopsChanged.connect(this.desktopsChanged.bind(this));
-        this.window.activitiesChanged.connect(
-            this.activitiesChanged.bind(this),
-        );
-        this.window.outputChanged.connect(this.outputChanged.bind(this));
+        this.window.desktopsChanged.connect(this.updateWindow.bind(this));
+        this.window.activitiesChanged.connect(this.updateWindow.bind(this));
+        this.window.outputChanged.connect(this.updateWindow.bind(this));
 
         this.window.fullScreenChanged.connect(
             this.fullscreenChanged.bind(this),
@@ -85,75 +80,15 @@ export class WindowHandler {
         return true;
     }
 
-    outputChanged() {
-        console().debug("output changed on window", this.window.resourceClass);
-
-        const previousOutput = this.previousOutput;
-        this.previousOutput = this.window.output;
-        if (!this.tiled) return;
-
-        for (const ev of createUntileEvents(
-            this.window,
-            this.previousDesktops,
-            this.previousActivities,
-            previousOutput,
-        )) {
-            ctrl().queueEvent(ev);
-        }
-        for (const ev of createTileEvents(this.window)) {
-            ctrl().queueEvent(ev);
-        }
-    }
-
-    desktopsChanged() {
+    updateWindow() {
         console().debug(
-            "desktops changed on window",
+            "updating displays for window",
             this.window.resourceClass,
         );
-
-        console().debug(
-            "new desktops -",
-            this.window.desktops.map((x) => x.id),
-        );
-
-        const previousDesktops = [...this.previousDesktops];
-        this.previousDesktops = [...this.window.desktops];
-        if (!this.tiled) return;
-
-        for (const ev of createUntileEvents(
-            this.window,
-            previousDesktops,
-            this.previousActivities,
-            this.previousOutput,
-        )) {
-            ctrl().queueEvent(ev);
-        }
-        for (const ev of createTileEvents(this.window)) {
-            ctrl().queueEvent(ev);
-        }
-    }
-
-    activitiesChanged() {
-        console().debug(
-            "activities changed on window",
-            this.window.resourceClass,
-        );
-
-        const previousActivities = [...this.previousActivities];
-        this.previousActivities = [...this.window.activities];
-        if (!this.tiled) return;
-
-        for (const ev of createUntileEvents(
-            this.window,
-            this.previousDesktops,
-            previousActivities,
-            this.previousOutput,
-        )) {
-            ctrl().queueEvent(ev);
-        }
-        for (const ev of createTileEvents(this.window)) {
-            ctrl().queueEvent(ev);
-        }
+        ctrl().queueEvent({
+            t: "updateWindow",
+            window: this.window,
+        });
     }
 
     fullscreenChanged() {
@@ -161,11 +96,11 @@ export class WindowHandler {
             "fullscreen changed on window",
             this.window.resourceClass,
         );
-        if (!this.canBeTiled() && this.tiled) {
-            this.tiled = false;
-            for (const ev of createUntileEvents(this.window)) {
-                ctrl().queueEvent(ev);
-            }
+        if (!this.canBeTiled() && ctrl().isWindowTiled(this.window)) {
+            ctrl().queueEvent({
+                t: "untileWindow",
+                window: this.window,
+            });
             // toggle fullscreen because this works for whatever reason
             ctrl().queuePostEvent({
                 t: "setWindowProperties",
@@ -177,11 +112,15 @@ export class WindowHandler {
                 window: this.window,
                 fullscreen: true,
             });
-        } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
-            this.tiled = true;
-            for (const ev of createTileEvents(this.window)) {
-                ctrl().queueEvent(ev);
-            }
+        } else if (
+            this.canBeTiled() &&
+            !ctrl().isWindowTiled(this.window) &&
+            this.wantsTiled
+        ) {
+            ctrl().queueEvent({
+                t: "tileWindow",
+                window: this.window,
+            });
         }
     }
 
@@ -190,16 +129,20 @@ export class WindowHandler {
             "minimized changed on window",
             this.window.resourceClass,
         );
-        if (!this.canBeTiled() && this.tiled) {
-            this.tiled = false;
-            for (const ev of createUntileEvents(this.window)) {
-                ctrl().queueEvent(ev);
-            }
-        } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
-            this.tiled = true;
-            for (const ev of createTileEvents(this.window)) {
-                ctrl().queueEvent(ev);
-            }
+        if (!this.canBeTiled() && ctrl().isWindowTiled(this.window)) {
+            ctrl().queueEvent({
+                t: "untileWindow",
+                window: this.window,
+            });
+        } else if (
+            this.canBeTiled() &&
+            !ctrl().isWindowTiled(this.window) &&
+            this.wantsTiled
+        ) {
+            ctrl().queueEvent({
+                t: "tileWindow",
+                window: this.window,
+            });
         }
     }
     maximizedChanged(state: MaximizeMode) {
@@ -208,16 +151,20 @@ export class WindowHandler {
             this.window.resourceClass,
         );
         this.maximized = state !== MaximizeMode.MaximizeRestore;
-        if (!this.canBeTiled() && this.tiled) {
-            this.tiled = false;
-            for (const ev of createUntileEvents(this.window)) {
-                ctrl().queueEvent(ev);
-            }
-        } else if (this.canBeTiled() && !this.tiled && this.wantsTiled) {
-            this.tiled = true;
-            for (const ev of createTileEvents(this.window)) {
-                ctrl().queueEvent(ev);
-            }
+        if (!this.canBeTiled() && ctrl().isWindowTiled(this.window)) {
+            ctrl().queueEvent({
+                t: "untileWindow",
+                window: this.window,
+            });
+        } else if (
+            this.canBeTiled() &&
+            !ctrl().isWindowTiled(this.window) &&
+            this.wantsTiled
+        ) {
+            ctrl().queueEvent({
+                t: "tileWindow",
+                window: this.window,
+            });
         }
     }
 
@@ -229,7 +176,11 @@ export class WindowHandler {
         this.wasTiledBeforeMove = this.window.tile != null;
     }
     interactiveMoveResizeStepped() {
-        if (!this.tiled || !this.canBeTiled() || this.window.tile != null) {
+        if (
+            !ctrl().isWindowTiled(this.window) ||
+            !this.canBeTiled() ||
+            this.window.tile != null
+        ) {
             return;
         }
         // if the policy is never retile then untile regardless of previous tile status
@@ -240,16 +191,20 @@ export class WindowHandler {
             return;
         }
         console().debug("move started on window", this.window.resourceClass);
-        this.tiled = false;
         if (config().windowDragPolicy == DragPolicy.Never) {
             this.wantsTiled = false;
         }
-        for (const ev of createUntileEvents(this.window)) {
-            ctrl().queueEvent(ev);
-        }
+        ctrl().queueEvent({
+            t: "untileWindow",
+            window: this.window,
+        });
     }
     interactiveMoveResizeFinished() {
-        if (!this.wantsTiled || !this.canBeTiled() || this.tiled) {
+        if (
+            !this.wantsTiled ||
+            !this.canBeTiled() ||
+            ctrl().isWindowTiled(this.window)
+        ) {
             return;
         }
         if (
@@ -263,69 +218,43 @@ export class WindowHandler {
             this.window.resourceClass,
         );
         const cursorPos = this.workspace.cursorPos;
-        this.tiled = true;
-        for (const desktop of this.window.desktops) {
+        if (this.window.desktops.includes(this.workspace.currentDesktop)) {
             const rootTile = this.workspace.rootTile(
                 this.window.output,
-                desktop,
+                this.workspace.currentDesktop,
             );
-            // bug where pick() returns null if there is only one tile (the root tile)
             const tile =
                 rootTile.tiles.length == 0
                     ? rootTile
                     : rootTile.pick(cursorPos);
-            if (tile == null) {
-                ctrl().queueEvent({
-                    t: "tileWindow",
-                    window: this.window,
-                    desktop: desktop,
-                    activity: this.workspace.currentActivity,
-                    output: this.window.output,
-                });
-            } else {
+            if (tile !== null) {
                 ctrl().queueEvent({
                     t: "placeWindow",
                     window: this.window,
-                    desktop: desktop,
-                    activity: this.workspace.currentActivity,
-                    output: this.window.output,
                     tile: tile,
                     direction: directionFromPoint(
                         tile.absoluteGeometry,
                         cursorPos,
                     ),
                 });
+                return;
             }
         }
-        // for other activities, just tile dont place
-        for (const activity of this.window.activities) {
-            if (activity === this.workspace.currentActivity) {
-                continue;
-            }
-            for (const ev of createTileEvents(
-                this.window,
-                this.window.desktops,
-                [activity],
-                this.window.output,
-            )) {
-                ctrl().queueEvent(ev);
-            }
-        }
+        // only runs if current desktop is not in window.desktops and if tile is null
+        ctrl().queueEvent({
+            t: "tileWindow",
+            window: this.window,
+        });
     }
 
     // this only tracks manual insertion into a tile
     tileChanged(tile: Tile) {
         if (this.previousTile == null && tile != null) {
-            for (const desktop of this.window.desktops) {
-                ctrl().queueEvent({
-                    t: "placeWindow",
-                    window: this.window,
-                    desktop: desktop,
-                    activity: this.workspace.currentActivity,
-                    output: this.window.output,
-                    tile: tile,
-                });
-            }
+            ctrl().queueEvent({
+                t: "placeWindow",
+                window: this.window,
+                tile: tile,
+            });
         }
         this.previousTile = tile;
     }

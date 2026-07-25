@@ -1,6 +1,5 @@
-import { Activity, Output, VirtualDesktop } from "kwin-api";
 import { console, controller as ctrl } from "..";
-import { DesktopIdentifier, desktopId } from "../event";
+import { Display } from "../event";
 import { TilingEngineType } from "../../engine";
 import { DBus as DBusQml } from "../../extern";
 
@@ -30,15 +29,9 @@ export class DBusHandler {
             .finished.connect(this.getSettingsCallback.bind(this));
     }
 
-    getSettings(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
-    ): void {
+    getSettings(display: Display): void {
         console().debug("getSettings called");
-        this.dbusQml.getSettings().arguments = [
-            desktopId(desktop, activity, output),
-        ];
+        this.dbusQml.getSettings().arguments = [display.toString()];
         this.dbusQml.getSettings().call();
     }
 
@@ -52,19 +45,15 @@ export class DBusHandler {
             settingsBundleStr,
         );
         try {
-            const desktopId = ctrl().parseDesktopId(
-                desktopIdStr as DesktopIdentifier,
-            );
-            if (desktopId.some((x) => x === undefined)) return;
+            const display = ctrl().parseDisplay(desktopIdStr as string);
+            if (display === undefined) return;
             const settingsBundle = JSON.parse(
                 settingsBundleStr as string,
             ) as SettingsBundle;
             ctrl().queueEvent(
                 {
                     t: "changeEngine",
-                    desktop: desktopId[0]!,
-                    activity: desktopId[1]!,
-                    output: desktopId[2]!,
+                    display: display,
                     engineType: settingsBundle.engineType,
                     engineSettings: settingsBundle.engineSettings,
                     noDBusUpdate: true,
@@ -77,29 +66,21 @@ export class DBusHandler {
     }
 
     setSettings(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
+        display: Display,
         engineType: TilingEngineType,
         engineSettings: object,
     ): void {
         console().debug("setSettings called");
         this.dbusQml.setSettings().arguments = [
-            desktopId(desktop, activity, output),
+            display.toString(),
             settingsBundle(engineType, engineSettings),
         ];
         this.dbusQml.setSettings().call();
     }
 
-    resetSettings(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
-    ): void {
+    resetSettings(display: Display): void {
         console().debug("resetSettings called");
-        this.dbusQml.resetSettings().arguments = [
-            desktopId(desktop, activity, output),
-        ];
+        this.dbusQml.resetSettings().arguments = [display.toString()];
         this.dbusQml.resetSettings().call();
     }
 }

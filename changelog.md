@@ -9,6 +9,9 @@
 - Improve stack based layout keyboard shortcuts
 - Add KWin layout
 - Add window dragging settings
+- Rewrite event system again
+- Add display class
+- "Desktop Identifiers" are now called "Displays"
 
 ### 1.2.0
 

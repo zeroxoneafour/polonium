@@ -2,61 +2,114 @@ import { Output, Tile, VirtualDesktop, Window, Activity } from "kwin-api";
 import { TilingEngineType } from "../engine";
 import { Queue, Direction } from "../util";
 
+export type DisplaySymbol = Symbol;
+
+export class Display {
+    readonly desktop: VirtualDesktop;
+    readonly activity: Activity;
+    readonly output: Output;
+
+    constructor(desktop: VirtualDesktop, activity: Activity, output: Output) {
+        this.desktop = desktop;
+        this.activity = activity;
+        this.output = output;
+    }
+
+    toString(): string {
+        return `{"d":"${this.desktop.id}","a":"${this.activity}","o":"${this.output.name}"}`;
+    }
+
+    toSymbol(): DisplaySymbol {
+        return Symbol.for(this.toString());
+    }
+
+    equals(d: Display | null | undefined) {
+        return (
+            d &&
+            d.desktop === this.desktop &&
+            d.activity === this.activity &&
+            d.output === this.output
+        );
+    }
+
+    static *generate(
+        desktops: VirtualDesktop[],
+        activities: Activity[],
+        outputs: Output[],
+    ): Iterable<Display> {
+        for (const desktop of desktops) {
+            for (const activity of activities) {
+                for (const output of outputs) {
+                    yield new Display(desktop, activity, output);
+                }
+            }
+        }
+    }
+
+    static *generateWindow(window: Window): Iterable<Display> {
+        for (const desktop of window.desktops) {
+            for (const activity of window.activities) {
+                yield new Display(desktop, activity, window.output);
+            }
+        }
+    }
+}
+
 interface GenericEvent {
     t: string;
+    // a lot of events have this field exactly so give it a bit of shape
+    display?: Display;
 }
 
 // normal events - run before build
-interface TileWindowEvent {
-    t: "tileWindow";
+interface NewWindowEvent {
+    t: "newWindow";
     window: Window;
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
+    forceTile?: boolean;
     tile?: Tile;
     direction?: Direction;
 }
+interface DeleteWindowEvent {
+    t: "deleteWindow";
+    window: Window;
+}
+interface UpdateWindowEvent {
+    t: "updateWindow";
+    window: Window;
+}
+interface TileWindowEvent {
+    t: "tileWindow";
+    window: Window;
+}
 interface UntileWindowEvent {
     t: "untileWindow";
-    window: Window;
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
-}
-interface UpdateDriversEvent {
-    t: "updateDrivers";
-}
-interface RebuildDesktopsEvent {
-    t: "rebuildDesktops";
-}
-// registering a window is immediate, but removing a window must happen after all refs have been resolved
-// as such, removing is an event while registering/creating is not
-interface RemoveWindowEvent {
-    t: "removeWindow";
     window: Window;
 }
 interface PlaceWindowEvent {
     t: "placeWindow";
     window: Window;
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
     tile: Tile;
     direction?: Direction;
+}
+interface WindowActivatedEvent {
+    t: "windowActivated";
+    window: Window;
+}
+interface UpdateDriversEvent {
+    t: "updateDrivers";
+}
+interface RebuildDisplaysEvent {
+    t: "rebuildDisplays";
 }
 // set rebuild to false to avoid stuttering tiles when just moving them
 interface UpdateTilesEvent {
     t: "updateTiles";
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
+    display: Display;
     rebuild: boolean;
 }
 interface ChangeEngineEvent {
     t: "changeEngine";
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
+    display: Display;
     engineType?: TilingEngineType;
     engineSettings?: object;
     // if set explicitly to true, then do not update dbus
@@ -64,29 +117,22 @@ interface ChangeEngineEvent {
 }
 interface ResetEngineEvent {
     t: "resetEngine";
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
-}
-interface WindowActivatedEvent {
-    t: "windowActivated";
-    window: Window;
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
+    display: Display;
 }
 
 export type Event =
+    | NewWindowEvent
+    | DeleteWindowEvent
+    | UpdateWindowEvent
     | TileWindowEvent
     | UntileWindowEvent
-    | UpdateDriversEvent
-    | RebuildDesktopsEvent
-    | RemoveWindowEvent
     | PlaceWindowEvent
+    | WindowActivatedEvent
+    | UpdateDriversEvent
+    | RebuildDisplaysEvent
     | UpdateTilesEvent
     | ChangeEngineEvent
-    | ResetEngineEvent
-    | WindowActivatedEvent;
+    | ResetEngineEvent;
 
 // post events - these events run after build
 interface SetWindowPropertiesEvent {
@@ -98,28 +144,21 @@ interface SetWindowPropertiesEvent {
 // make update tile sizes run post to avoid rebuilds that can cause jutter
 interface ToggleSettingsMenuEvent {
     t: "toggleSettingsMenu";
-    desktop: VirtualDesktop;
-    activity: Activity;
-    output: Output;
+    display: Display;
 }
 
 export type PostEvent = SetWindowPropertiesEvent | ToggleSettingsMenuEvent;
 
-// check if two events operate on the same window, desktops, and output
-function eventsAreParallel<
-    T1 extends TileWindowEvent | PlaceWindowEvent | UntileWindowEvent,
-    T2 extends TileWindowEvent | PlaceWindowEvent | UntileWindowEvent,
->(ev1: T1, ev2: T2): boolean {
-    if (ev1.window !== ev2.window) return false;
-    if (ev1.output !== ev2.output) return false;
-    if (ev1.activity !== ev2.activity) return false;
-    if (ev1.desktop !== ev2.desktop) return false;
-    return true;
-}
-
 function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
     if (ev1.t !== ev2.t) return false;
     for (const prop in ev1) {
+        // display is the only parameter in the above events that should be matched based on value not reference
+        if (prop === "display") {
+            if (ev1.display?.equals(ev2.display)) {
+                continue;
+            }
+            return false;
+        }
         const val1 = (ev1 as any)[prop];
         const val2 = (ev2 as any)[prop];
         if (val1 !== val2) return false;
@@ -130,25 +169,54 @@ function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
 export function simplifyEvents(oldEvents: Queue<Event>): Queue<Event> {
     const newEvents = new Queue<Event>();
     for (const ev of oldEvents) {
+        // cancel out conflicting tile request events
         if (
-            ev.t == "tileWindow" ||
-            ev.t == "untileWindow" ||
-            ev.t == "placeWindow"
+            ev.t === "tileWindow" ||
+            ev.t === "untileWindow" ||
+            ev.t === "placeWindow"
         ) {
-            const parallelEventIdx = newEvents.indexOf((e) => {
-                if (
-                    e.t == "tileWindow" ||
-                    e.t == "untileWindow" ||
-                    e.t == "placeWindow"
-                ) {
-                    return eventsAreParallel(ev, e);
-                } else {
-                    return false;
+            // first check if a newWindow event with the same window has been queued.
+            // if so, we can set props on the newWindow event such that it applies the tile event
+            // and then we continue cus newWindow got us
+            const newEv = newEvents.find(
+                (e) => e.t === "newWindow" && e.window === ev.window,
+            );
+            if (newEv !== undefined && newEv.t === "newWindow") {
+                if (ev.t === "tileWindow") {
+                    newEv.forceTile = true;
+                    newEv.tile = undefined;
+                    newEv.direction = undefined;
+                } else if (ev.t === "untileWindow") {
+                    newEv.forceTile = false;
+                    newEv.tile = undefined;
+                    newEv.direction = undefined;
+                } else if (ev.t === "placeWindow") {
+                    newEv.forceTile = true;
+                    newEv.tile = ev.tile;
+                    newEv.direction = ev.direction;
                 }
-            });
+                continue;
+            }
+            const parallelIdx = newEvents.indexOf(
+                (e) =>
+                    (e.t === "tileWindow" ||
+                        e.t === "untileWindow" ||
+                        e.t === "placeWindow") &&
+                    e.window === ev.window,
+            );
             // remove old parallel event so we can use new one instead
-            if (parallelEventIdx != -1) {
-                newEvents.removeAtIndex(parallelEventIdx);
+            if (parallelIdx != -1) {
+                newEvents.removeAtIndex(parallelIdx);
+            }
+        }
+        // if a window is deleted in the same frame it is created then cancel both events
+        if (ev.t === "deleteWindow") {
+            const newIdx = newEvents.indexOf(
+                (e) => e.t === "newWindow" && e.window === ev.window,
+            );
+            if (newIdx != -1) {
+                newEvents.removeAtIndex(newIdx);
+                continue;
             }
         }
         // code that continues must go below code that removes other events,
@@ -180,62 +248,4 @@ export function simplifyPostEvents(
         newEvents.push(ev);
     }
     return newEvents;
-}
-
-export function createTileEvents(
-    window: Window,
-    desktops?: VirtualDesktop[],
-    activities?: Activity[],
-    output?: Output,
-): TileWindowEvent[] {
-    if (desktops === undefined) desktops = window.desktops;
-    if (activities === undefined) activities = window.activities;
-    if (output === undefined) output = window.output;
-    const ret: TileWindowEvent[] = [];
-    for (const desktop of desktops) {
-        for (const activity of activities) {
-            ret.push({
-                t: "tileWindow",
-                window: window,
-                desktop: desktop,
-                activity: activity,
-                output: output,
-            });
-        }
-    }
-    // force return
-    return ret;
-}
-
-export function createUntileEvents(
-    window: Window,
-    desktops?: VirtualDesktop[],
-    activities?: Activity[],
-    output?: Output,
-): UntileWindowEvent[] {
-    if (desktops === undefined) desktops = window.desktops;
-    if (activities === undefined) activities = window.activities;
-    if (output === undefined) output = window.output;
-    const ret: UntileWindowEvent[] = [];
-    for (const desktop of desktops) {
-        for (const activity of activities) {
-            ret.push({
-                t: "untileWindow",
-                window: window,
-                desktop: desktop,
-                activity: activity,
-                output: output,
-            });
-        }
-    }
-    return ret;
-}
-
-export type DesktopIdentifier = string;
-export function desktopId(
-    desktop: VirtualDesktop,
-    activity: Activity,
-    output: Output,
-): DesktopIdentifier {
-    return `{"d":"${desktop.id}","a":"${activity}","o":"${output.name}"}`;
 }

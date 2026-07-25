@@ -2,6 +2,7 @@ import { Activity, Output, VirtualDesktop } from "kwin-api";
 import { Settings as SettingsQml } from "../../extern";
 import { TilingEngineType } from "../../engine";
 import { console, controller as ctrl } from "..";
+import { Display } from "../event";
 
 export class SettingsHandler {
     private settingsQml: SettingsQml;
@@ -14,17 +15,15 @@ export class SettingsHandler {
     }
 
     show(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
+        display: Display,
         engineType: TilingEngineType,
         engineSettings: object,
     ): void {
         console().debug("showing settings");
         this.settingsQml.show(
-            desktop,
-            activity,
-            output,
+            display.desktop,
+            display.activity,
+            display.output,
             engineType,
             engineSettings,
         );
@@ -47,9 +46,7 @@ export class SettingsHandler {
     ) {
         ctrl().queueEvent({
             t: "changeEngine",
-            desktop: desktop,
-            activity: activity,
-            output: output,
+            display: new Display(desktop, activity, output),
             engineType: engineType,
             engineSettings: engineSettings,
         });
@@ -62,9 +59,7 @@ export class SettingsHandler {
     ) {
         ctrl().queueEvent({
             t: "resetEngine",
-            desktop: desktop,
-            activity: activity,
-            output: output,
+            display: new Display(desktop, activity, output),
         });
     }
 }

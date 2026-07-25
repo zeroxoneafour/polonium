@@ -17,13 +17,15 @@ import { config, console, controller as ctrl } from "../controller";
 import { Direction } from "../util";
 import { Borders } from "../controller/config";
 import { updateTiles } from "./updatetiles";
+import { Display } from "../controller/event";
 
 export class Driver {
     private engineRootTile: EngineTile | null = null;
     private tileMap: Map<KwinTile, EngineTile> = new Map();
     private hookedTiles: Set<KwinTile> = new Set();
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
-    private windowsToUnmanage: KwinWindow[] = [];
+    private untiledWindows: Set<KwinWindow> = new Set();
+    private windowsToRemove: KwinWindow[] = [];
     private savedActiveWindow: KwinWindow | null = null;
 
     private tilingEngine: TilingEngine;
@@ -66,12 +68,23 @@ export class Driver {
         return this.windowMap.has(kwinWindow);
     }
 
+    hasTile(kwinTile: KwinTile): boolean {
+        return this.tileMap.has(kwinTile);
+    }
+
     getEngineType(): TilingEngineType {
         return this.tilingEngine.engineType;
     }
 
     getEngineSettings(): object {
         return this.tilingEngine.getEngineSettings();
+    }
+
+    isWindowTiled(kwinWindow: KwinWindow): boolean | undefined {
+        if (!this.windowMap.has(kwinWindow)) {
+            return undefined;
+        }
+        return !this.untiledWindows.has(kwinWindow);
     }
 
     resetTilingEngine(): void {
@@ -84,20 +97,15 @@ export class Driver {
         }
     }
 
-    buildLayout(
-        rootTile: KwinTile,
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
-    ): void {
+    buildLayout(rootTile: KwinTile, display: Display): void {
         // remove non-extant windows or windows that are not on the desktop/activity/output
         // should prevent ghost tiles even if code elsewhere is buggy
         for (const [kwinWindow, _ew] of this.windowMap) {
             if (
                 !ctrl().windowExists(kwinWindow) ||
-                !kwinWindow.desktops.includes(desktop) ||
-                !kwinWindow.activities.includes(activity) ||
-                kwinWindow.output !== output
+                !kwinWindow.desktops.includes(display.desktop) ||
+                !kwinWindow.activities.includes(display.activity) ||
+                kwinWindow.output !== display.output
             ) {
                 console().warn("invalid window in windowMap");
                 this.removeWindow(kwinWindow);
@@ -121,20 +129,10 @@ export class Driver {
             // set callbacks on tiles that do not have callbacks set
             if (!this.hookedTiles.has(kwinTile)) {
                 kwinTile.relativeGeometryChanged.connect(
-                    this.updateTileSizesCallback.bind(
-                        this,
-                        desktop,
-                        activity,
-                        output,
-                    ),
+                    this.updateTileSizesCallback.bind(this, display),
                 );
                 kwinTile.childTilesChanged.connect(
-                    this.updateTileCountCallback.bind(
-                        this,
-                        desktop,
-                        activity,
-                        output,
-                    ),
+                    this.updateTileCountCallback.bind(this, display),
                 );
                 this.hookedTiles.add(kwinTile);
             }
@@ -142,6 +140,9 @@ export class Driver {
                 const kwinWindow = invertedWindowMap.get(engineWindow);
                 if (kwinWindow === undefined) {
                     continue;
+                }
+                if (this.untiledWindows.has(kwinWindow)) {
+                    this.untiledWindows.delete(kwinWindow);
                 }
                 setTiledProps(kwinWindow);
                 if (kwinWindow.tile !== kwinTile) kwinTile.manage(kwinWindow);
@@ -152,6 +153,7 @@ export class Driver {
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindows.has(kwinWindow)) {
+                this.untiledWindows.add(kwinWindow);
                 // dont set untiled props if the tile isnt null and this driver doesnt manage it
                 // (in all likelihood another driver does)
                 if (
@@ -165,20 +167,6 @@ export class Driver {
                 }
             }
         }
-        // untile windows set to be unmanaged only if they still exist (removeWindow has not been called)
-        for (const kwinWindow of this.windowsToUnmanage) {
-            // we dont sanitize this for windowExists (unlike for windowMap) so double check
-            if (!ctrl().windowExists(kwinWindow)) {
-                continue;
-            }
-            if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
-                kwinWindow.tile.unmanage(kwinWindow);
-                setUntiledProps(kwinWindow);
-            } else if (kwinWindow.tile == null) {
-                setUntiledProps(kwinWindow);
-            }
-        }
-        this.windowsToUnmanage = [];
     }
 
     private initializeWindow(kwinWindow: KwinWindow): EngineWindow {
@@ -216,6 +204,38 @@ export class Driver {
             // return value doesnt matter as we rebuild on add regardless
             this.tilingEngine.windowActivated(window);
         }
+    }
+
+    addWindowUntiled(kwinWindow: KwinWindow) {
+        if (this.windowMap.has(kwinWindow)) {
+            console().warn(
+                "initializeWindow error - window already exists in map",
+            );
+            return;
+        }
+        this.initializeWindow(kwinWindow);
+    }
+
+    tileWindow(kwinWindow: KwinWindow) {
+        const window = this.windowMap.get(kwinWindow);
+        if (window === undefined) {
+            console().warn("tileWindow error - window not found in map");
+            return;
+        }
+        this.tilingEngine.addWindow(window);
+        if (this.savedActiveWindow === kwinWindow) {
+            // return value doesnt matter as we rebuild on add regardless
+            this.tilingEngine.windowActivated(window);
+        }
+    }
+
+    untileWindow(kwinWindow: KwinWindow) {
+        const window = this.windowMap.get(kwinWindow);
+        if (window === undefined) {
+            console().warn("untileWindow error - window not found in map");
+            return;
+        }
+        this.tilingEngine.removeWindow(window);
     }
 
     placeWindow(
@@ -259,9 +279,16 @@ export class Driver {
             );
             return;
         }
-        this.windowsToUnmanage.push(kwinWindow);
         this.tilingEngine.removeWindow(engineWindow);
         this.windowMap.delete(kwinWindow);
+        if (this.untiledWindows.has(kwinWindow)) {
+            this.untiledWindows.delete(kwinWindow);
+        } else if (ctrl().windowExists(kwinWindow)) {
+            setUntiledProps(kwinWindow);
+            if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
+                kwinWindow.tile.unmanage(kwinWindow);
+            }
+        }
     }
 
     // as of right now, can only update sizes (ie cannot add/remove tiles)
@@ -274,31 +301,19 @@ export class Driver {
         this.tilingEngine.updateTiles(tile);
     }
 
-    updateTileSizesCallback(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
-    ) {
+    private updateTileSizesCallback(display: Display) {
         ctrl().queueEvent({
             t: "updateTiles",
-            desktop: desktop,
-            activity: activity,
-            output: output,
+            display: display,
             rebuild: false,
         });
     }
     // when updating tile count we want to rebuild as for most engines this is an error
     // for kwin this is fine though
-    updateTileCountCallback(
-        desktop: VirtualDesktop,
-        activity: Activity,
-        output: Output,
-    ) {
+    private updateTileCountCallback(display: Display) {
         ctrl().queueEvent({
             t: "updateTiles",
-            desktop: desktop,
-            activity: activity,
-            output: output,
+            display: display,
             rebuild: true,
         });
     }
