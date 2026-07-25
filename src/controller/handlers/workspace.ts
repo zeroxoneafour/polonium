@@ -3,6 +3,7 @@ import { config, controller as ctrl } from "..";
 import { Window } from "kwin-api";
 import { Borders } from "../config";
 import { directionFromPoint } from "../../util";
+import { Display } from "../event";
 
 export class WorkspaceHandler {
     private workspace: Workspace;
@@ -59,6 +60,7 @@ export class WorkspaceHandler {
         ctrl().queueEvent({
             t: "deleteWindow",
             window: window,
+            displays: [...Display.generateWindow(window)],
         });
     }
 

@@ -145,7 +145,7 @@ class Controller {
                         ev.direction,
                     );
                 case "deleteWindow":
-                    return this.evDeleteWindow(ev.window);
+                    return this.evDeleteWindow(ev.window, ev.displays);
                 case "updateWindow":
                     return this.evUpdateWindow(ev.window);
                 case "tileWindow":
@@ -219,13 +219,13 @@ class Controller {
         }
         return ret;
     }
-    private evDeleteWindow(window: Window): Display[] {
+    private evDeleteWindow(window: Window, displays: Display[]): Display[] {
         console().log("destroying window", window.resourceClass);
-        if (!this.previousDisplays.has(window)) {
-            return [];
+        if (this.previousDisplays.has(window)) {
+            this.previousDisplays.delete(window);
         }
         const ret = [];
-        for (const display of this.previousDisplays.get(window)!) {
+        for (const display of displays) {
             this.getDriver(display)?.removeWindow(window);
             ret.push(display);
         }

@@ -175,7 +175,7 @@ export class WindowHandler {
     // then if it leaves the tile in a later step, untile it
     // after all that, if
     interactiveMoveResizeStarted() {
-        this.wasTiledBeforeMove = this.window.tile != null;
+        this.wasTiledBeforeMove = ctrl().isWindowTiled(this.window) ?? false;
     }
     interactiveMoveResizeStepped() {
         if (
@@ -216,7 +216,7 @@ export class WindowHandler {
             return;
         }
         console().debug(
-            "move/resize finished on window",
+            "move finished on window",
             this.window.resourceClass,
         );
         const cursorPos = this.workspace.cursorPos;
@@ -230,6 +230,7 @@ export class WindowHandler {
     // this only tracks manual insertion into a tile
     tileChanged(tile: Tile) {
         if (this.previousTile == null && tile != null) {
+            this.wantsTiled = true;
             ctrl().queueEvent({
                 t: "placeWindow",
                 window: this.window,

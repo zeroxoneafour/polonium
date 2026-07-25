@@ -68,8 +68,9 @@ export class Display {
 
 interface GenericEvent {
     t: string;
-    // a lot of events have this field exactly so give it a bit of shape
+    // a lot of events have these field exactly so give it a bit of shape
     display?: Display;
+    displays?: Display[];
 }
 
 // normal events - run before build
@@ -83,6 +84,8 @@ interface NewWindowEvent {
 interface DeleteWindowEvent {
     t: "deleteWindow";
     window: Window;
+    // need a displays field in case window becomes undefined/null
+    displays: Display[];
 }
 interface UpdateWindowEvent {
     t: "updateWindow";
@@ -176,6 +179,16 @@ function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
                 continue;
             }
             return false;
+        } else if (prop === "displays") {
+            if (ev1.displays === undefined || ev2.displays === undefined) {
+                return false;
+            }
+            for (let i = 0; i < ev1.displays.length; i += 1) {
+                if (!ev1.displays[i].equals(ev2.displays[i])) {
+                    return false;
+                }
+            }
+            continue;
         }
         const val1 = (ev1 as any)[prop];
         const val2 = (ev2 as any)[prop];

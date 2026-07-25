@@ -18,7 +18,6 @@ export class Driver {
     private hookedTiles: Set<KwinTile> = new Set();
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
     private untiledWindows: Set<KwinWindow> = new Set();
-    private windowsToRemove: KwinWindow[] = [];
     private savedActiveWindow: KwinWindow | null = null;
 
     private tilingEngine: TilingEngine;
@@ -137,6 +136,7 @@ export class Driver {
                 if (kwinWindow === undefined) {
                     continue;
                 }
+                console().debug("setting", kwinWindow.resourceClass, "as tiled");
                 if (this.untiledWindows.has(kwinWindow)) {
                     this.untiledWindows.delete(kwinWindow);
                 }
@@ -149,6 +149,7 @@ export class Driver {
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindows.has(kwinWindow)) {
+                console().debug("setting", kwinWindow.resourceClass, "as untiled");
                 this.untiledWindows.add(kwinWindow);
                 // dont set untiled props if the tile isnt null and this driver doesnt manage it
                 // (in all likelihood another driver does)
@@ -266,6 +267,15 @@ export class Driver {
     }
 
     removeWindow(kwinWindow: KwinWindow): void {
+        if (this.untiledWindows.has(kwinWindow)) {
+            this.untiledWindows.delete(kwinWindow);
+        } else if (ctrl().windowExists(kwinWindow)) {
+            setUntiledProps(kwinWindow);
+            if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
+                kwinWindow.tile.unmanage(kwinWindow);
+            }
+        }
+
         const engineWindow = this.windowMap.get(kwinWindow);
         if (engineWindow === undefined) {
             console().warn(
@@ -277,14 +287,6 @@ export class Driver {
         }
         this.tilingEngine.removeWindow(engineWindow);
         this.windowMap.delete(kwinWindow);
-        if (this.untiledWindows.has(kwinWindow)) {
-            this.untiledWindows.delete(kwinWindow);
-        } else if (ctrl().windowExists(kwinWindow)) {
-            setUntiledProps(kwinWindow);
-            if (kwinWindow.tile != null && this.tileMap.has(kwinWindow.tile)) {
-                kwinWindow.tile.unmanage(kwinWindow);
-            }
-        }
     }
 
     // as of right now, can only update sizes (ie cannot add/remove tiles)

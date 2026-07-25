@@ -24,13 +24,20 @@ export class KwinEngine implements TilingEngineInterface {
     }
     removeWindow(window: Window): void {
         const tile = this.windowTiles.get(window);
+        this.windowTiles.delete(window);
         if (tile === undefined) {
             return;
         }
         tile.windows.splice(tile.windows.indexOf(window), 1);
     }
     placeWindow(window: Window, tile: Tile, _direction?: Direction): void {
-        tile.windows.push(window);
+        if (this.windowTiles.has(window)) {
+            const oldTile = this.windowTiles.get(window)!;
+            oldTile.windows.splice(oldTile.windows.indexOf(window), 1);
+        }
+        if (!tile.windows.includes(window)) {
+            tile.windows.push(window);
+        }
         this.windowTiles.set(window, tile);
     }
     windowActivated(_window: Window): boolean {
