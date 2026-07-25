@@ -1,7 +1,7 @@
 import { Window, MaximizeMode, Tile } from "kwin-api";
-import { config, console, controller as ctrl } from "..";
+import { config, console, controller as ctrl, qt } from "..";
 import { Workspace } from "kwin-api/qml";
-import { DragPolicy } from "../config";
+import { DragPolicy, DragRetilePoint } from "../config";
 
 export class WindowHandler {
     window: Window;
@@ -216,11 +216,34 @@ export class WindowHandler {
             return;
         }
         console().debug("move finished on window", this.window.resourceClass);
-        const cursorPos = this.workspace.cursorPos;
+        let insertionPoint;
+        switch (config().dragRetilePoint) {
+            case DragRetilePoint.Mouse:
+                insertionPoint = this.workspace.cursorPos;
+                break;
+            case DragRetilePoint.Center:
+                insertionPoint = qt().point(
+                    this.window.frameGeometry.x +
+                        this.window.frameGeometry.width / 2,
+                    this.window.frameGeometry.y +
+                        this.window.frameGeometry.height / 2,
+                );
+                break;
+            case DragRetilePoint.Top:
+                insertionPoint = qt().point(
+                    this.window.frameGeometry.x +
+                        this.window.frameGeometry.width / 2,
+                    this.window.frameGeometry.y,
+                );
+                break;
+            default:
+                insertionPoint = this.workspace.cursorPos;
+                break;
+        }
         ctrl().queueEvent({
             t: "placeWindowPoint",
             window: this.window,
-            point: cursorPos,
+            point: insertionPoint,
         });
     }
 

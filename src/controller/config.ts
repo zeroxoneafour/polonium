@@ -23,6 +23,11 @@ export enum DragPolicy {
     Tiled,
     Never,
 }
+export enum DragRetilePoint {
+    Mouse = 0,
+    Center,
+    Top,
+}
 
 export class Config {
     readonly rebuildDelay: number;
@@ -39,15 +44,17 @@ export class Config {
     readonly pillarSettings: object;
     readonly pagerSettings: object;
 
+    readonly borders: Borders;
+    readonly tiledWindowsBelow: boolean;
+    readonly windowDragPolicy: DragPolicy;
+    readonly dragRetilePoint: DragRetilePoint;
+
     readonly rawRegex: boolean;
     readonly ignoreWindowClasses: RegExp;
     readonly ignoreWindowCaptions: RegExp;
     readonly untileWindowClasses: RegExp;
     readonly untileWindowCaptions: RegExp;
-    readonly borders: Borders;
-    readonly tiledWindowsBelow: boolean;
     readonly tilePopups: boolean;
-    readonly windowDragPolicy: DragPolicy;
 
     constructor(kwinApi: KWin) {
         const rc = kwinApi.readConfig;
@@ -120,6 +127,7 @@ export class Config {
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.tilePopups = rc("TilePopups", false);
         this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
+        this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
     }
 }
 

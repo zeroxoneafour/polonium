@@ -71,17 +71,21 @@ No settings are available for this layout. Configuration is done via the KWin ti
 
 ## Windows
 
+* Borders - How window borders should be distributed.
+* Place Tiled Windows Below - Whether tiled windows should be forced below floating/fullscreen ones.
+* Window Dragging Policy - How dragged windows should be treated.
+* Drag Retile Point - The reference point to use when retiling a dragged window.
+
+## Filters
+
 Note that all text fields accept regex.
 Commas are replaced with regex OR statements (`|`) for backwards compatibility and readability.
 Additionally, the regex is wrapped with `^` and `$` to prevent empty matching.
 
+* Use Raw Regex - If true, then commas will not be converted into regex ORs and the regex will not be wrapped.
+    * Use with caution as empty strings will match everything!
 * Ignore Window Classes - If a window class matches this regex, it will be completely ignored by the engine.
 * Ignore Window Captions - If a window caption (title) matches this regex, it will be completely ignored by the engine.
 * Untile Window Classes - If a window class matches this regex, it will not be automatically tiled.
 * Untile Window Captions - If a window caption (title) matches this regex, it will not be automatically tiled.
-* Raw Regex - If true, then commas will not be converted into regex ORs and the regex will not be wrapped.
-    * Use with caution as empty strings will match everything!
-* Borders - How window borders should be distributed.
-* Place Tiled Windows Below - Whether tiled windows should be forced below floating/fullscreen ones.
 * Tile Popup Windows - Whether to tile popup windows.
-* Window Dragging Policy - How dragged windows should be treated.
