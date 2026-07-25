@@ -117,6 +117,12 @@ export class WindowHandler {
                 fullscreen: true,
                 keepAbove: true,
             });
+        } else {
+            ctrl().queuePostEvent({
+                t: "setWindowProperties",
+                window: this.window,
+                keepAbove: false,
+            });
         }
     }
 
