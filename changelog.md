@@ -12,6 +12,9 @@
 - Rewrite event system again
 - Add display class
 - "Desktop Identifiers" are now called "Displays"
+- Add option to completely ignore window classes/captions
+- Fixed fullscreen windows being below the taskbar
+- Support pinned windows and windows on multiple desktops
 
 ### 1.2.0
 

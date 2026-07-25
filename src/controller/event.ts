@@ -55,7 +55,9 @@ export class Display {
     }
 
     static *generateWindow(window: Window): Iterable<Display> {
-        const desktops = window.onAllDesktops ? this.workspace?.desktops ?? [] : window.desktops;
+        const desktops = window.onAllDesktops
+            ? (this.workspace?.desktops ?? [])
+            : window.desktops;
         for (const desktop of desktops) {
             for (const activity of window.activities) {
                 yield new Display(desktop, activity, window.output);
