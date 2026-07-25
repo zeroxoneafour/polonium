@@ -1,6 +1,7 @@
 import { Output, Tile, VirtualDesktop, Window, Activity } from "kwin-api";
 import { TilingEngineType } from "../engine";
 import { Queue, Direction } from "../util";
+import { QPoint } from "kwin-api/qt";
 
 export type DisplaySymbol = Symbol;
 
@@ -91,6 +92,11 @@ interface PlaceWindowEvent {
     tile: Tile;
     direction?: Direction;
 }
+interface PlaceWindowPointEvent {
+    t: "placeWindowPoint";
+    window: Window;
+    point: QPoint;
+}
 interface WindowActivatedEvent {
     t: "windowActivated";
     window: Window;
@@ -127,6 +133,7 @@ export type Event =
     | TileWindowEvent
     | UntileWindowEvent
     | PlaceWindowEvent
+    | PlaceWindowPointEvent
     | WindowActivatedEvent
     | UpdateDriversEvent
     | RebuildDisplaysEvent
@@ -140,6 +147,7 @@ interface SetWindowPropertiesEvent {
     window: Window;
     fullscreen?: boolean;
     noBorder?: boolean;
+    keepAbove?: boolean;
 }
 // make update tile sizes run post to avoid rebuilds that can cause jutter
 interface ToggleSettingsMenuEvent {

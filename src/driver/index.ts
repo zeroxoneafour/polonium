@@ -1,10 +1,6 @@
 import {
     Tile as KwinTile,
     Window as KwinWindow,
-    LayoutDirection,
-    Output,
-    VirtualDesktop,
-    Activity,
 } from "kwin-api";
 import {
     Tile as EngineTile,

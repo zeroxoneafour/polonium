@@ -16,10 +16,10 @@ import {
     SettingsHandler,
     DBusHandler,
 } from "./handlers";
-import { Direction, Queue } from "../util";
+import { Direction, directionFromPoint, Queue } from "../util";
 import { Console } from "./console";
 import { Driver } from "../driver";
-import { QTimer, Qt } from "kwin-api/qt";
+import { QPoint, QTimer, Qt } from "kwin-api/qt";
 import { Config } from "./config";
 import { TilingEngineType } from "../engine";
 
@@ -93,7 +93,7 @@ class Controller {
                 rebuildDisplays.set(display.toSymbol(), display);
             }
         }
-        for (const [symbol, display] of rebuildDisplays) {
+        for (const [_, display] of rebuildDisplays) {
             if (display.desktop == undefined || display.output == undefined) {
                 continue;
             }
@@ -130,7 +130,7 @@ class Controller {
         this.processingEvents = false;
     }
 
-    // returns a list of desktopIdentifiers that need a rebuild
+    // returns a list of displays that need a rebuild
     // one event returning yes guarantees a rebuild
     // error handling - break in case statement to exit and log error message
     private handleEvent(ev: Event): Display[] {
@@ -154,12 +154,14 @@ class Controller {
                     return this.evUntileWindow(ev.window);
                 case "placeWindow":
                     return this.evPlaceWindow(ev.window, ev.tile, ev.direction);
+                case "placeWindowPoint":
+                    return this.evPlaceWindowPoint(ev.window, ev.point);
+                case "windowActivated":
+                    return this.evWindowActivated(ev.window);
                 case "updateDrivers":
                     return this.updateDrivers();
                 case "rebuildDisplays":
                     return this.displaysToRebuild();
-                case "windowActivated":
-                    return this.evWindowActivated(ev.window);
                 case "updateTiles":
                     return this.evUpdateTiles(ev.display, ev.rebuild);
                 case "changeEngine":
@@ -200,17 +202,18 @@ class Controller {
                 continue;
             }
             if (
-                (forceTile === undefined && handler.wantsTiled) ||
-                (forceTile === true && tile === undefined)
-            ) {
-                driver.addWindow(window);
-            } else if (
                 forceTile === false ||
                 (forceTile === undefined && !handler.wantsTiled)
             ) {
                 driver.addWindowUntiled(window);
-            } else if (forceTile === true && tile != undefined) {
+            } else if (
+                forceTile === true &&
+                tile != undefined &&
+                driver.hasTile(tile)
+            ) {
                 driver.placeWindow(window, tile, direction);
+            } else {
+                driver.addWindow(window, tile, direction);
             }
             ret.push(display);
         }
@@ -277,7 +280,7 @@ class Controller {
             const driver = this.getDriver(display);
             if (driver === undefined) {
                 throw new Error(
-                    "driver not found for desktop id " + display.toString(),
+                    "driver not found for display " + display.toString(),
                 );
             }
             ret.push(display);
@@ -292,13 +295,96 @@ class Controller {
             const driver = this.getDriver(display);
             if (driver === undefined) {
                 throw new Error(
-                    "driver not found for desktop id " + display.toString(),
+                    "driver not found for display " + display.toString(),
                 );
             }
             ret.push(display);
             driver.untileWindow(window);
         }
         return ret;
+    }
+    private evPlaceWindow(
+        window: Window,
+        tile: Tile,
+        direction: Direction | undefined,
+    ): Display[] {
+        console().log(
+            "placing window",
+            window.resourceClass,
+            "in tile at",
+            tile.absoluteGeometry,
+        );
+        const displays = [];
+        for (const display of Display.generateWindow(window)) {
+            const driver = this.getDriver(display);
+            if (driver == undefined) continue;
+            if (!driver.hasTile(tile)) {
+                if (driver.hasWindow(window)) {
+                    driver.tileWindow(window);
+                } else {
+                    driver.addWindow(window);
+                }
+                continue;
+            }
+            driver.placeWindow(window, tile, direction);
+            displays.push(display);
+        }
+        return displays;
+    }
+    private evPlaceWindowPoint(window: Window, point: QPoint): Display[] {
+        console().log(
+            "placing window",
+            window.resourceClass,
+            "at point",
+            point,
+        );
+        const displays = [];
+        for (const display of Display.generateWindow(window)) {
+            const driver = this.getDriver(display);
+            if (driver == undefined) continue;
+            displays.push(display);
+            // can only get tiles for current activity
+            if (display.activity !== this.workspace.currentActivity) {
+                if (driver.hasWindow(window)) {
+                    driver.tileWindow(window);
+                } else {
+                    driver.addWindow(window);
+                }
+                continue;
+            }
+            const rootTile = this.workspace.rootTile(
+                display.output,
+                display.desktop,
+            );
+            const tile =
+                rootTile.tiles.length == 0 ? rootTile : rootTile.pick(point);
+            if (tile === null || !driver.hasTile(tile)) {
+                if (driver.hasWindow(window)) {
+                    driver.tileWindow(window);
+                } else {
+                    driver.addWindow(window);
+                }
+            } else {
+                const direction = directionFromPoint(
+                    tile.absoluteGeometry,
+                    point,
+                );
+                driver.placeWindow(window, tile, direction);
+            }
+        }
+        return displays;
+    }
+    private evWindowActivated(window: Window): Display[] {
+        console().log("window activated", window.resourceClass);
+        const displays = [];
+        for (const display of Display.generateWindow(window)) {
+            const driver = this.getDriver(display);
+            if (driver == undefined) continue;
+            if (driver.windowActivated(window)) {
+                displays.push(display);
+            }
+        }
+        return displays;
     }
     private updateDrivers(): Display[] {
         const ret = [];
@@ -336,39 +422,6 @@ class Controller {
         }
         return displays;
     }
-    private evPlaceWindow(
-        window: Window,
-        tile: Tile,
-        direction: Direction | undefined,
-    ): Display[] {
-        console().log(
-            "placing window",
-            window.resourceClass,
-            "in tile at",
-            tile.absoluteGeometry,
-        );
-        const displays = [];
-        for (const display of Display.generateWindow(window)) {
-            const driver = this.getDriver(display);
-            if (driver == undefined) continue;
-            if (!driver.hasTile(tile)) continue;
-            driver.placeWindow(window, tile, direction);
-            displays.push(display);
-        }
-        return displays;
-    }
-    private evWindowActivated(window: Window): Display[] {
-        console().log("window activated", window.resourceClass);
-        const displays = [];
-        for (const display of Display.generateWindow(window)) {
-            const driver = this.getDriver(display);
-            if (driver == undefined) continue;
-            if (driver.windowActivated(window)) {
-                displays.push(display);
-            }
-        }
-        return displays;
-    }
     private evUpdateTiles(display: Display, rebuild: boolean): Display[] {
         console().log("updating tiles for display", display.toString());
         const driver = this.getDriver(display);
@@ -396,7 +449,7 @@ class Controller {
         noDBusUpdate: boolean | undefined,
     ): Display[] {
         console().log(
-            "changing engine type/settings for desktop id",
+            "changing engine type/settings for display",
             display.toString(),
         );
         const driver = this.getDriver(display);
@@ -463,6 +516,9 @@ class Controller {
                 }
                 if (ev.noBorder !== undefined) {
                     ev.window.noBorder = ev.noBorder;
+                }
+                if (ev.keepAbove !== undefined) {
+                    ev.window.keepAbove = ev.keepAbove;
                 }
                 return;
             }

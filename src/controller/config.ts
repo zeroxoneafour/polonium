@@ -42,6 +42,8 @@ export class Config {
     readonly rawRegex: boolean;
     readonly ignoreWindowClasses: RegExp;
     readonly ignoreWindowCaptions: RegExp;
+    readonly untileWindowClasses: RegExp;
+    readonly untileWindowCaptions: RegExp;
     readonly borders: Borders;
     readonly tiledWindowsBelow: boolean;
     readonly tilePopups: boolean;
@@ -100,17 +102,20 @@ export class Config {
             "IgnoreWindowClasses",
             "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
         );
+        let ignoreWindowCaptions = rc("IgnoreWindowCaptions", "");
+        let untileWindowClasses = rc("UntileWindowClasses", "");
+        let untileWindowCaptions = rc("UntileWindowCaptions", "");
         if (!this.rawRegex) {
-            ignoreWindowClasses = commaRegex(ignoreWindowClasses);
-            ignoreWindowClasses = "^" + ignoreWindowClasses + "$";
+            ignoreWindowClasses = "^" + commaRegex(ignoreWindowClasses) + "$";
+            ignoreWindowCaptions = "^" + commaRegex(ignoreWindowCaptions) + "$";
+            untileWindowClasses = "^" + commaRegex(untileWindowClasses) + "$";
+            untileWindowCaptions = "^" + commaRegex(untileWindowCaptions) + "$";
         }
         this.ignoreWindowClasses = new RegExp(ignoreWindowClasses);
-        let ignoreWindowCaptions = rc("IgnoreWindowCaptions", "");
-        if (!this.rawRegex) {
-            ignoreWindowCaptions = commaRegex(ignoreWindowCaptions);
-            ignoreWindowCaptions = "^" + ignoreWindowCaptions + "$";
-        }
         this.ignoreWindowCaptions = new RegExp(ignoreWindowCaptions);
+        this.untileWindowClasses = new RegExp(untileWindowClasses);
+        this.untileWindowCaptions = new RegExp(untileWindowCaptions);
+
         this.borders = rc("Borders", Borders.All);
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.tilePopups = rc("TilePopups", false);

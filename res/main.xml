@@ -41,6 +41,7 @@
         <entry name="IgnoreWindowCaptions" type="string"><default></default></entry>
         <entry name="UntileWindowClasses" type="string"><default></default></entry>
         <entry name="UntileWindowCaptions" type="string"><default></default></entry>
+
         <entry name="RawRegex" type="bool"><default>false</default></entry>
         <entry name="Borders" type="int"><default>4</default></entry>
         <entry name="TiledWindowsBelow" type="bool"><default>true</default></entry>

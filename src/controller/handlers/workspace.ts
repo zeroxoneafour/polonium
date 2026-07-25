@@ -1,5 +1,5 @@
 import { Workspace } from "kwin-api/qml";
-import { config, console, controller as ctrl } from "..";
+import { config, controller as ctrl } from "..";
 import { Window } from "kwin-api";
 import { Borders } from "../config";
 import { directionFromPoint } from "../../util";
@@ -32,6 +32,12 @@ export class WorkspaceHandler {
     }
 
     windowAdded(window: Window) {
+        if (
+            config().ignoreWindowClasses.test(window.resourceClass) ||
+            config().ignoreWindowCaptions.test(window.caption)
+        ) {
+            return;
+        }
         let tile,
             direction = undefined;
         if (this.previousActivated?.tile != null) {
@@ -69,13 +75,12 @@ export class WorkspaceHandler {
         // eventually we should move border setting entirely into the controller/driver
         this.previousActivated = this.currentActivated;
         this.currentActivated = window;
-        /*
         const borders = config().borders;
         if (
             this.previousActivated !== null &&
             (borders === Borders.Active ||
                 (borders === Borders.FloatingActive &&
-                    windowIsTiled(this.previousActivated)))
+                    ctrl().isWindowTiled(this.previousActivated)))
         ) {
             ctrl().queuePostEvent({
                 t: "setWindowProperties",
@@ -83,15 +88,13 @@ export class WorkspaceHandler {
                 noBorder: true,
             });
         }
-        */
         if (window === null) {
             return;
         }
-        /*
         if (
             (borders === Borders.Active ||
                 borders === Borders.FloatingActive) &&
-            windowIsTiled(window)
+            ctrl().isWindowTiled(window)
         ) {
             ctrl().queuePostEvent({
                 t: "setWindowProperties",
@@ -99,7 +102,6 @@ export class WorkspaceHandler {
                 noBorder: false,
             });
         }
-        */
         ctrl().queueEvent({
             t: "windowActivated",
             window: window,

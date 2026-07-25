@@ -1,14 +1,6 @@
-import {
-    Output,
-    VirtualDesktop,
-    Window,
-    Activity,
-    MaximizeMode,
-    Tile,
-} from "kwin-api";
+import { Window, MaximizeMode, Tile } from "kwin-api";
 import { config, console, controller as ctrl } from "..";
 import { Workspace } from "kwin-api/qml";
-import { directionFromPoint } from "../../util";
 import { DragPolicy } from "../config";
 
 export class WindowHandler {
@@ -71,10 +63,10 @@ export class WindowHandler {
         if (!this.canBeTiled()) {
             return false;
         }
-        if (config().ignoreWindowClasses.test(this.window.resourceClass)) {
+        if (config().untileWindowClasses.test(this.window.resourceClass)) {
             return false;
         }
-        if (config().ignoreWindowCaptions.test(this.window.caption)) {
+        if (config().untileWindowCaptions.test(this.window.caption)) {
             return false;
         }
         return true;
@@ -101,17 +93,6 @@ export class WindowHandler {
                 t: "untileWindow",
                 window: this.window,
             });
-            // toggle fullscreen because this works for whatever reason
-            ctrl().queuePostEvent({
-                t: "setWindowProperties",
-                window: this.window,
-                fullscreen: false,
-            });
-            ctrl().queuePostEvent({
-                t: "setWindowProperties",
-                window: this.window,
-                fullscreen: true,
-            });
         } else if (
             this.canBeTiled() &&
             !ctrl().isWindowTiled(this.window) &&
@@ -120,6 +101,21 @@ export class WindowHandler {
             ctrl().queueEvent({
                 t: "tileWindow",
                 window: this.window,
+            });
+        }
+        if (this.window.fullScreen) {
+            // toggle fullscreen because this works for whatever reason
+            ctrl().queuePostEvent({
+                t: "setWindowProperties",
+                window: this.window,
+                fullscreen: false,
+            });
+            // add keepabove here to prevent fullscreen windows showing below widgets
+            ctrl().queuePostEvent({
+                t: "setWindowProperties",
+                window: this.window,
+                fullscreen: true,
+                keepAbove: true,
             });
         }
     }
@@ -218,32 +214,10 @@ export class WindowHandler {
             this.window.resourceClass,
         );
         const cursorPos = this.workspace.cursorPos;
-        if (this.window.desktops.includes(this.workspace.currentDesktop)) {
-            const rootTile = this.workspace.rootTile(
-                this.window.output,
-                this.workspace.currentDesktop,
-            );
-            const tile =
-                rootTile.tiles.length == 0
-                    ? rootTile
-                    : rootTile.pick(cursorPos);
-            if (tile !== null) {
-                ctrl().queueEvent({
-                    t: "placeWindow",
-                    window: this.window,
-                    tile: tile,
-                    direction: directionFromPoint(
-                        tile.absoluteGeometry,
-                        cursorPos,
-                    ),
-                });
-                return;
-            }
-        }
-        // only runs if current desktop is not in window.desktops and if tile is null
         ctrl().queueEvent({
-            t: "tileWindow",
+            t: "placeWindowPoint",
             window: this.window,
+            point: cursorPos,
         });
     }
 
