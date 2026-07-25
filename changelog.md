@@ -2,6 +2,10 @@
 
 ## 1.2
 
+### 1.2.2
+
+- Shrink tiles when resizing with keyboard shortcuts at maximum size
+
 ### 1.2.1
 
 - Fix issue with setting reset

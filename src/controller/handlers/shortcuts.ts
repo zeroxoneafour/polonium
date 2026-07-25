@@ -259,10 +259,54 @@ export class ShortcutsHandler {
         const currentTile = this.workspace.activeWindow?.tile;
         if (currentTile == null) return;
         let amount = config().tileResizeAmount;
-        if (edge & Edge.TopEdge || edge & Edge.LeftEdge) {
-            amount *= -1;
+        switch (edge) {
+            case Edge.TopEdge: {
+                const oldTop = currentTile.absoluteGeometry.y;
+                currentTile.resizeByPixels(-amount, Edge.TopEdge);
+                if (oldTop == currentTile.absoluteGeometry.y) {
+                    currentTile.resizeByPixels(-amount, Edge.BottomEdge);
+                }
+                break;
+            }
+            case Edge.BottomEdge: {
+                const oldBottom =
+                    currentTile.absoluteGeometry.y +
+                    currentTile.absoluteGeometry.height;
+                currentTile.resizeByPixels(amount, Edge.BottomEdge);
+                if (
+                    oldBottom ==
+                    currentTile.absoluteGeometry.y +
+                        currentTile.absoluteGeometry.height
+                ) {
+                    currentTile.resizeByPixels(amount, Edge.TopEdge);
+                }
+                break;
+            }
+            case Edge.LeftEdge: {
+                const oldLeft = currentTile.absoluteGeometry.x;
+                currentTile.resizeByPixels(-amount, Edge.LeftEdge);
+                if (oldLeft == currentTile.absoluteGeometry.x) {
+                    currentTile.resizeByPixels(-amount, Edge.RightEdge);
+                }
+                break;
+            }
+            case Edge.RightEdge: {
+                const oldRight =
+                    currentTile.absoluteGeometry.x +
+                    currentTile.absoluteGeometry.width;
+                currentTile.resizeByPixels(amount, Edge.RightEdge);
+                if (
+                    oldRight ==
+                    currentTile.absoluteGeometry.x +
+                        currentTile.absoluteGeometry.width
+                ) {
+                    currentTile.resizeByPixels(amount, Edge.LeftEdge);
+                }
+                break;
+            }
+            default:
+                break;
         }
-        currentTile.resizeByPixels(amount, edge);
     }
 
     toggleSettingsMenu() {
