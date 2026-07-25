@@ -136,7 +136,11 @@ export class Driver {
                 if (kwinWindow === undefined) {
                     continue;
                 }
-                console().debug("setting", kwinWindow.resourceClass, "as tiled");
+                console().debug(
+                    "setting",
+                    kwinWindow.resourceClass,
+                    "as tiled",
+                );
                 if (this.untiledWindows.has(kwinWindow)) {
                     this.untiledWindows.delete(kwinWindow);
                 }
@@ -149,7 +153,11 @@ export class Driver {
         // untile windows that aren't tiled
         for (const kwinWindow of this.windowMap.keys()) {
             if (!tiledWindows.has(kwinWindow)) {
-                console().debug("setting", kwinWindow.resourceClass, "as untiled");
+                console().debug(
+                    "setting",
+                    kwinWindow.resourceClass,
+                    "as untiled",
+                );
                 this.untiledWindows.add(kwinWindow);
                 // dont set untiled props if the tile isnt null and this driver doesnt manage it
                 // (in all likelihood another driver does)

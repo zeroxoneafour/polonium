@@ -215,10 +215,7 @@ export class WindowHandler {
         ) {
             return;
         }
-        console().debug(
-            "move finished on window",
-            this.window.resourceClass,
-        );
+        console().debug("move finished on window", this.window.resourceClass);
         const cursorPos = this.workspace.cursorPos;
         ctrl().queueEvent({
             t: "placeWindowPoint",
