@@ -346,6 +346,7 @@ class Controller {
             // then remove the window from the old output
             if (display.output !== output) {
                 this.getDriver(display)?.removeWindow(window);
+                displays.push(display);
                 display = new Display(
                     display.desktop,
                     display.activity,

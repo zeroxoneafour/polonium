@@ -249,7 +249,11 @@ export class WindowHandler {
 
     // this only tracks manual insertion into a tile
     tileChanged(tile: Tile) {
-        if (this.previousTile == null && tile != null) {
+        if (
+            this.previousTile == null &&
+            tile != null &&
+            !ctrl().isWindowTiled(this.window)
+        ) {
             this.wantsTiled = true;
             ctrl().queueEvent({
                 t: "placeWindow",
