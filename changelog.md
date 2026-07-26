@@ -7,6 +7,7 @@
 - Shrink tiles when resizing with keyboard shortcuts at maximum size
 - Reorganize settings
 - Add option for where to place dragged windows
+- Fix shift-dragging untiled windows
 
 ### 1.2.1
 

@@ -2,6 +2,8 @@ import { Window, MaximizeMode, Tile } from "kwin-api";
 import { config, console, controller as ctrl, qt } from "..";
 import { Workspace } from "kwin-api/qml";
 import { DragPolicy, DragRetilePoint } from "../config";
+import { QPoint } from "kwin-api/qt";
+import { directionFromPoint } from "../../util";
 
 export class WindowHandler {
     window: Window;
@@ -15,7 +17,6 @@ export class WindowHandler {
     wantsTiled: boolean;
     maximized: boolean;
     wasTiledBeforeMove: boolean = false;
-    previousTile: Tile | null = null;
 
     workspace: Workspace;
 
@@ -216,52 +217,27 @@ export class WindowHandler {
             return;
         }
         console().debug("move finished on window", this.window.resourceClass);
-        let insertionPoint;
-        switch (config().dragRetilePoint) {
-            case DragRetilePoint.Mouse:
-                insertionPoint = this.workspace.cursorPos;
-                break;
-            case DragRetilePoint.Center:
-                insertionPoint = qt().point(
-                    this.window.frameGeometry.x +
-                        this.window.frameGeometry.width / 2,
-                    this.window.frameGeometry.y +
-                        this.window.frameGeometry.height / 2,
-                );
-                break;
-            case DragRetilePoint.Top:
-                insertionPoint = qt().point(
-                    this.window.frameGeometry.x +
-                        this.window.frameGeometry.width / 2,
-                    this.window.frameGeometry.y,
-                );
-                break;
-            default:
-                insertionPoint = this.workspace.cursorPos;
-                break;
-        }
         ctrl().queueEvent({
             t: "placeWindowPoint",
             window: this.window,
-            point: insertionPoint,
+            point: this.getInsertionPoint(),
         });
     }
 
     // this only tracks manual insertion into a tile
     tileChanged(tile: Tile) {
-        if (
-            this.previousTile == null &&
-            tile != null &&
-            !ctrl().isWindowTiled(this.window)
-        ) {
+        if (tile != null && !ctrl().isWindowTiled(this.window)) {
             this.wantsTiled = true;
             ctrl().queueEvent({
                 t: "placeWindow",
                 window: this.window,
                 tile: tile,
+                direction: directionFromPoint(
+                    tile.absoluteGeometry,
+                    this.getInsertionPoint(),
+                ),
             });
         }
-        this.previousTile = tile;
     }
 
     canBeTiled(): boolean {
@@ -270,5 +246,31 @@ export class WindowHandler {
             this.window.minimized ||
             this.maximized
         );
+    }
+
+    private getInsertionPoint(): QPoint {
+        switch (config().dragRetilePoint) {
+            case DragRetilePoint.Mouse: {
+                return this.workspace.cursorPos;
+            }
+            case DragRetilePoint.Center: {
+                return qt().point(
+                    this.window.frameGeometry.x +
+                        this.window.frameGeometry.width / 2,
+                    this.window.frameGeometry.y +
+                        this.window.frameGeometry.height / 2,
+                );
+            }
+            case DragRetilePoint.Top: {
+                return qt().point(
+                    this.window.frameGeometry.x +
+                        this.window.frameGeometry.width / 2,
+                    this.window.frameGeometry.y,
+                );
+            }
+            default: {
+                return this.workspace.cursorPos;
+            }
+        }
     }
 }
