@@ -233,9 +233,11 @@ export class WindowHandler {
                 t: "placeWindow",
                 window: this.window,
                 tile: tile,
+                // always use cursorPos as frameGeometry is equal to the tile geometry
+                // after insertion
                 direction: directionFromPoint(
                     tile.absoluteGeometry,
-                    this.getInsertionPoint(),
+                    this.workspace.cursorPos,
                 ),
             });
         }
