@@ -338,8 +338,20 @@ class Controller {
             "at point",
             point,
         );
+        const output = this.workspace.screenAt(point);
         const displays = [];
-        for (const display of Display.generateWindow(window)) {
+        for (const windowDisplay of Display.generateWindow(window)) {
+            let display = windowDisplay;
+            // if the target output is different than the window output
+            // then remove the window from the old output
+            if (display.output !== output) {
+                this.getDriver(display)?.removeWindow(window);
+                display = new Display(
+                    display.desktop,
+                    display.activity,
+                    output,
+                );
+            }
             const driver = this.getDriver(display);
             if (driver == undefined) continue;
             displays.push(display);
@@ -371,6 +383,9 @@ class Controller {
                 );
                 driver.placeWindow(window, tile, direction);
             }
+        }
+        if (output !== window.output) {
+            window.output = output;
         }
         return displays;
     }

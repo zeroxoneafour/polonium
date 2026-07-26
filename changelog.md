@@ -5,6 +5,9 @@
 ### 1.2.2
 
 - Shrink tiles when resizing with keyboard shortcuts at maximum size
+- Reorganize settings
+- Add option for where to place dragged windows
+- Change output of dragged windows if necessary
 
 ### 1.2.1
 
