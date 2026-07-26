@@ -206,7 +206,8 @@ export class WindowHandler {
         if (
             !this.wantsTiled ||
             !this.canBeTiled() ||
-            ctrl().isWindowTiled(this.window)
+            ctrl().isWindowTiled(this.window) ||
+            this.window.tile != null
         ) {
             return;
         }
