@@ -1,4 +1,8 @@
-import { Tile as KwinTile, Window as KwinWindow } from "kwin-api";
+import {
+    Tile as KwinTile,
+    Window as KwinWindow,
+    LayoutDirection,
+} from "kwin-api";
 import {
     Tile as EngineTile,
     Window as EngineWindow,
@@ -8,7 +12,7 @@ import {
 import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
 import { Direction } from "../util";
-import { Borders } from "../controller/config";
+import { Borders, UltrawidePosition } from "../controller/config";
 import { updateTiles } from "./updatetiles";
 import { Display } from "../controller/event";
 
@@ -108,6 +112,10 @@ export class Driver {
         }
 
         this.engineRootTile = this.tilingEngine.buildLayout();
+        this.engineRootTile = applyUltrawideSingleWindow(
+            this.engineRootTile,
+            display,
+        );
         this.tileMap = buildLayout(rootTile, this.engineRootTile);
         // clean out old hooked (callback set) tiles
         for (const hookedTile of this.hookedTiles) {
@@ -373,4 +381,69 @@ function setUntiledProps(window: KwinWindow) {
     ) {
         window.noBorder = false;
     }
+}
+
+function getEngineWindows(tile: EngineTile): EngineWindow[] {
+    const windows: EngineWindow[] = [...tile.windows];
+    for (const child of tile.children) {
+        windows.push(...getEngineWindows(child));
+    }
+    return windows;
+}
+
+function applyUltrawideSingleWindow(
+    engineRootTile: EngineTile,
+    display: Display,
+): EngineTile {
+    if (!config().ultrawideSingleWindow) {
+        return engineRootTile;
+    }
+    const geom = display.output?.geometry;
+    if (!geom || geom.height <= 0) {
+        return engineRootTile;
+    }
+    const aspectRatio = geom.width / geom.height;
+    if (aspectRatio < config().ultrawideThreshold) {
+        return engineRootTile;
+    }
+    const windows = getEngineWindows(engineRootTile);
+    if (windows.length !== 1) {
+        return engineRootTile;
+    }
+
+    const singleWindow = windows[0];
+    const widthShare = config().ultrawideSingleWindowWidth;
+    const position = config().ultrawideSingleWindowPosition;
+
+    const newRoot = new EngineTile();
+    newRoot.layoutDirection = LayoutDirection.Horizontal;
+
+    if (position === UltrawidePosition.Center) {
+        const sideShare = (1 - widthShare) / 2;
+        const leftTile = newRoot.addChild();
+        leftTile.size = sideShare;
+
+        const centerTile = newRoot.addChild();
+        centerTile.size = widthShare;
+        centerTile.windows.push(singleWindow);
+
+        const rightTile = newRoot.addChild();
+        rightTile.size = sideShare;
+    } else if (position === UltrawidePosition.Left) {
+        const leftTile = newRoot.addChild();
+        leftTile.size = widthShare;
+        leftTile.windows.push(singleWindow);
+
+        const rightTile = newRoot.addChild();
+        rightTile.size = 1 - widthShare;
+    } else if (position === UltrawidePosition.Right) {
+        const leftTile = newRoot.addChild();
+        leftTile.size = 1 - widthShare;
+
+        const rightTile = newRoot.addChild();
+        rightTile.size = widthShare;
+        rightTile.windows.push(singleWindow);
+    }
+
+    return newRoot;
 }

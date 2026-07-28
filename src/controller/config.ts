@@ -28,6 +28,11 @@ export enum DragRetilePoint {
     Center,
     Top,
 }
+export enum UltrawidePosition {
+    Center = 0,
+    Left,
+    Right,
+}
 
 export class Config {
     readonly rebuildDelay: number;
@@ -48,6 +53,11 @@ export class Config {
     readonly tiledWindowsBelow: boolean;
     readonly windowDragPolicy: DragPolicy;
     readonly dragRetilePoint: DragRetilePoint;
+
+    readonly ultrawideSingleWindow: boolean;
+    readonly ultrawideThreshold: number;
+    readonly ultrawideSingleWindowWidth: number;
+    readonly ultrawideSingleWindowPosition: UltrawidePosition;
 
     readonly rawRegex: boolean;
     readonly ignoreWindowClasses: RegExp;
@@ -103,6 +113,20 @@ export class Config {
             swapInsertSide: rc("PagerSwapInsertSide", false),
             rotateLayout: rc("PagerRotateLayout", false),
         };
+
+        this.borders = rc("Borders", Borders.All);
+        this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
+        this.tilePopups = rc("TilePopups", false);
+        this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
+        this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
+
+        this.ultrawideSingleWindow = rc("UltrawideSingleWindow", false);
+        this.ultrawideThreshold = rc("UltrawideThreshold", 2.0);
+        this.ultrawideSingleWindowWidth = rc("UltrawideSingleWindowWidth", 0.5);
+        this.ultrawideSingleWindowPosition = rc(
+            "UltrawideSingleWindowPosition",
+            UltrawidePosition.Center,
+        );
 
         this.rawRegex = rc("RawRegex", false);
         let ignoreWindowClasses = rc(
