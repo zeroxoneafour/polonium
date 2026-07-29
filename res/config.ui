@@ -831,12 +831,18 @@
             <property name="text">
              <string>Custom Sizing for Single Window</string>
             </property>
+            <property name="toolTip">
+             <string>Enable custom sizing and positioning for a lone window on ultrawide monitors.</string>
+            </property>
            </widget>
           </item>
           <item row="6" column="1">
            <widget class="QCheckBox" name="kcfg_UltrawideSingleWindow">
             <property name="text">
              <string/>
+            </property>
+            <property name="toolTip">
+             <string>Enable custom sizing and positioning for a lone window on ultrawide monitors.</string>
             </property>
            </widget>
           </item>
@@ -845,10 +851,16 @@
             <property name="text">
              <string>Aspect Ratio Threshold</string>
             </property>
+            <property name="toolTip">
+             <string>Minimum screen aspect ratio (width / height) to apply custom single window sizing. Standard 16:9 is ~1.78, 21:9 is ~2.33, 32:9 is ~3.55.</string>
+            </property>
            </widget>
           </item>
           <item row="7" column="1">
            <widget class="QDoubleSpinBox" name="kcfg_UltrawideThreshold">
+            <property name="toolTip">
+             <string>Minimum screen aspect ratio (width / height) to apply custom single window sizing. Standard 16:9 is ~1.78, 21:9 is ~2.33, 32:9 is ~3.55.</string>
+            </property>
             <property name="minimum">
              <double>1.500000000000000</double>
             </property>
@@ -866,12 +878,18 @@
           <item row="8" column="0">
            <widget class="QLabel" name="ultrawideWidthLabel">
             <property name="text">
-             <string>Single Window Width Share</string>
+             <string>Single Window Width</string>
+            </property>
+            <property name="toolTip">
+             <string>Width of a single window as a proportion of total screen width (e.g. 0.50 for 50%).</string>
             </property>
            </widget>
           </item>
           <item row="8" column="1">
            <widget class="QDoubleSpinBox" name="kcfg_UltrawideSingleWindowWidth">
+            <property name="toolTip">
+             <string>Width of a single window as a proportion of total screen width (e.g. 0.50 for 50%).</string>
+            </property>
             <property name="minimum">
              <double>0.100000000000000</double>
             </property>
@@ -891,10 +909,16 @@
             <property name="text">
              <string>Single Window Position</string>
             </property>
+            <property name="toolTip">
+             <string>Position of a single window on screen when custom ultrawide sizing is active (Center, Left, or Right).</string>
+            </property>
            </widget>
           </item>
           <item row="9" column="1">
            <widget class="QComboBox" name="kcfg_UltrawideSingleWindowPosition">
+            <property name="toolTip">
+             <string>Position of a single window on screen when custom ultrawide sizing is active (Center, Left, or Right).</string>
+            </property>
             <item>
              <property name="text">
               <string>Center</string>
