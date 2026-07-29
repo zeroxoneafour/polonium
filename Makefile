@@ -13,11 +13,11 @@ XDG_DATA_HOME ?= $(HOME)/.local/share
 all: build install cleanall
 
 build: res src
-	zip -r $(PKGFILE) $(PKGDIR) || python3 -m zipfile -c $(PKGFILE) $(PKGDIR)
+	zip -r $(PKGFILE) $(PKGDIR)
 
 $(PKGFILE): build
 
-install: $(PKGFILE)
+install:
 	kpackagetool6 -t KWin/Script -s $(NAME) \
 		&& kpackagetool6 -t KWin/Script -u $(PKGFILE) \
 		|| kpackagetool6 -t KWin/Script -i $(PKGFILE)
