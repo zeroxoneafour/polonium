@@ -51,7 +51,7 @@
 
         <entry name="UltrawideSingleWindow" type="bool"><default>false</default></entry>
         <entry name="UltrawideThreshold" type="double"><default>2.0</default></entry>
-        <entry name="UltrawideSingleWindowWidth" type="double"><default>0.50</default></entry>
+        <entry name="UltrawideSingleWindowWidth" type="double"><default>0.60</default></entry>
         <entry name="UltrawideSingleWindowPosition" type="int"><default>0</default></entry>
     </group>
 </kcfg>

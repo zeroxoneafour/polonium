@@ -881,14 +881,14 @@
              <string>Single Window Width</string>
             </property>
             <property name="toolTip">
-             <string>Width of a single window as a proportion of total screen width (e.g. 0.50 for 50%).</string>
+             <string>Width of a single window as a proportion of total screen width (e.g. 0.60 for 60%).</string>
             </property>
            </widget>
           </item>
           <item row="8" column="1">
            <widget class="QDoubleSpinBox" name="kcfg_UltrawideSingleWindowWidth">
             <property name="toolTip">
-             <string>Width of a single window as a proportion of total screen width (e.g. 0.50 for 50%).</string>
+             <string>Width of a single window as a proportion of total screen width (e.g. 0.60 for 60%).</string>
             </property>
             <property name="minimum">
              <double>0.100000000000000</double>
@@ -900,7 +900,7 @@
              <double>0.050000000000000</double>
             </property>
             <property name="value">
-             <double>0.500000000000000</double>
+             <double>0.600000000000000</double>
             </property>
            </widget>
           </item>

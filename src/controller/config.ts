@@ -122,7 +122,7 @@ export class Config {
 
         this.ultrawideSingleWindow = rc("UltrawideSingleWindow", false);
         this.ultrawideThreshold = rc("UltrawideThreshold", 2.0);
-        this.ultrawideSingleWindowWidth = rc("UltrawideSingleWindowWidth", 0.5);
+        this.ultrawideSingleWindowWidth = rc("UltrawideSingleWindowWidth", 0.6);
         this.ultrawideSingleWindowPosition = rc(
             "UltrawideSingleWindowPosition",
             UltrawidePosition.Center,
