@@ -156,8 +156,11 @@ export class Config {
 }
 
 function commaRegex(str: string): string {
-    return str
+    const pattern = str
         .split(",")
         .map((x) => x.trim())
+        .filter(Boolean)
         .join("|");
+    // An empty pattern would become /^$/, matching windows with empty initial metadata.
+    return pattern || "(?!)";
 }
