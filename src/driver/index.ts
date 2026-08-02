@@ -19,6 +19,7 @@ export class Driver {
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
     private untiledWindows: Set<KwinWindow> = new Set();
     private savedActiveWindow: KwinWindow | null = null;
+    private buildingLayout: boolean = false;
 
     private tilingEngine: TilingEngine;
 
@@ -108,7 +109,12 @@ export class Driver {
         }
 
         this.engineRootTile = this.tilingEngine.buildLayout();
-        this.tileMap = buildLayout(rootTile, this.engineRootTile);
+        this.buildingLayout = true;
+        try {
+            this.tileMap = buildLayout(rootTile, this.engineRootTile);
+        } finally {
+            this.buildingLayout = false;
+        }
         // clean out old hooked (callback set) tiles
         for (const hookedTile of this.hookedTiles) {
             if (!this.tileMap.has(hookedTile)) {
@@ -308,6 +314,9 @@ export class Driver {
     }
 
     private updateTileSizesCallback(display: Display) {
+        if (this.buildingLayout) {
+            return;
+        }
         ctrl().queueEvent({
             t: "updateTiles",
             display: display,
@@ -317,6 +326,9 @@ export class Driver {
     // when updating tile count we want to rebuild as for most engines this is an error
     // for kwin this is fine though
     private updateTileCountCallback(display: Display) {
+        if (this.buildingLayout) {
+            return;
+        }
         ctrl().queueEvent({
             t: "updateTiles",
             display: display,
