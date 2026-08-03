@@ -19,6 +19,7 @@ import { Display } from "../controller/event";
 export class Driver {
     private engineRootTile: EngineTile | null = null;
     private tileMap: Map<KwinTile, EngineTile> = new Map();
+    private placementTileMap: Map<KwinTile, EngineTile> = new Map();
     private hookedTiles: Set<KwinTile> = new Set();
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
     private untiledWindows: Set<KwinWindow> = new Set();
@@ -111,12 +112,18 @@ export class Driver {
             }
         }
 
-        this.engineRootTile = this.tilingEngine.buildLayout();
+        const engineRootTile = this.tilingEngine.buildLayout();
         this.engineRootTile = applyUltrawideSingleWindow(
-            this.engineRootTile,
+            engineRootTile,
             display,
         );
         this.tileMap = buildLayout(rootTile, this.engineRootTile);
+        this.placementTileMap = new Map(this.tileMap);
+        if (this.engineRootTile !== engineRootTile) {
+            for (const kwinTile of this.placementTileMap.keys()) {
+                this.placementTileMap.set(kwinTile, engineRootTile);
+            }
+        }
         // clean out old hooked (callback set) tiles
         for (const hookedTile of this.hookedTiles) {
             if (!this.tileMap.has(hookedTile)) {
@@ -257,7 +264,7 @@ export class Driver {
         direction?: Direction,
     ): void {
         let window = this.initializeWindow(kwinWindow);
-        const tile = this.tileMap.get(kwinTile);
+        const tile = this.placementTileMap.get(kwinTile);
         if (tile == undefined) {
             console().warn("tile undefined during window placement");
             // place like normal if no tile

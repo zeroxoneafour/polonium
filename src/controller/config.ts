@@ -114,12 +114,6 @@ export class Config {
             rotateLayout: rc("PagerRotateLayout", false),
         };
 
-        this.borders = rc("Borders", Borders.All);
-        this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
-        this.tilePopups = rc("TilePopups", false);
-        this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
-        this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
-
         this.ultrawideSingleWindow = rc("UltrawideSingleWindow", false);
         this.ultrawideThreshold = rc("UltrawideThreshold", 2.0);
         this.ultrawideSingleWindowWidth = rc("UltrawideSingleWindowWidth", 0.6);
