@@ -403,17 +403,31 @@ function applyUltrawideSingleWindow(
     display: Display,
 ): EngineTile {
     if (!config().ultrawideSingleWindow) {
+        console().debug("ultrawide single-window disabled");
         return engineRootTile;
     }
     const geom = display.output?.geometry;
     if (!geom || geom.height <= 0) {
+        console().debug("ultrawide single-window: invalid output geometry");
         return engineRootTile;
     }
     const aspectRatio = geom.width / geom.height;
-    if (aspectRatio < config().ultrawideThreshold) {
+    const threshold = config().ultrawideThreshold;
+    console().debug(
+        "ultrawide single-window check - output",
+        display.output.name,
+        "geometry",
+        `${geom.width}x${geom.height}`,
+        "ratio",
+        aspectRatio,
+        "threshold",
+        threshold,
+    );
+    if (aspectRatio < threshold) {
         return engineRootTile;
     }
     const windows = getEngineWindows(engineRootTile);
+    console().debug("ultrawide single-window count", windows.length);
     if (windows.length !== 1) {
         return engineRootTile;
     }
@@ -421,6 +435,12 @@ function applyUltrawideSingleWindow(
     const singleWindow = windows[0];
     const widthShare = config().ultrawideSingleWindowWidth;
     const position = config().ultrawideSingleWindowPosition;
+    console().debug(
+        "applying ultrawide single-window layout - width",
+        widthShare,
+        "position",
+        position,
+    );
 
     const newRoot = new EngineTile();
     newRoot.layoutDirection = LayoutDirection.Horizontal;

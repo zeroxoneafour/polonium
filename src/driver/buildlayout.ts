@@ -32,11 +32,8 @@ export function buildLayout(
         console().debug("kwin children", kwinTile.tiles.length);
         console().debug("engine children", engineTile.children.length);
 
-        if (engineTile.children.length == 0) {
-            while (kwinTile.tiles.length > 0) {
-                kwinTile.tiles[kwinTile.tiles.length - 1].remove();
-            }
-        } else if (engineTile.children.length == 1) {
+        // if engine tile has one child then tie that child to the kwin tile
+        if (engineTile.children.length == 1) {
             console().warn(
                 "engine tile at",
                 kwinTile.absoluteGeometry,
