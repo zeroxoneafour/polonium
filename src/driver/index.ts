@@ -113,10 +113,7 @@ export class Driver {
         }
 
         const engineRootTile = this.tilingEngine.buildLayout();
-        this.engineRootTile = applyUltrawideSingleWindow(
-            engineRootTile,
-            display,
-        );
+        this.engineRootTile = applySingleWindowSizing(engineRootTile, display);
         this.tileMap = buildLayout(rootTile, this.engineRootTile);
         this.placementTileMap = new Map(this.tileMap);
         if (this.engineRootTile !== engineRootTile) {
@@ -398,36 +395,41 @@ function getEngineWindows(tile: EngineTile): EngineWindow[] {
     return windows;
 }
 
-function applyUltrawideSingleWindow(
+const ultrawideAspectRatioThreshold = 2;
+
+function applySingleWindowSizing(
     engineRootTile: EngineTile,
     display: Display,
 ): EngineTile {
     if (!config().ultrawideSingleWindow) {
-        console().debug("ultrawide single-window disabled");
+        console().debug("single-window sizing disabled");
         return engineRootTile;
     }
-    const geom = display.output?.geometry;
-    if (!geom || geom.height <= 0) {
-        console().debug("ultrawide single-window: invalid output geometry");
-        return engineRootTile;
-    }
-    const aspectRatio = geom.width / geom.height;
-    const threshold = config().ultrawideThreshold;
-    console().debug(
-        "ultrawide single-window check - output",
-        display.output.name,
-        "geometry",
-        `${geom.width}x${geom.height}`,
-        "ratio",
-        aspectRatio,
-        "threshold",
-        threshold,
-    );
-    if (aspectRatio < threshold) {
-        return engineRootTile;
+    if (config().ultrawideOnly) {
+        const geom = display.output?.geometry;
+        if (!geom || geom.height <= 0) {
+            console().debug("single-window sizing: invalid output geometry");
+            return engineRootTile;
+        }
+        const aspectRatio = geom.width / geom.height;
+        console().debug(
+            "single-window sizing check - output",
+            display.output.name,
+            "geometry",
+            `${geom.width}x${geom.height}`,
+            "ratio",
+            aspectRatio,
+            "threshold",
+            ultrawideAspectRatioThreshold,
+        );
+        if (aspectRatio < ultrawideAspectRatioThreshold) {
+            return engineRootTile;
+        }
+    } else {
+        console().debug("single-window sizing enabled for all screens");
     }
     const windows = getEngineWindows(engineRootTile);
-    console().debug("ultrawide single-window count", windows.length);
+    console().debug("single-window sizing window count", windows.length);
     if (windows.length !== 1) {
         return engineRootTile;
     }
@@ -436,7 +438,7 @@ function applyUltrawideSingleWindow(
     const widthShare = config().ultrawideSingleWindowWidth;
     const position = config().ultrawideSingleWindowPosition;
     console().debug(
-        "applying ultrawide single-window layout - width",
+        "applying single-window sizing - width",
         widthShare,
         "position",
         position,

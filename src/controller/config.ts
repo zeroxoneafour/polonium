@@ -55,7 +55,7 @@ export class Config {
     readonly dragRetilePoint: DragRetilePoint;
 
     readonly ultrawideSingleWindow: boolean;
-    readonly ultrawideThreshold: number;
+    readonly ultrawideOnly: boolean;
     readonly ultrawideSingleWindowWidth: number;
     readonly ultrawideSingleWindowPosition: UltrawidePosition;
 
@@ -115,7 +115,7 @@ export class Config {
         };
 
         this.ultrawideSingleWindow = rc("UltrawideSingleWindow", false);
-        this.ultrawideThreshold = rc("UltrawideThreshold", 2.0);
+        this.ultrawideOnly = rc("UltrawideOnly", true);
         this.ultrawideSingleWindowWidth = rc("UltrawideSingleWindowWidth", 0.6);
         this.ultrawideSingleWindowPosition = rc(
             "UltrawideSingleWindowPosition",
