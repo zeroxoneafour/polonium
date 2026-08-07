@@ -810,19 +810,136 @@
            </item>
           </widget>
          </item>
-         <item row="5" column="0" colspan="2">
-          <spacer name="windowsVerticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QLabel" name="ultrawideTitle">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Single Window Sizing</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="ultrawideEnableLabel">
+            <property name="text">
+             <string>Custom Sizing for Single Window</string>
+            </property>
+            <property name="toolTip">
+             <string>Use the configured width and position when an output has exactly one tiled window.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QCheckBox" name="kcfg_UltrawideSingleWindow">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="toolTip">
+             <string>Use the configured width and position when an output has exactly one tiled window.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="ultrawideOnlyLabel">
+            <property name="text">
+             <string>Only on Ultrawide Screens</string>
+            </property>
+            <property name="toolTip">
+             <string>Apply custom single-window sizing only to screens with an aspect ratio of at least 2:1. Disable this to use it on any screen.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QCheckBox" name="kcfg_UltrawideOnly">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="toolTip">
+             <string>Apply custom single-window sizing only to screens with an aspect ratio of at least 2:1. Disable this to use it on any screen.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="ultrawideWidthLabel">
+            <property name="text">
+             <string>Single Window Width</string>
+            </property>
+            <property name="toolTip">
+             <string>Width of the single window as a fraction of the screen width (0.60 means 60%).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QDoubleSpinBox" name="kcfg_UltrawideSingleWindowWidth">
+            <property name="toolTip">
+             <string>Width of the single window as a fraction of the screen width (0.60 means 60%).</string>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>0.900000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.050000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.600000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="ultrawidePositionLabel">
+            <property name="text">
+             <string>Single Window Position</string>
+            </property>
+            <property name="toolTip">
+             <string>Position of the single window when custom sizing is active (Center, Left, or Right).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QComboBox" name="kcfg_UltrawideSingleWindowPosition">
+            <property name="toolTip">
+             <string>Position of the single window when custom sizing is active (Center, Left, or Right).</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Right</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="10" column="0" colspan="2">
+           <spacer name="windowsVerticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="tiledWindowsBelowLabel">
            <property name="text">

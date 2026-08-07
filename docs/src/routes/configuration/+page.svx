@@ -76,6 +76,13 @@ No settings are available for this layout. Configuration is done via the KWin ti
 * Window Dragging Policy - How dragged windows should be treated.
 * Drag Retile Point - The reference point to use when retiling a dragged window.
 
+### Single Window Sizing
+
+* Custom Sizing for Single Window - Enable custom sizing and positioning when an output has one tiled window.
+* Only on Ultrawide Screens - Restrict custom sizing to outputs with an aspect ratio of at least 2:1.
+* Single Window Width - Width of the single window as a proportion of the output width.
+* Single Window Position - Position of the single window on the output (Center, Left, or Right).
+
 ## Filters
 
 Note that all text fields accept regex.

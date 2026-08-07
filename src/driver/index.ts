@@ -1,4 +1,8 @@
-import { Tile as KwinTile, Window as KwinWindow } from "kwin-api";
+import {
+    Tile as KwinTile,
+    Window as KwinWindow,
+    LayoutDirection,
+} from "kwin-api";
 import {
     Tile as EngineTile,
     Window as EngineWindow,
@@ -8,13 +12,14 @@ import {
 import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
 import { Direction } from "../util";
-import { Borders } from "../controller/config";
+import { Borders, UltrawidePosition } from "../controller/config";
 import { updateTiles } from "./updatetiles";
 import { Display } from "../controller/event";
 
 export class Driver {
     private engineRootTile: EngineTile | null = null;
     private tileMap: Map<KwinTile, EngineTile> = new Map();
+    private placementTileMap: Map<KwinTile, EngineTile> = new Map();
     private hookedTiles: Set<KwinTile> = new Set();
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
     private untiledWindows: Set<KwinWindow> = new Set();
@@ -107,8 +112,15 @@ export class Driver {
             }
         }
 
-        this.engineRootTile = this.tilingEngine.buildLayout();
+        const engineRootTile = this.tilingEngine.buildLayout();
+        this.engineRootTile = applySingleWindowSizing(engineRootTile, display);
         this.tileMap = buildLayout(rootTile, this.engineRootTile);
+        this.placementTileMap = new Map(this.tileMap);
+        if (this.engineRootTile !== engineRootTile) {
+            for (const kwinTile of this.placementTileMap.keys()) {
+                this.placementTileMap.set(kwinTile, engineRootTile);
+            }
+        }
         // clean out old hooked (callback set) tiles
         for (const hookedTile of this.hookedTiles) {
             if (!this.tileMap.has(hookedTile)) {
@@ -249,7 +261,7 @@ export class Driver {
         direction?: Direction,
     ): void {
         let window = this.initializeWindow(kwinWindow);
-        const tile = this.tileMap.get(kwinTile);
+        const tile = this.placementTileMap.get(kwinTile);
         if (tile == undefined) {
             console().warn("tile undefined during window placement");
             // place like normal if no tile
@@ -373,4 +385,94 @@ function setUntiledProps(window: KwinWindow) {
     ) {
         window.noBorder = false;
     }
+}
+
+function getEngineWindows(tile: EngineTile): EngineWindow[] {
+    const windows: EngineWindow[] = [...tile.windows];
+    for (const child of tile.children) {
+        windows.push(...getEngineWindows(child));
+    }
+    return windows;
+}
+
+const ultrawideAspectRatioThreshold = 2;
+
+function applySingleWindowSizing(
+    engineRootTile: EngineTile,
+    display: Display,
+): EngineTile {
+    if (!config().ultrawideSingleWindow) {
+        console().debug("single-window sizing disabled");
+        return engineRootTile;
+    }
+    if (config().ultrawideOnly) {
+        const geom = display.output?.geometry;
+        if (!geom || geom.height <= 0) {
+            console().debug("single-window sizing: invalid output geometry");
+            return engineRootTile;
+        }
+        const aspectRatio = geom.width / geom.height;
+        console().debug(
+            "single-window sizing check - output",
+            display.output.name,
+            "geometry",
+            `${geom.width}x${geom.height}`,
+            "ratio",
+            aspectRatio,
+            "threshold",
+            ultrawideAspectRatioThreshold,
+        );
+        if (aspectRatio < ultrawideAspectRatioThreshold) {
+            return engineRootTile;
+        }
+    } else {
+        console().debug("single-window sizing enabled for all screens");
+    }
+    const windows = getEngineWindows(engineRootTile);
+    console().debug("single-window sizing window count", windows.length);
+    if (windows.length !== 1) {
+        return engineRootTile;
+    }
+
+    const singleWindow = windows[0];
+    const widthShare = config().ultrawideSingleWindowWidth;
+    const position = config().ultrawideSingleWindowPosition;
+    console().debug(
+        "applying single-window sizing - width",
+        widthShare,
+        "position",
+        position,
+    );
+
+    const newRoot = new EngineTile();
+    newRoot.layoutDirection = LayoutDirection.Horizontal;
+
+    if (position === UltrawidePosition.Center) {
+        const sideShare = (1 - widthShare) / 2;
+        const leftTile = newRoot.addChild();
+        leftTile.size = sideShare;
+
+        const centerTile = newRoot.addChild();
+        centerTile.size = widthShare;
+        centerTile.windows.push(singleWindow);
+
+        const rightTile = newRoot.addChild();
+        rightTile.size = sideShare;
+    } else if (position === UltrawidePosition.Left) {
+        const leftTile = newRoot.addChild();
+        leftTile.size = widthShare;
+        leftTile.windows.push(singleWindow);
+
+        const rightTile = newRoot.addChild();
+        rightTile.size = 1 - widthShare;
+    } else if (position === UltrawidePosition.Right) {
+        const leftTile = newRoot.addChild();
+        leftTile.size = 1 - widthShare;
+
+        const rightTile = newRoot.addChild();
+        rightTile.size = widthShare;
+        rightTile.windows.push(singleWindow);
+    }
+
+    return newRoot;
 }
