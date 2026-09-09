@@ -51,6 +51,13 @@ export class WindowHandler {
         );
 
         this.window.tileChanged.connect(this.tileChanged.bind(this));
+        this.window.frameGeometryChanged.connect(
+            this.frameGeometryChanged.bind(this),
+        );
+    }
+
+    frameGeometryChanged() {
+        ctrl().mouseFollowsFocus()?.geometryChanged(this.window);
     }
 
     startTiled(): boolean {

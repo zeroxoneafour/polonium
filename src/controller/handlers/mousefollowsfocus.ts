@@ -46,6 +46,15 @@ export class MouseFollowsFocusHandler {
         }
     }
 
+    // wayland clients ack new geometry asynchronously, so a warp decided
+    // during the rebuild may have read stale geometry; once the focused
+    // window actually moves, decide again
+    geometryChanged(window: Window) {
+        if (window === this.workspace.activeWindow) {
+            ctrl().queuePostEvent({ t: "mouseWarp" });
+        }
+    }
+
     private cursorMoved(): boolean {
         const pos = this.workspace.cursorPos;
         return (
