@@ -1,6 +1,12 @@
 // engine/index.ts - Wrapper around the engines to interact with the driver
 import { console } from "../controller";
-import { TilingEngineInterface, Window, Tile, Direction } from "./engine";
+import {
+    TilingEngineInterface,
+    Window,
+    Tile,
+    Direction,
+    LayoutDirection,
+} from "./engine";
 import { BTreeEngine } from "./layouts/btree";
 import { HalfEngine } from "./layouts/half";
 import { ThreeColumnEngine } from "./layouts/threecolumn";
@@ -8,7 +14,7 @@ import { PillarEngine } from "./layouts/pillars";
 import { PagerEngine } from "./layouts/pager";
 import { KwinEngine } from "./layouts/kwin";
 
-export { Window, Tile, Direction };
+export { Window, Tile, Direction, LayoutDirection };
 
 export { InsertionStyle as BTreeInsertionStyle } from "./layouts/btree";
 export { InsertionStyle as PillarsInsertionStyle } from "./layouts/pillars";
