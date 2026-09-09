@@ -61,7 +61,6 @@ class Controller {
         if (config().mouseFollowsFocus) {
             this.mffHandler = new MouseFollowsFocusHandler(
                 this.workspace,
-                this.qmlObjects.mffTimer,
                 this.qmlObjects.dbus,
             );
         }
@@ -126,8 +125,8 @@ class Controller {
                 continue;
             }
         }
-        if (rebuildDisplays.size > 0) {
-            this.mffHandler?.retiled();
+        if (rebuildDisplays.size > 0 && this.mffHandler !== null) {
+            this.postEventQueue.push({ t: "mouseWarp" });
         }
         const postQueue = simplifyPostEvents(this.postEventQueue);
         this.postEventQueue = new Queue<PostEvent>();
@@ -553,6 +552,10 @@ class Controller {
                 if (ev.keepAbove !== undefined) {
                     ev.window.keepAbove = ev.keepAbove;
                 }
+                return;
+            }
+            case "mouseWarp": {
+                this.mffHandler?.warp();
                 return;
             }
             case "toggleSettingsMenu": {

@@ -12,10 +12,6 @@ Item {
         id: eventTimer;
     }
 
-    Timer {
-        id: mffTimer;
-    }
-
     Component.onCompleted: {
         const api = {
             "workspace": Workspace,
@@ -27,7 +23,6 @@ Item {
         const qmlObjects = {
             "root": root,
             "eventTimer": eventTimer,
-            "mffTimer": mffTimer,
             "shortcuts": shortcutsLoader.item,
             "settings": settingsLoader.item,
             "dbus": dbusLoader.item,
