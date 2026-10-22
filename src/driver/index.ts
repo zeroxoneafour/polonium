@@ -104,7 +104,10 @@ export class Driver {
                     kwinWindow.desktops.includes(display.desktop) ||
                     kwinWindow.onAllDesktops
                 ) ||
-                !kwinWindow.activities.includes(display.activity) ||
+                !(
+                    kwinWindow.activities.includes(display.activity) ||
+                    kwinWindow.activities.length == 0
+                ) ||
                 kwinWindow.output !== display.output
             ) {
                 console().warn("invalid window in windowMap");
@@ -171,17 +174,63 @@ export class Driver {
                     "as untiled",
                 );
                 this.untiledWindows.add(kwinWindow);
-                // dont set untiled props if the tile isnt null and this driver doesnt manage it
-                // (in all likelihood another driver does)
-                if (
-                    kwinWindow.tile != null &&
-                    this.tileMap.has(kwinWindow.tile)
-                ) {
+                if (kwinWindow.tile != null) {
                     kwinWindow.tile.unmanage(kwinWindow);
-                    setUntiledProps(kwinWindow);
-                } else if (kwinWindow.tile == null) {
-                    setUntiledProps(kwinWindow);
                 }
+                setUntiledProps(kwinWindow);
+            }
+        }
+    }
+
+    // use this to rebuild the state of the driver without mutating kwin
+    // ex. when rebuilding a display on a different activity
+    buildState(display: Display): void {
+        for (const [kwinWindow, _ew] of this.windowMap) {
+            if (
+                !ctrl().windowExists(kwinWindow) ||
+                !(
+                    kwinWindow.desktops.includes(display.desktop) ||
+                    kwinWindow.onAllDesktops
+                ) ||
+                !(
+                    kwinWindow.activities.includes(display.activity) ||
+                    kwinWindow.activities.length == 0
+                ) ||
+                kwinWindow.output !== display.output
+            ) {
+                console().warn("invalid window in windowMap");
+                this.removeWindow(kwinWindow);
+            }
+        }
+        let engineRootTile = this.tilingEngine.buildLayout();
+        engineRootTile = applySingleWindowSizing(engineRootTile, display);
+        const invertedWindowMap = new Map(
+            Array.from(this.windowMap, (a) => [a[1], a[0]]),
+        );
+        const tiledWindows: Set<KwinWindow> = new Set();
+        let tileStack: EngineTile[] = [];
+        if (engineRootTile !== null) {
+            tileStack.push(engineRootTile);
+        }
+        while (tileStack.length > 0) {
+            const engineTile = tileStack.pop()!;
+            // set callbacks on tiles that do not have callbacks set
+            for (const engineWindow of engineTile.windows) {
+                const kwinWindow = invertedWindowMap.get(engineWindow);
+                if (kwinWindow === undefined) {
+                    continue;
+                }
+                if (this.untiledWindows.has(kwinWindow)) {
+                    this.untiledWindows.delete(kwinWindow);
+                }
+                tiledWindows.add(kwinWindow);
+            }
+            tileStack.push(...engineTile.children);
+        }
+        // mark windows that aren't tiled as untiled
+        for (const kwinWindow of this.windowMap.keys()) {
+            if (!tiledWindows.has(kwinWindow)) {
+                this.untiledWindows.add(kwinWindow);
             }
         }
     }

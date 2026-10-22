@@ -4,6 +4,7 @@ import { config, console, controller as ctrl, qt } from "..";
 import { Direction, TilingEngineType } from "../../engine";
 import { Display } from "../event";
 import { Edge, Tile } from "kwin-api";
+import { WarpCursor } from "../config";
 
 export class ShortcutsHandler {
     private workspace: Workspace;
@@ -146,8 +147,7 @@ export class ShortcutsHandler {
         });
     }
 
-    getTileInDirection(tile: Tile, rootTile: Tile, edge: Edge): Tile | null {
-        if (tile == rootTile) return null;
+    getTileInDirection(tile: Tile, edge: Edge): Tile | null {
         let x = tile.absoluteGeometry.x;
         let y = tile.absoluteGeometry.y;
         // kwin fucking up math somehow so add 2 instead of 1 for offset
@@ -173,6 +173,14 @@ export class ShortcutsHandler {
         }
         const point = qt().point(Math.floor(x), Math.floor(y));
         console().debug("selecting tile for point", point);
+        const screen = this.workspace.screenAt(point);
+        const rootTile = this.workspace.rootTile(
+            screen,
+            this.workspace.currentDesktopForScreen(screen),
+        );
+        if (tile == rootTile) {
+            return null;
+        }
         return rootTile.pick(point);
     }
 
@@ -183,14 +191,20 @@ export class ShortcutsHandler {
         while (rootTile.parent != null) {
             rootTile = rootTile.parent!;
         }
-        const targetTile = this.getTileInDirection(currentTile, rootTile, edge);
+        const targetTile = this.getTileInDirection(currentTile, edge);
         if (targetTile == null) return;
-        console().log(
+        console().debug(
             "activateInDirection geom -",
             targetTile.absoluteGeometry,
         );
         if (targetTile.windows.length == 0) return;
         this.workspace.activeWindow = targetTile.windows[0];
+        if (config().warpCursor === WarpCursor.OnShortcut) {
+            ctrl().queuePostEvent({
+                t: "warpCursor",
+                window: targetTile.windows[0],
+            });
+        }
     }
 
     placeInDirection(edge: Edge) {
@@ -204,7 +218,7 @@ export class ShortcutsHandler {
         while (rootTile.parent != null) {
             rootTile = rootTile.parent!;
         }
-        const targetTile = this.getTileInDirection(currentTile, rootTile, edge);
+        const targetTile = this.getTileInDirection(currentTile, edge);
         if (targetTile == null) return;
         let direction: Direction | undefined = undefined;
         switch (edge) {
@@ -253,6 +267,12 @@ export class ShortcutsHandler {
             tile: targetTile,
             direction: direction,
         });
+        if (
+            config().warpCursor === WarpCursor.OnShortcut ||
+            config().warpCursor === WarpCursor.Always
+        ) {
+            ctrl().queuePostEvent({ t: "warpCursor", window: window });
+        }
     }
 
     resizeInDirection(edge: Edge) {

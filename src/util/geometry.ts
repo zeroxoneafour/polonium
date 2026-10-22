@@ -63,3 +63,13 @@ export function directionFromPoint(r: QRect, p: QPoint): Direction {
         }
     }
 }
+
+export function rectContainsPoint(r: QRect, p: QPoint): boolean {
+    if (p.x < r.x || p.y < r.y) {
+        return false;
+    }
+    if (p.x > r.x + r.width || p.y > r.y + r.height) {
+        return false;
+    }
+    return true;
+}

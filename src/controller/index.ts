@@ -20,8 +20,9 @@ import { Direction, directionFromPoint, Queue } from "../util";
 import { Console } from "./console";
 import { Driver } from "../driver";
 import { QPoint, QTimer, Qt } from "kwin-api/qt";
-import { Config } from "./config";
+import { Config, WarpCursor } from "./config";
 import { TilingEngineType } from "../engine";
+import { rectContainsPoint } from "../util/geometry";
 
 class Controller {
     private workspace: Workspace;
@@ -40,6 +41,7 @@ class Controller {
     private shortcutsHandler: ShortcutsHandler;
     private settingsHandler: SettingsHandler;
     private dbusHandler: DBusHandler | null = null;
+    private moveMouseToFocusFn: () => void;
 
     constructor(qmlApi: QmlApi, qmlObjects: QmlObjects) {
         this.workspace = qmlApi.workspace;
@@ -55,6 +57,7 @@ class Controller {
         if (config().useDBusSaver) {
             this.dbusHandler = new DBusHandler(this.qmlObjects.dbus);
         }
+        this.moveMouseToFocusFn = this.qmlObjects.dbus.moveMouseToFocus;
         this.settingsHandler = new SettingsHandler(this.qmlObjects.settings);
         this.workspaceHandler = new WorkspaceHandler(this.workspace);
         this.shortcutsHandler = new ShortcutsHandler(
@@ -97,24 +100,24 @@ class Controller {
             if (display.desktop == undefined || display.output == undefined) {
                 continue;
             }
-            // dont rebuild for other activities because tiles are shared between them
-            if (display.activity !== this.workspace.currentActivity) {
-                continue;
-            }
             console().debug("Rebuilding for display", display.toString());
             const driver = this.getDriver(display);
-            const rootTile = this.workspace.rootTile(
-                display.output,
-                display.desktop,
-            );
-            if (driver != undefined && rootTile != undefined) {
-                driver.buildLayout(rootTile, display);
-            } else {
+            if (driver == undefined) {
                 console().error(
                     "no driver found for display",
                     display.toString(),
                 );
                 continue;
+            }
+            const rootTile = this.workspace.rootTile(
+                display.output,
+                display.desktop,
+            );
+            if (display.activity !== this.workspace.currentActivity) {
+                // dont rebuild for other activities because tiles are shared between them
+                driver.buildState(display);
+            } else if (rootTile != undefined) {
+                driver.buildLayout(rootTile, display);
             }
         }
         const postQueue = simplifyPostEvents(this.postEventQueue);
@@ -324,9 +327,9 @@ class Controller {
                 } else {
                     driver.addWindow(window);
                 }
-                continue;
+            } else {
+                driver.placeWindow(window, tile, direction);
             }
-            driver.placeWindow(window, tile, direction);
             displays.push(display);
         }
         return displays;
@@ -358,23 +361,17 @@ class Controller {
             */
             const driver = this.getDriver(display);
             if (driver == undefined) continue;
-            displays.push(display);
-            // can only get tiles for current activity
-            if (display.activity !== this.workspace.currentActivity) {
-                if (driver.hasWindow(window)) {
-                    driver.tileWindow(window);
-                } else {
-                    driver.addWindow(window);
-                }
-                continue;
-            }
             const rootTile = this.workspace.rootTile(
                 display.output,
                 display.desktop,
             );
             const tile =
                 rootTile.tiles.length == 0 ? rootTile : rootTile.pick(point);
-            if (tile === null || !driver.hasTile(tile)) {
+            if (
+                tile === null ||
+                !driver.hasTile(tile) ||
+                display.activity !== this.workspace.currentActivity
+            ) {
                 if (driver.hasWindow(window)) {
                     driver.tileWindow(window);
                 } else {
@@ -387,6 +384,7 @@ class Controller {
                 );
                 driver.placeWindow(window, tile, direction);
             }
+            displays.push(display);
         }
         /*
         if (output !== window.output) {
@@ -558,6 +556,25 @@ class Controller {
                     driver.getEngineType(),
                     driver.getEngineSettings(),
                 );
+                return;
+            }
+            case "warpCursor": {
+                if (
+                    rectContainsPoint(
+                        ev.window.frameGeometry,
+                        this.workspace.cursorPos,
+                    )
+                ) {
+                    return;
+                }
+                console().debug(
+                    "warping cursor to window",
+                    ev.window.resourceClass,
+                );
+                let oldActiveWindow = this.workspace.activeWindow;
+                this.workspace.activeWindow = ev.window;
+                this.moveMouseToFocusFn();
+                this.workspace.activeWindow = oldActiveWindow;
                 return;
             }
             default: {

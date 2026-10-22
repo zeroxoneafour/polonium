@@ -1,7 +1,7 @@
 import { Workspace } from "kwin-api/qml";
 import { config, controller as ctrl } from "..";
 import { Window } from "kwin-api";
-import { Borders } from "../config";
+import { Borders, WarpCursor } from "../config";
 import { directionFromPoint } from "../../util";
 import { Display } from "../event";
 
@@ -108,5 +108,8 @@ export class WorkspaceHandler {
             t: "windowActivated",
             window: window,
         });
+        if (config().warpCursor === WarpCursor.Always) {
+            ctrl().queuePostEvent({ t: "warpCursor", window: window });
+        }
     }
 }

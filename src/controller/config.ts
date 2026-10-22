@@ -33,11 +33,17 @@ export enum UltrawidePosition {
     Left,
     Right,
 }
+export enum WarpCursor {
+    Never = 0,
+    OnShortcut,
+    Always,
+}
 
 export class Config {
     readonly rebuildDelay: number;
     readonly tileResizeAmount: number;
     readonly useDBusSaver: boolean;
+    readonly warpCursor: WarpCursor;
 
     readonly logLevel: LogLevel;
 
@@ -72,6 +78,7 @@ export class Config {
         this.rebuildDelay = rc("RebuildDelay", 10);
         this.tileResizeAmount = rc("TileResizeAmount", 10);
         this.useDBusSaver = rc("UseDBusSaver", false);
+        this.warpCursor = rc("WarpCursor", WarpCursor.Never);
 
         this.logLevel = rc("LogLevel", LogLevel.Warn);
 
@@ -114,6 +121,12 @@ export class Config {
             rotateLayout: rc("PagerRotateLayout", false),
         };
 
+        this.borders = rc("Borders", Borders.All);
+        this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
+        this.tilePopups = rc("TilePopups", false);
+        this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
+        this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
+
         this.ultrawideSingleWindow = rc("UltrawideSingleWindow", false);
         this.ultrawideOnly = rc("UltrawideOnly", true);
         this.ultrawideSingleWindowWidth = rc("UltrawideSingleWindowWidth", 0.6);
@@ -140,12 +153,6 @@ export class Config {
         this.ignoreWindowCaptions = new RegExp(ignoreWindowCaptions);
         this.untileWindowClasses = new RegExp(untileWindowClasses);
         this.untileWindowCaptions = new RegExp(untileWindowCaptions);
-
-        this.borders = rc("Borders", Borders.All);
-        this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
-        this.tilePopups = rc("TilePopups", false);
-        this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
-        this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
     }
 }
 

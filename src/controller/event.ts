@@ -58,8 +58,12 @@ export class Display {
         const desktops = window.onAllDesktops
             ? (this.workspace?.desktops ?? [])
             : window.desktops;
+        const activities =
+            window.activities.length > 0
+                ? window.activities
+                : (this.workspace?.activities ?? []);
         for (const desktop of desktops) {
-            for (const activity of window.activities) {
+            for (const activity of activities) {
                 yield new Display(desktop, activity, window.output);
             }
         }
@@ -167,8 +171,13 @@ interface ToggleSettingsMenuEvent {
     t: "toggleSettingsMenu";
     display: Display;
 }
+interface WarpCursorEvent {
+    t: "warpCursor";
+    window: Window;
+}
 
-export type PostEvent = SetWindowPropertiesEvent | ToggleSettingsMenuEvent;
+export type PostEvent =
+    SetWindowPropertiesEvent | ToggleSettingsMenuEvent | WarpCursorEvent;
 
 function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
     if (ev1.t !== ev2.t) return false;
@@ -273,6 +282,12 @@ export function simplifyPostEvents(
 ): Queue<PostEvent> {
     const newEvents = new Queue<PostEvent>();
     for (const ev of oldEvents) {
+        if (ev.t === "warpCursor") {
+            let pastCursorEv = newEvents.indexOf((ev) => ev.t === "warpCursor");
+            if (pastCursorEv != -1) {
+                newEvents.removeAtIndex(pastCursorEv);
+            }
+        }
         if (newEvents.some((e) => eventsAreSame(ev, e))) {
             continue;
         }

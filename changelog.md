@@ -9,6 +9,10 @@
 - Add option for where to place dragged windows
 - Fix shift-dragging untiled windows
 - Fix empty window filters matching windows with empty classes or captions
+- Fix border settings on changing engine type
+- Fix windows on all activities
+- Multiple displays for shortcuts (hypotetically)
+- Snap cursor to active window settings (broken for swap, out of our control)
 
 ### 1.2.1
 

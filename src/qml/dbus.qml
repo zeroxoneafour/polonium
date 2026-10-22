@@ -9,7 +9,7 @@ Item {
     }
     DBusCall {
         id: getSettingsObj;
-        
+
         service: "xyz.vaughanm.polonium";
         path: "/saver";
         dbusInterface: "xyz.vaughanm.polonium";
@@ -21,7 +21,7 @@ Item {
     }
     DBusCall {
         id: setSettingsObj;
-        
+
         service: "xyz.vaughanm.polonium";
         path: "/saver";
         dbusInterface: "xyz.vaughanm.polonium";
@@ -33,10 +33,23 @@ Item {
     }
     DBusCall {
         id: resetSettingsObj;
-        
+
         service: "xyz.vaughanm.polonium";
         path: "/saver";
         dbusInterface: "xyz.vaughanm.polonium";
         method: "ResetSettings";
+    }
+
+    function moveMouseToFocus() {
+        moveMouseToFocusObj.call();
+    }
+    DBusCall {
+        id: moveMouseToFocusObj;
+
+        service: "org.kde.kglobalaccel";
+        path: "/component/kwin";
+        dbusInterface: "org.kde.kglobalaccel.Component";
+        method: "invokeShortcut";
+        arguments: ["MoveMouseToFocus"];
     }
 }

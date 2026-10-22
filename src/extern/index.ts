@@ -76,4 +76,5 @@ export interface DBus extends QObject {
     getSettings(): DBusCall;
     setSettings(): DBusCall;
     resetSettings(): DBusCall;
+    moveMouseToFocus(): void;
 }
