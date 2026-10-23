@@ -11,8 +11,10 @@
 - Fix empty window filters matching windows with empty classes or captions
 - Fix border settings on changing engine type
 - Fix windows on all activities
-- Multiple displays for shortcuts (hypotetically)
+- Multiple displays for shortcuts (hypothetically)
 - Snap cursor to active window settings (broken for swap, out of our control)
+- Option for ultrawide windows per-display
+- Updated settings interface
 
 ### 1.2.1
 

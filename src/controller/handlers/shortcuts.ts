@@ -4,7 +4,7 @@ import { config, console, controller as ctrl, qt } from "..";
 import { Direction, TilingEngineType } from "../../engine";
 import { Display } from "../event";
 import { Edge, Tile } from "kwin-api";
-import { WarpCursor } from "../config";
+import { KWinVersion, WarpCursor } from "../config";
 
 export class ShortcutsHandler {
     private workspace: Workspace;
@@ -174,10 +174,11 @@ export class ShortcutsHandler {
         const point = qt().point(Math.floor(x), Math.floor(y));
         console().debug("selecting tile for point", point);
         const screen = this.workspace.screenAt(point);
-        const rootTile = this.workspace.rootTile(
-            screen,
-            this.workspace.currentDesktopForScreen(screen),
-        );
+        const desktop =
+            config().kwinVersion >= KWinVersion.SixSeven
+                ? this.workspace.currentDesktopForScreen(screen)
+                : this.workspace.currentDesktop;
+        const rootTile = this.workspace.rootTile(screen, desktop);
         if (tile == rootTile) {
             return null;
         }

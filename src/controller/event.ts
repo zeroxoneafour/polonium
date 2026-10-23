@@ -175,9 +175,16 @@ interface WarpCursorEvent {
     t: "warpCursor";
     window: Window;
 }
+interface RefreshSettingsMenuEvent {
+    t: "refreshSettingsMenu";
+    display: Display;
+}
 
 export type PostEvent =
-    SetWindowPropertiesEvent | ToggleSettingsMenuEvent | WarpCursorEvent;
+    | SetWindowPropertiesEvent
+    | ToggleSettingsMenuEvent
+    | WarpCursorEvent
+    | RefreshSettingsMenuEvent;
 
 function eventsAreSame(ev1: GenericEvent, ev2: GenericEvent): boolean {
     if (ev1.t !== ev2.t) return false;

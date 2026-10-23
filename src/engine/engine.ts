@@ -81,12 +81,13 @@ export class Tile {
     }
 
     // adds a child that will split perpendicularly to the parent. Returns the child
-    addChild(): Tile {
+    addChild(tile?: Tile): Tile {
         let splitDirection: LayoutDirection = LayoutDirection.Horizontal;
         if (this.layoutDirection == LayoutDirection.Horizontal) {
             splitDirection = LayoutDirection.Vertical;
         }
-        const childTile = new Tile(this);
+        const childTile = tile != undefined ? tile : new Tile(this);
+        childTile.parent = this;
         this.children.push(childTile);
         childTile.layoutDirection = splitDirection;
         return childTile;

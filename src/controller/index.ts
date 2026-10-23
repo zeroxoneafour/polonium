@@ -577,6 +577,24 @@ class Controller {
                 this.workspace.activeWindow = oldActiveWindow;
                 return;
             }
+            // basically this does the same thing as toggle but opposite
+            // i mean that if the display is open it updates (shows) it, if not it does nothing
+            case "refreshSettingsMenu": {
+                console().log("refreshing settings menu");
+                if (!this.settingsHandler.isVisible()) {
+                    return;
+                }
+                const driver = this.getDriver(ev.display);
+                if (driver === undefined) {
+                    break;
+                }
+                this.settingsHandler.show(
+                    ev.display,
+                    driver.getEngineType(),
+                    driver.getEngineSettings(),
+                );
+                return;
+            }
             default: {
                 console().error("invalid post event type", (ev as any).t);
                 return;

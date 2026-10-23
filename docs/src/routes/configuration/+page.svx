@@ -7,6 +7,8 @@ Configuration is accessed through the KWin Scripts settings menu.
 * Rebuild Delay - How long no events must occur before event processing happens. Keep this low for responsiveness.
 * Tile Resize Amount - How much to resize tiles by when using the resizing shortcuts.
 * Use DBus Saver - Turn on to enable DBus interaction with `polonium-saver`.
+* Warp Cursor - Whether to warp the cursor to activated windows. Due to lag within KWin, does not work properly when shifting windows around.
+* KWin Version - Set this to the greatest version less than or equal to your current KWin version.
 
 ### Debug
 
@@ -21,6 +23,10 @@ Configuration is accessed through the KWin Scripts settings menu.
     * Pillars - Several stacks of windows
     * Pager - Focused layout with active window as dominant
     * KWin - Untiled layout with KWin vanilla tile support
+
+* Single Window Custom Sizing - Enable custom sizing and positioning when an output has one tiled window
+* Single Window Width - Width of the single window as a proportion of the output width
+* Single Window Position - Position of the single window on the output (Center, Left, or Right)
 
 ### Binary Tree
 
@@ -75,13 +81,6 @@ No settings are available for this layout. Configuration is done via the KWin ti
 * Place Tiled Windows Below - Whether tiled windows should be forced below floating/fullscreen ones.
 * Window Dragging Policy - How dragged windows should be treated.
 * Drag Retile Point - The reference point to use when retiling a dragged window.
-
-### Single Window Sizing
-
-* Custom Sizing for Single Window - Enable custom sizing and positioning when an output has one tiled window.
-* Only on Ultrawide Screens - Restrict custom sizing to outputs with an aspect ratio of at least 2:1.
-* Single Window Width - Width of the single window as a proportion of the output width.
-* Single Window Position - Position of the single window on the output (Center, Left, or Right).
 
 ## Filters
 

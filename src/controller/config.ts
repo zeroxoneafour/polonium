@@ -38,12 +38,17 @@ export enum WarpCursor {
     OnShortcut,
     Always,
 }
+export enum KWinVersion {
+    SixFour = 0,
+    SixSeven,
+}
 
 export class Config {
     readonly rebuildDelay: number;
     readonly tileResizeAmount: number;
     readonly useDBusSaver: boolean;
     readonly warpCursor: WarpCursor;
+    readonly kwinVersion: KWinVersion;
 
     readonly logLevel: LogLevel;
 
@@ -54,16 +59,12 @@ export class Config {
     readonly threeColumnSettings: object;
     readonly pillarSettings: object;
     readonly pagerSettings: object;
+    readonly kwinSettings: object;
 
     readonly borders: Borders;
     readonly tiledWindowsBelow: boolean;
     readonly windowDragPolicy: DragPolicy;
     readonly dragRetilePoint: DragRetilePoint;
-
-    readonly ultrawideSingleWindow: boolean;
-    readonly ultrawideOnly: boolean;
-    readonly ultrawideSingleWindowWidth: number;
-    readonly ultrawideSingleWindowPosition: UltrawidePosition;
 
     readonly rawRegex: boolean;
     readonly ignoreWindowClasses: RegExp;
@@ -79,61 +80,78 @@ export class Config {
         this.tileResizeAmount = rc("TileResizeAmount", 10);
         this.useDBusSaver = rc("UseDBusSaver", false);
         this.warpCursor = rc("WarpCursor", WarpCursor.Never);
+        this.kwinVersion = rc("KWinVersion", KWinVersion.SixFour);
 
         this.logLevel = rc("LogLevel", LogLevel.Warn);
 
         this.defaultEngine = rc("DefaultEngine", TilingEngineType.BTree);
-        this.btreeSettings = {
-            swapInsertSide: rc("BTreeSwapInsertSide", false),
-            rotateLayout: rc("BTreeRotateLayout", false),
-            insertionStyle: rc(
-                "BTreeInsertionStyle",
-                BTreeInsertionStyle.Shallow,
+        let engineSettings = {
+            ultrawideEnabled: rc("UltrawideEnabled", false),
+            ultrawideWidth: rc("UltrawideWidth", 0.6),
+            ultrawidePosition: rc(
+                "UltrawidePosition",
+                UltrawidePosition.Center,
             ),
-            insertInActive: rc("BTreeInsertInActive", false),
         };
-        this.halfSettings = {
-            swapInsertSide: rc("HalfSwapInsertSide", false),
-            middleSplit: rc("HalfMiddleSplit", 0.5),
-            rotateLayout: rc("HalfRotateLayout", false),
-            insertInActive: rc("HalfInsertInActive", false),
-            keepMaster: rc("HalfKeepMaster", false),
-        };
-        this.threeColumnSettings = {
-            swapInsertSide: rc("ThreeColumnSwapInsertSide", false),
-            side1Size: rc("ThreeColumnSide1Size", 0.25),
-            side2Size: rc("ThreeColumnSide2Size", 0.25),
-            rotateLayout: rc("ThreeColumnRotateLayout", false),
-        };
-        this.pillarSettings = {
-            pillarCount: rc("PillarsPillarCount", 3),
-            swapInsertSide: rc("PillarsSwapInsertSide", false),
-            insertionStyle: rc(
-                "PillarsInsertionStyle",
-                PillarsInsertionStyle.Rows,
-            ),
-            rotateLayout: rc("PillarsRotateLayout", false),
-            insertInActive: rc("PillarsInsertInActive", false),
-        };
-        this.pagerSettings = {
-            pageWidth: rc("PagerPageWidth", 0.15),
-            swapInsertSide: rc("PagerSwapInsertSide", false),
-            rotateLayout: rc("PagerRotateLayout", false),
-        };
+        this.btreeSettings = Object.assign(
+            {
+                swapInsertSide: rc("BTreeSwapInsertSide", false),
+                rotateLayout: rc("BTreeRotateLayout", false),
+                insertionStyle: rc(
+                    "BTreeInsertionStyle",
+                    BTreeInsertionStyle.Shallow,
+                ),
+                insertInActive: rc("BTreeInsertInActive", false),
+            },
+            engineSettings,
+        );
+        this.halfSettings = Object.assign(
+            {
+                swapInsertSide: rc("HalfSwapInsertSide", false),
+                middleSplit: rc("HalfMiddleSplit", 0.5),
+                rotateLayout: rc("HalfRotateLayout", false),
+                insertInActive: rc("HalfInsertInActive", false),
+                keepMaster: rc("HalfKeepMaster", false),
+            },
+            engineSettings,
+        );
+        this.threeColumnSettings = Object.assign(
+            {
+                swapInsertSide: rc("ThreeColumnSwapInsertSide", false),
+                side1Size: rc("ThreeColumnSide1Size", 0.25),
+                side2Size: rc("ThreeColumnSide2Size", 0.25),
+                rotateLayout: rc("ThreeColumnRotateLayout", false),
+            },
+            engineSettings,
+        );
+        this.pillarSettings = Object.assign(
+            {
+                pillarCount: rc("PillarsPillarCount", 3),
+                swapInsertSide: rc("PillarsSwapInsertSide", false),
+                insertionStyle: rc(
+                    "PillarsInsertionStyle",
+                    PillarsInsertionStyle.Rows,
+                ),
+                rotateLayout: rc("PillarsRotateLayout", false),
+                insertInActive: rc("PillarsInsertInActive", false),
+            },
+            engineSettings,
+        );
+        this.pagerSettings = Object.assign(
+            {
+                pageWidth: rc("PagerPageWidth", 0.15),
+                swapInsertSide: rc("PagerSwapInsertSide", false),
+                rotateLayout: rc("PagerRotateLayout", false),
+            },
+            engineSettings,
+        );
+        this.kwinSettings = {};
 
         this.borders = rc("Borders", Borders.All);
         this.tiledWindowsBelow = rc("TiledWindowsBelow", true);
         this.tilePopups = rc("TilePopups", false);
         this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
         this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
-
-        this.ultrawideSingleWindow = rc("UltrawideSingleWindow", false);
-        this.ultrawideOnly = rc("UltrawideOnly", true);
-        this.ultrawideSingleWindowWidth = rc("UltrawideSingleWindowWidth", 0.6);
-        this.ultrawideSingleWindowPosition = rc(
-            "UltrawideSingleWindowPosition",
-            UltrawidePosition.Center,
-        );
 
         this.rawRegex = rc("RawRegex", false);
         let ignoreWindowClasses = rc(

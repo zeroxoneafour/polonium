@@ -2,7 +2,7 @@
 
 ## What layouts are supported?
 
-Right now, we have Binary Tree, Half, Three Column, Pillars, and Pager layouts.
+Right now, we have Binary Tree, Half, Three Column, Pillars, Pager, and KWin (untiled) layouts.
 They are highly [configurable](../configuration) and can emulate several other layout styles.
 
 Particularly, master-stack can be built with Half and dwindle/spiral can be built with BTree.
@@ -45,4 +45,4 @@ Open an issue [here](https://github.com/zeroxoneafour/polonium/issues).
 
 ## How about X11?
 
-Never gonna happen. Plasma 6.8 is removing it completely anyway.
+Never gonna happen. Plasma 6.8 removed it completely anyway.

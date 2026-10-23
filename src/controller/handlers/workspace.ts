@@ -24,6 +24,9 @@ export class WorkspaceHandler {
         this.workspace.currentActivityChanged.connect(
             this.rebuildDesktops.bind(this),
         );
+        this.workspace.currentDesktopChanged.connect(
+            this.refreshSettingsPopup.bind(this),
+        );
 
         this.workspace.screensChanged.connect(this.updateDrivers.bind(this));
         this.workspace.desktopsChanged.connect(this.updateDrivers.bind(this));
@@ -71,6 +74,17 @@ export class WorkspaceHandler {
 
     updateDrivers() {
         ctrl().queueEvent({ t: "updateDrivers" });
+    }
+
+    refreshSettingsPopup() {
+        ctrl().queuePostEvent({
+            t: "refreshSettingsMenu",
+            display: new Display(
+                this.workspace.currentDesktop,
+                this.workspace.currentActivity,
+                this.workspace.activeScreen,
+            ),
+        });
     }
 
     windowActivated(window: Window | null) {

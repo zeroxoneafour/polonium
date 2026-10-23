@@ -12,14 +12,15 @@ import {
 import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
 import { Direction } from "../util";
-import { Borders, UltrawidePosition } from "../controller/config";
+import { Borders } from "../controller/config";
 import { updateTiles } from "./updatetiles";
 import { Display } from "../controller/event";
+import { clampPoint, directionFromPoint, rectCenter } from "../util/geometry";
 
 export class Driver {
+    private kwinRootTile: KwinTile | null = null;
     private engineRootTile: EngineTile | null = null;
     private tileMap: Map<KwinTile, EngineTile> = new Map();
-    private placementTileMap: Map<KwinTile, EngineTile> = new Map();
     private hookedTiles: Set<KwinTile> = new Set();
     private windowMap: Map<KwinWindow, EngineWindow> = new Map();
     private untiledWindows: Set<KwinWindow> = new Set();
@@ -95,6 +96,8 @@ export class Driver {
     }
 
     buildLayout(rootTile: KwinTile, display: Display): void {
+        this.kwinRootTile = rootTile;
+
         // remove non-extant windows or windows that are not on the desktop/activity/output
         // should prevent ghost tiles even if code elsewhere is buggy
         for (const [kwinWindow, _ew] of this.windowMap) {
@@ -115,15 +118,8 @@ export class Driver {
             }
         }
 
-        const engineRootTile = this.tilingEngine.buildLayout();
-        this.engineRootTile = applySingleWindowSizing(engineRootTile, display);
+        this.engineRootTile = this.tilingEngine.buildLayout();
         this.tileMap = buildLayout(rootTile, this.engineRootTile);
-        this.placementTileMap = new Map(this.tileMap);
-        if (this.engineRootTile !== engineRootTile) {
-            for (const kwinTile of this.placementTileMap.keys()) {
-                this.placementTileMap.set(kwinTile, engineRootTile);
-            }
-        }
         // clean out old hooked (callback set) tiles
         for (const hookedTile of this.hookedTiles) {
             if (!this.tileMap.has(hookedTile)) {
@@ -203,7 +199,6 @@ export class Driver {
             }
         }
         let engineRootTile = this.tilingEngine.buildLayout();
-        engineRootTile = applySingleWindowSizing(engineRootTile, display);
         const invertedWindowMap = new Map(
             Array.from(this.windowMap, (a) => [a[1], a[0]]),
         );
@@ -307,15 +302,57 @@ export class Driver {
     placeWindow(
         kwinWindow: KwinWindow,
         kwinTile: KwinTile,
-        direction?: Direction,
+        directionArg?: Direction,
     ): void {
         let window = this.initializeWindow(kwinWindow);
-        const tile = this.placementTileMap.get(kwinTile);
+        let tile = this.tileMap.get(kwinTile);
+        let direction = directionArg;
         if (tile == undefined) {
             console().warn("tile undefined during window placement");
             // place like normal if no tile
             this.tilingEngine.addWindow(window);
             return;
+        }
+        // basically, if the tile is not part of the engine proper (core root tile), then -
+        // 1. find the kwin tile corresponding to the core
+        // 2. find the center of the tile that is trying to be inserted into
+        // 3. clamp this center so that it is inside of the core kwin tile
+        // 4. use pick() to find the corresponding smallest tile internal to the core
+        if (!this.tilingEngine.isTileCore(tile)) {
+            let coreKwinTile = null;
+            for (const [k, v] of this.tileMap.entries()) {
+                if (v === this.tilingEngine.getCoreRootTile()) {
+                    coreKwinTile = k;
+                    break;
+                }
+            }
+            if (coreKwinTile == null || this.kwinRootTile == null) {
+                console().warn("core kwin tile not found!");
+                this.tilingEngine.addWindow(window);
+                return;
+            }
+            let targetPoint = rectCenter(kwinTile.absoluteGeometry);
+            targetPoint = clampPoint(
+                coreKwinTile.absoluteGeometry,
+                targetPoint,
+                1,
+            );
+            console().debug(
+                "place window (non core) inserting at target point",
+                targetPoint,
+            );
+            const targetTile =
+                this.kwinRootTile.pick(targetPoint) ?? coreKwinTile;
+            tile = this.tileMap.get(targetTile);
+            if (tile == undefined) {
+                console().warn("no tile found to insert into!");
+                this.tilingEngine.addWindow(window);
+                return;
+            }
+            direction = directionFromPoint(
+                targetTile.absoluteGeometry,
+                targetPoint,
+            );
         }
         this.tilingEngine.placeWindow(window, tile, direction);
         // see comments in addWindow
@@ -400,8 +437,7 @@ function getConfigEngineSettings(engineType: TilingEngineType): object {
         case TilingEngineType.Pager:
             return config().pagerSettings;
         case TilingEngineType.KWin:
-            // no settings for kwin
-            return {};
+            return config().kwinSettings;
         default:
             console().error("engine type", engineType, "is invalid");
             return {};
@@ -434,94 +470,4 @@ function setUntiledProps(window: KwinWindow) {
     ) {
         window.noBorder = false;
     }
-}
-
-function getEngineWindows(tile: EngineTile): EngineWindow[] {
-    const windows: EngineWindow[] = [...tile.windows];
-    for (const child of tile.children) {
-        windows.push(...getEngineWindows(child));
-    }
-    return windows;
-}
-
-const ultrawideAspectRatioThreshold = 2;
-
-function applySingleWindowSizing(
-    engineRootTile: EngineTile,
-    display: Display,
-): EngineTile {
-    if (!config().ultrawideSingleWindow) {
-        console().debug("single-window sizing disabled");
-        return engineRootTile;
-    }
-    if (config().ultrawideOnly) {
-        const geom = display.output?.geometry;
-        if (!geom || geom.height <= 0) {
-            console().debug("single-window sizing: invalid output geometry");
-            return engineRootTile;
-        }
-        const aspectRatio = geom.width / geom.height;
-        console().debug(
-            "single-window sizing check - output",
-            display.output.name,
-            "geometry",
-            `${geom.width}x${geom.height}`,
-            "ratio",
-            aspectRatio,
-            "threshold",
-            ultrawideAspectRatioThreshold,
-        );
-        if (aspectRatio < ultrawideAspectRatioThreshold) {
-            return engineRootTile;
-        }
-    } else {
-        console().debug("single-window sizing enabled for all screens");
-    }
-    const windows = getEngineWindows(engineRootTile);
-    console().debug("single-window sizing window count", windows.length);
-    if (windows.length !== 1) {
-        return engineRootTile;
-    }
-
-    const singleWindow = windows[0];
-    const widthShare = config().ultrawideSingleWindowWidth;
-    const position = config().ultrawideSingleWindowPosition;
-    console().debug(
-        "applying single-window sizing - width",
-        widthShare,
-        "position",
-        position,
-    );
-
-    const newRoot = new EngineTile();
-    newRoot.layoutDirection = LayoutDirection.Horizontal;
-
-    if (position === UltrawidePosition.Center) {
-        const sideShare = (1 - widthShare) / 2;
-        const leftTile = newRoot.addChild();
-        leftTile.size = sideShare;
-
-        const centerTile = newRoot.addChild();
-        centerTile.size = widthShare;
-        centerTile.windows.push(singleWindow);
-
-        const rightTile = newRoot.addChild();
-        rightTile.size = sideShare;
-    } else if (position === UltrawidePosition.Left) {
-        const leftTile = newRoot.addChild();
-        leftTile.size = widthShare;
-        leftTile.windows.push(singleWindow);
-
-        const rightTile = newRoot.addChild();
-        rightTile.size = 1 - widthShare;
-    } else if (position === UltrawidePosition.Right) {
-        const leftTile = newRoot.addChild();
-        leftTile.size = 1 - widthShare;
-
-        const rightTile = newRoot.addChild();
-        rightTile.size = widthShare;
-        rightTile.windows.push(singleWindow);
-    }
-
-    return newRoot;
 }
