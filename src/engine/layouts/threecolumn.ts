@@ -227,7 +227,9 @@ export class ThreeColumnEngine implements TilingEngineInterface {
     updateTiles(rootTile: Tile): void {
         // only read column sizes if the tile tree has the shape buildLayout produced
         const expectedColumns =
-            1 + (this.side1.length > 0 ? 1 : 0) + (this.side2.length > 0 ? 1 : 0);
+            1 +
+            (this.side1.length > 0 ? 1 : 0) +
+            (this.side2.length > 0 ? 1 : 0);
         const totalSize = rootTile.totalChildrenSize();
         if (
             expectedColumns > 1 &&

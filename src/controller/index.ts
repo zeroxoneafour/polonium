@@ -98,7 +98,10 @@ class Controller {
                 }
             }
             for (const [_, display] of rebuildDisplays) {
-                if (display.desktop == undefined || display.output == undefined) {
+                if (
+                    display.desktop == undefined ||
+                    display.output == undefined
+                ) {
                     continue;
                 }
                 console().debug("Rebuilding for display", display.toString());
@@ -132,7 +135,7 @@ class Controller {
                 this.handlePostEvent(ev);
             }
         } catch (e) {
-            console().error("ran into error during ev handling -", e)
+            console().error("ran into error during ev handling -", e);
         } finally {
             this.processingEvents = false;
         }

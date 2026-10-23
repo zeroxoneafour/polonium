@@ -295,7 +295,9 @@ export function simplifyPostEvents(
     const newEvents = new Queue<PostEvent>();
     for (const ev of oldEvents) {
         if (ev.t === "warpCursor") {
-            let pastCursorEv = newEvents.findIndex((ev) => ev.t === "warpCursor");
+            let pastCursorEv = newEvents.findIndex(
+                (ev) => ev.t === "warpCursor",
+            );
             if (pastCursorEv != -1) {
                 newEvents.removeAtIndex(pastCursorEv);
             }
