@@ -163,7 +163,7 @@ export class ThreeColumnEngine implements TilingEngineInterface {
     // default to inserting below
     placeWindow(window: Window, tile: Tile, direction?: Direction) {
         // center must always be occupied
-        if (this.center === null) {
+        if (this.center.length == 0) {
             this.addWindow(window);
             return;
         }
@@ -225,16 +225,22 @@ export class ThreeColumnEngine implements TilingEngineInterface {
     }
 
     updateTiles(rootTile: Tile): void {
-        if (this.side1.length > 0) {
-            this.settings.side1Size =
-                rootTile.children[0].size / rootTile.totalChildrenSize();
+        // only read column sizes if the tile tree has the shape buildLayout produced
+        const expectedColumns =
+            1 + (this.side1.length > 0 ? 1 : 0) + (this.side2.length > 0 ? 1 : 0);
+        const totalSize = rootTile.totalChildrenSize();
+        if (
+            expectedColumns > 1 &&
+            rootTile.children.length == expectedColumns &&
+            totalSize > 0
+        ) {
+            if (this.side1.length > 0) {
+                this.settings.side1Size = rootTile.children[0].size / totalSize;
+            }
             if (this.side2.length > 0) {
                 this.settings.side2Size =
-                    rootTile.children[2].size / rootTile.totalChildrenSize();
+                    rootTile.children[expectedColumns - 1].size / totalSize;
             }
-        } else if (this.side2.length > 0) {
-            this.settings.side2Size =
-                rootTile.children[1].size / rootTile.totalChildrenSize();
         }
         for (const [tile, idx] of this.tileMap) {
             if (idx.boxes === this.center) {

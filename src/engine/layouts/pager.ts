@@ -24,13 +24,18 @@ export class PagerEngine implements TilingEngineInterface {
     private settings: PagerSettings = new PagerSettings();
     private pageWidth: number = this.settings.pageWidth + floatingPointFix;
     private windows: Window[] = [];
-    private activeWindowIdx: number = -1;
+    // track the window itself as indices shift when windows are added/removed
+    private activeWindow: Window | null = null;
 
     getEngineSettings(): object {
         return this.settings.getProps();
     }
     setEngineSettings(settings: object): void {
         this.settings.setProps(settings);
+        this.settings.pageWidth = Math.min(
+            Math.max(this.settings.pageWidth, 0.15),
+            0.2,
+        );
         this.pageWidth = this.settings.pageWidth + floatingPointFix;
     }
 
@@ -49,13 +54,15 @@ export class PagerEngine implements TilingEngineInterface {
             rootTile.windows.push(this.windows[0]);
             return rootTile;
         }
+        // shrink pages when there are too many to fit so the active page never goes negative
+        const pageWidth = Math.min(this.pageWidth, 1 / len);
         for (let i = 0; i < len; i += 1) {
             const tile = rootTile.addChild();
             tile.windows.push(this.windows[i]);
-            if (i == this.activeWindowIdx) {
-                tile.size = (1 - this.pageWidth * (len - 1)) * len;
+            if (this.windows[i] === this.activeWindow) {
+                tile.size = (1 - pageWidth * (len - 1)) * len;
             } else {
-                tile.size = this.pageWidth * len;
+                tile.size = pageWidth * len;
             }
         }
         return rootTile;
@@ -90,11 +97,10 @@ export class PagerEngine implements TilingEngineInterface {
     }
 
     windowActivated(window: Window): boolean {
-        const idx = this.windows.indexOf(window);
-        if (idx === this.activeWindowIdx || idx === -1) {
+        if (window === this.activeWindow || !this.windows.includes(window)) {
             return false;
         }
-        this.activeWindowIdx = idx;
+        this.activeWindow = window;
         return true;
     }
 
@@ -103,8 +109,8 @@ export class PagerEngine implements TilingEngineInterface {
         if (idx == -1) {
             return;
         }
-        if (this.activeWindowIdx == idx) {
-            this.activeWindowIdx = -1;
+        if (this.activeWindow === window) {
+            this.activeWindow = null;
         }
         this.windows.splice(idx, 1);
     }

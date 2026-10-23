@@ -268,12 +268,15 @@ export class ShortcutsHandler {
             tile: targetTile,
             direction: direction,
         });
+        // Add this someday when cursor warp becomes more stable
+        /*
         if (
             config().warpCursor === WarpCursor.OnShortcut ||
             config().warpCursor === WarpCursor.Always
         ) {
             ctrl().queuePostEvent({ t: "warpCursor", window: window });
         }
+        */
     }
 
     resizeInDirection(edge: Edge) {

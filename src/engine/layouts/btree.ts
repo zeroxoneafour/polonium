@@ -8,7 +8,7 @@ import {
     BaseEngineSettings,
     LayoutDirection,
 } from "../engine";
-import { Queue, Stack, StackLike } from "../../util";
+import { Queue, StackLike } from "../../util";
 import { console } from "../../controller";
 
 class BTreeSettings extends BaseEngineSettings {
@@ -103,7 +103,7 @@ export class BTreeEngine implements TilingEngineInterface {
         const rootTile = new Tile();
         this.tileMap.clear();
         queue.push([this.root, rootTile]);
-        while (!queue.isEmpty) {
+        while (queue.length > 0) {
             const [node, tile] = queue.pop()!;
             this.tileMap.set(tile, node);
             if (node.window !== null) tile.windows.push(node.window);
@@ -132,13 +132,14 @@ export class BTreeEngine implements TilingEngineInterface {
             this.root.window = window;
             return;
         }
+        // shallow is breadth first (queue), dwindle/spiral are depth first (array as a stack)
         const queue: StackLike<Node> =
             this.settings.insertionStyle === InsertionStyle.Shallow
                 ? new Queue<Node>()
-                : new Stack<Node>();
+                : [];
         queue.push(this.root);
         let i = 0;
-        while (!queue.isEmpty) {
+        while (queue.length > 0) {
             const node = queue.pop()!;
             let swapInsertSide = this.settings.swapInsertSide;
             // spiral does depth-first, toggling insert side every two inserts
@@ -158,7 +159,7 @@ export class BTreeEngine implements TilingEngineInterface {
                     if (swapInsertSide) {
                         children.reverse();
                     }
-                    queue.multipush(children);
+                    queue.push(...children);
                     i += 1;
                 }
             }
@@ -217,14 +218,14 @@ export class BTreeEngine implements TilingEngineInterface {
         }
         const queue = new Queue<Node>();
         queue.push(this.root);
-        while (!queue.isEmpty) {
+        while (queue.length > 0) {
             const node = queue.pop()!;
             if (node.window === window) {
                 node.destroy();
                 return;
             } else {
                 if (node.children !== null) {
-                    queue.multipush(node.children);
+                    queue.push(...node.children);
                 }
             }
         }

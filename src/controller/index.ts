@@ -82,55 +82,60 @@ class Controller {
 
     private processEvents() {
         this.processingEvents = true;
-        const queue = simplifyEvents(this.eventQueue);
-        this.eventQueue = new Queue<Event>();
-        console().debug("Handling", queue.size, "event(s)");
-        const rebuildDisplays = new Map<DisplaySymbol, Display>();
-        while (!queue.isEmpty) {
-            const ev = queue.pop();
-            if (ev === undefined) {
-                break;
+        try {
+            const queue = simplifyEvents(this.eventQueue);
+            this.eventQueue = new Queue<Event>();
+            console().debug("Handling", queue.length, "event(s)");
+            const rebuildDisplays = new Map<DisplaySymbol, Display>();
+            while (queue.length > 0) {
+                const ev = queue.pop();
+                if (ev === undefined) {
+                    break;
+                }
+                const displays = this.handleEvent(ev);
+                for (const display of displays) {
+                    rebuildDisplays.set(display.toSymbol(), display);
+                }
             }
-            const displays = this.handleEvent(ev);
-            for (const display of displays) {
-                rebuildDisplays.set(display.toSymbol(), display);
-            }
-        }
-        for (const [_, display] of rebuildDisplays) {
-            if (display.desktop == undefined || display.output == undefined) {
-                continue;
-            }
-            console().debug("Rebuilding for display", display.toString());
-            const driver = this.getDriver(display);
-            if (driver == undefined) {
-                console().error(
-                    "no driver found for display",
-                    display.toString(),
+            for (const [_, display] of rebuildDisplays) {
+                if (display.desktop == undefined || display.output == undefined) {
+                    continue;
+                }
+                console().debug("Rebuilding for display", display.toString());
+                const driver = this.getDriver(display);
+                if (driver == undefined) {
+                    console().error(
+                        "no driver found for display",
+                        display.toString(),
+                    );
+                    continue;
+                }
+                const rootTile = this.workspace.rootTile(
+                    display.output,
+                    display.desktop,
                 );
-                continue;
+                if (display.activity !== this.workspace.currentActivity) {
+                    // dont rebuild for other activities because tiles are shared between them
+                    driver.buildState(display);
+                } else if (rootTile != undefined) {
+                    driver.buildLayout(rootTile, display);
+                }
             }
-            const rootTile = this.workspace.rootTile(
-                display.output,
-                display.desktop,
-            );
-            if (display.activity !== this.workspace.currentActivity) {
-                // dont rebuild for other activities because tiles are shared between them
-                driver.buildState(display);
-            } else if (rootTile != undefined) {
-                driver.buildLayout(rootTile, display);
+            const postQueue = simplifyPostEvents(this.postEventQueue);
+            this.postEventQueue = new Queue<PostEvent>();
+            console().debug("Handling", postQueue.length, "post event(s)");
+            while (postQueue.length > 0) {
+                const ev = postQueue.pop();
+                if (ev === undefined) {
+                    break;
+                }
+                this.handlePostEvent(ev);
             }
+        } catch (e) {
+            console().error("ran into error during ev handling -", e)
+        } finally {
+            this.processingEvents = false;
         }
-        const postQueue = simplifyPostEvents(this.postEventQueue);
-        this.postEventQueue = new Queue<PostEvent>();
-        console().debug("Handling", postQueue.size, "post event(s)");
-        while (!postQueue.isEmpty) {
-            const ev = postQueue.pop();
-            if (ev === undefined) {
-                break;
-            }
-            this.handlePostEvent(ev);
-        }
-        this.processingEvents = false;
     }
 
     // returns a list of displays that need a rebuild
@@ -559,6 +564,9 @@ class Controller {
                 return;
             }
             case "warpCursor": {
+                if (!this.windowExists(ev.window)) {
+                    break;
+                }
                 if (
                     rectContainsPoint(
                         ev.window.frameGeometry,
@@ -701,6 +709,9 @@ export function initializeController(qmlApi: QmlApi, qmlObjects: QmlObjects) {
     consoleObj = new Console(qmlApi.console);
     qtObject = qmlApi.qt;
     console().debug("config -", JSON.stringify(config()));
+    for (const err of config().regexErrors) {
+        console().error(err);
+    }
     controllerObj = new Controller(qmlApi, qmlObjects);
     console().log("controller initialized. Welcome to Polonium!");
 }

@@ -33,6 +33,10 @@ export class HalfEngine implements TilingEngineInterface {
     setEngineSettings(settings: object): void {
         const prevSwapSide = this.settings.swapInsertSide;
         this.settings.setProps(settings);
+        this.settings.middleSplit = Math.min(
+            Math.max(this.settings.middleSplit, 0.15),
+            0.85,
+        );
         // if keepMaster changed but not swapInsertSide then move windows out of dominant tile
         if (
             this.settings.keepMaster &&

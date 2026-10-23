@@ -1,95 +1,93 @@
-// util/queue.ts - Linked list queue
+// util/queue.ts - Array backed ring buffer queue
 
 import { StackLike } from "./stacklike";
 
-class Node<T> {
-    value: T;
-    next: Node<T> | null = null;
-    constructor(value: T) {
-        this.value = value;
-    }
-    append(node: Node<T>): Node<T> {
-        this.next = node;
-        return this.next;
-    }
-}
-
-export class Queue<T> extends StackLike<T> {
-    private head: Node<T> | null = null;
-    private tail: Node<T> | null = null;
+export class Queue<T> implements StackLike<T> {
+    // slots outside of [head, head + count) are kept undefined so popped values can be collected
+    private items: (T | undefined)[];
+    private head: number = 0;
     private count: number = 0;
 
-    constructor() {
-        super();
+    constructor(capacity: number = 16) {
+        this.items = new Array(Math.max(capacity, 1));
     }
 
-    push(value: T): void {
-        if (this.head === null || this.tail === null) {
-            this.head = new Node(value);
-            this.tail = this.head;
-        } else {
-            this.tail = this.tail.append(new Node(value));
+    get length(): number {
+        return this.count;
+    }
+
+    // maps a queue index (0 is the front) to an index in the backing array
+    private slot(index: number): number {
+        return (this.head + index) % this.items.length;
+    }
+
+    private grow(): void {
+        const items = new Array<T | undefined>(this.items.length * 2);
+        for (let i = 0; i < this.count; i += 1) {
+            items[i] = this.items[this.slot(i)];
         }
-        this.count += 1;
+        this.items = items;
+        this.head = 0;
     }
 
+    push(...values: T[]): number {
+        for (const value of values) {
+            if (this.count === this.items.length) {
+                this.grow();
+            }
+            this.items[this.slot(this.count)] = value;
+            this.count += 1;
+        }
+        return this.count;
+    }
+
+    // removes from the front, unlike Array.pop
     pop(): T | undefined {
-        if (this.head === null) {
+        if (this.count === 0) {
             return undefined;
         }
-        const value = this.head.value;
-        this.head = this.head.next;
-        if (this.head === null) {
-            this.tail = null;
-        }
+        const value = this.items[this.head];
+        this.items[this.head] = undefined;
+        this.head = (this.head + 1) % this.items.length;
         this.count -= 1;
         return value;
-    }
-
-    peek(): T | undefined {
-        return this.head?.value;
     }
 
     removeAtIndex(index: number): T | undefined {
         if (index < 0 || index >= this.count) {
             return undefined;
         }
-        let node = this.head;
-        let prevNode: Node<T> | null = null;
-        for (let i = 0; i < index; i += 1) {
-            if (node === null) {
-                return undefined;
-            }
-            prevNode = node;
-            node = node.next;
+        const value = this.items[this.slot(index)];
+        // shift everything after the index forward by one
+        for (let i = index; i < this.count - 1; i += 1) {
+            this.items[this.slot(i)] = this.items[this.slot(i + 1)];
         }
-        if (node === null) return undefined;
-        if (prevNode !== null) {
-            prevNode.next = node.next;
-            if (node === this.tail) {
-                this.tail = prevNode;
-            }
-        } else {
-            // no real need for an if here (as if prevNode === null then node is head)
-            this.head = node.next;
-        }
+        this.items[this.slot(this.count - 1)] = undefined;
         this.count -= 1;
-        return node.value;
+        return value;
     }
 
-    get size(): number {
-        return this.count;
+    some(predicate: (value: T, index: number) => unknown): boolean {
+        return this.findIndex(predicate) !== -1;
     }
-    get isEmpty(): boolean {
-        return this.count === 0;
+
+    find(predicate: (value: T, index: number) => unknown): T | undefined {
+        const index = this.findIndex(predicate);
+        return index === -1 ? undefined : (this.items[this.slot(index)] as T);
+    }
+
+    findIndex(predicate: (value: T, index: number) => unknown): number {
+        for (let i = 0; i < this.count; i += 1) {
+            if (predicate(this.items[this.slot(i)] as T, i)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     *[Symbol.iterator](): IterableIterator<T> {
-        let currNode = this.head;
-        while (currNode !== null) {
-            let ret = currNode.value;
-            currNode = currNode.next;
-            yield ret;
+        for (let i = 0; i < this.count; i += 1) {
+            yield this.items[this.slot(i)] as T;
         }
     }
 }

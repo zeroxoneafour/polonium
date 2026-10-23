@@ -47,9 +47,10 @@ export class PillarEngine implements TilingEngineInterface {
     }
     setEngineSettings(settings: object): void {
         this.settings.setProps(settings);
-        if (this.settings.pillarCount < 1) {
-            this.settings.pillarCount = 1;
-        }
+        this.settings.pillarCount = Math.min(
+            Math.max(Math.round(this.settings.pillarCount), 1),
+            10,
+        );
         if (this.pillars.length == 0) return;
         // removes old pillars past the count and adds their windows back into the system
         while (this.pillars.length > this.settings.pillarCount) {
@@ -161,7 +162,7 @@ export class PillarEngine implements TilingEngineInterface {
         if (boxIdx === -1) return;
         pillar.boxes.splice(boxIdx, 1);
         if (pillar.boxes.length == 0) {
-            const pillarWithMost = this.getPillarWithMost(boxIdx);
+            const pillarWithMost = this.getPillarWithMost(pillarIdx);
             if (pillarWithMost.boxes.length > 1) {
                 pillar.boxes.push(pillarWithMost.boxes.pop()!);
             } else {
@@ -244,6 +245,9 @@ export class PillarEngine implements TilingEngineInterface {
         for (let i = 0; i < rootTile.children.length; i += 1) {
             let subTile = rootTile;
             const pillar = this.pillars[i];
+            if (pillar === undefined) {
+                break;
+            }
             if (this.pillars.length > 1) {
                 subTile = rootTile.children[i];
                 pillar.size = subTile.size;
@@ -253,7 +257,11 @@ export class PillarEngine implements TilingEngineInterface {
                 i += rootTile.children.length;
             }
             for (let j = 0; j < subTile.children.length; j += 1) {
-                pillar.boxes[j].size = subTile.children[j].size;
+                const box = pillar.boxes[j];
+                if (box === undefined) {
+                    break;
+                }
+                box.size = subTile.children[j].size;
             }
         }
     }
@@ -270,7 +278,7 @@ export class PillarEngine implements TilingEngineInterface {
                 } else if (
                     p.boxes.length == r.boxes.length &&
                     refIdx !== undefined &&
-                    Math.abs(i - refIdx) >= ri - refIdx
+                    Math.abs(i - refIdx) <= Math.abs(ri - refIdx)
                 ) {
                     return [p, i];
                 }

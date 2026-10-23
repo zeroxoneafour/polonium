@@ -90,6 +90,18 @@ export class TilingEngine {
     setEngineSettings(settings: object): void {
         if (this.engineType !== TilingEngineType.KWin) {
             this.settings.setProps(settings);
+            this.settings.ultrawideWidth = clamp(
+                this.settings.ultrawideWidth,
+                0.15,
+                0.85,
+            );
+            if (
+                this.settings.ultrawidePosition !== UltrawidePosition.Center &&
+                this.settings.ultrawidePosition !== UltrawidePosition.Left &&
+                this.settings.ultrawidePosition !== UltrawidePosition.Right
+            ) {
+                this.settings.ultrawidePosition = UltrawidePosition.Center;
+            }
         }
         this.engine.setEngineSettings(settings);
     }
@@ -97,7 +109,7 @@ export class TilingEngine {
     buildLayout(): Tile {
         let rootTile = this.engine.buildLayout();
         this.coreRootTile = rootTile;
-        if (this.settings.ultrawideEnabled && rootTile.windows.length > 0) {
+        if (this.settings.ultrawideEnabled && countWindows(rootTile) === 1) {
             rootTile = applySingleWindowSizing(rootTile, this.settings);
         }
         this.rootTile = rootTile;
@@ -125,8 +137,10 @@ export class TilingEngine {
     removeWindow(window: Window): void {
         return this.engine.removeWindow(window);
     }
-    updateTiles(rootTile: Tile): void {
-        return this.engine.updateTiles(rootTile);
+    // rootTile may be the single window sizing wrapper, but the core engine only
+    // knows about its own root (which is a child of the wrapper in that case)
+    updateTiles(_rootTile: Tile): void {
+        return this.engine.updateTiles(this.coreRootTile);
     }
 
     getCoreRootTile(): Tile {
@@ -135,6 +149,21 @@ export class TilingEngine {
     isTileCore(tile: Tile): boolean {
         return !this.nonCoreTiles.has(tile);
     }
+}
+
+function clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max);
+}
+
+function countWindows(rootTile: Tile): number {
+    let count = 0;
+    const stack = [rootTile];
+    while (stack.length > 0) {
+        const tile = stack.pop()!;
+        count += tile.windows.length;
+        stack.push(...tile.children);
+    }
+    return count;
 }
 
 function applySingleWindowSizing(

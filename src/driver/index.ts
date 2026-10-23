@@ -39,8 +39,16 @@ export class Driver {
         engineType: TilingEngineType,
         engineSettings: object,
     ): void {
+        // the kwin engine leaves most windows untiled, so retile everything when leaving it.
+        // otherwise keep windows that were untiled untiled
+        const retileAll =
+            this.tilingEngine.engineType === TilingEngineType.KWin;
         this.tilingEngine = new TilingEngine(engineType, engineSettings);
-        for (const engineWindow of this.windowMap.values()) {
+        for (const [kwinWindow, engineWindow] of this.windowMap) {
+            if (!retileAll && this.untiledWindows.has(kwinWindow)) {
+                continue;
+            }
+            this.untiledWindows.delete(kwinWindow);
             this.tilingEngine.addWindow(engineWindow);
         }
     }
@@ -170,10 +178,17 @@ export class Driver {
                     "as untiled",
                 );
                 this.untiledWindows.add(kwinWindow);
-                if (kwinWindow.tile != null) {
+                // dont touch the window if it is in a tile this driver doesnt manage
+                // (in all likelihood another driver or kwin itself does)
+                if (
+                    kwinWindow.tile != null &&
+                    this.tileMap.has(kwinWindow.tile)
+                ) {
                     kwinWindow.tile.unmanage(kwinWindow);
+                    setUntiledProps(kwinWindow);
+                } else if (kwinWindow.tile == null) {
+                    setUntiledProps(kwinWindow);
                 }
-                setUntiledProps(kwinWindow);
             }
         }
     }
@@ -198,6 +213,10 @@ export class Driver {
                 this.removeWindow(kwinWindow);
             }
         }
+        // not driving kwin tiles, so drop references to them
+        this.tileMap.clear();
+        this.kwinRootTile = null;
+        this.engineRootTile = null;
         let engineRootTile = this.tilingEngine.buildLayout();
         const invertedWindowMap = new Map(
             Array.from(this.windowMap, (a) => [a[1], a[0]]),
@@ -275,14 +294,21 @@ export class Driver {
             return;
         }
         this.initializeWindow(kwinWindow);
+        this.untiledWindows.add(kwinWindow);
     }
 
+    // untiledWindows is kept up to date eagerly (and reconciled on build) so that a
+    // window already in the engine is never added to it twice
     tileWindow(kwinWindow: KwinWindow) {
         const window = this.windowMap.get(kwinWindow);
         if (window === undefined) {
             console().warn("tileWindow error - window not found in map");
             return;
         }
+        if (!this.untiledWindows.has(kwinWindow)) {
+            return;
+        }
+        this.untiledWindows.delete(kwinWindow);
         this.tilingEngine.addWindow(window);
         if (this.savedActiveWindow === kwinWindow) {
             // return value doesnt matter as we rebuild on add regardless
@@ -297,6 +323,7 @@ export class Driver {
             return;
         }
         this.tilingEngine.removeWindow(window);
+        this.untiledWindows.add(kwinWindow);
     }
 
     placeWindow(
@@ -305,6 +332,7 @@ export class Driver {
         directionArg?: Direction,
     ): void {
         let window = this.initializeWindow(kwinWindow);
+        this.untiledWindows.delete(kwinWindow);
         let tile = this.tileMap.get(kwinTile);
         let direction = directionArg;
         if (tile == undefined) {
@@ -398,7 +426,8 @@ export class Driver {
     // as of right now, can only update sizes (ie cannot add/remove tiles)
     updateTiles(): void {
         if (this.engineRootTile === null) {
-            console().warn("updateTiles called, but engine layout not built");
+            // expected when this driver isnt driving kwin tiles (ex. on another activity)
+            console().debug("updateTiles called, but engine layout not built");
             return;
         }
         const tile = updateTiles(this.engineRootTile, this.tileMap);

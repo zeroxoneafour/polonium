@@ -24,7 +24,12 @@ export class Display {
     }
 
     toString(): string {
-        return `{"d":"${this.desktop.id}","a":"${this.activity}","o":"${this.output.name}"}`;
+        // same format as before (key order, no spaces) so saved dbus settings still match
+        return JSON.stringify({
+            d: this.desktop.id,
+            a: this.activity,
+            o: this.output.name,
+        });
     }
 
     toSymbol(): DisplaySymbol {
@@ -244,7 +249,7 @@ export function simplifyEvents(oldEvents: Queue<Event>): Queue<Event> {
                 }
                 continue;
             }
-            const parallelIdx = newEvents.indexOf(
+            const parallelIdx = newEvents.findIndex(
                 (e) =>
                     (e.t === "tileWindow" ||
                         e.t === "untileWindow" ||
@@ -258,7 +263,7 @@ export function simplifyEvents(oldEvents: Queue<Event>): Queue<Event> {
         }
         // if a window is deleted in the same frame it is created then cancel both events
         if (ev.t === "deleteWindow") {
-            const newIdx = newEvents.indexOf(
+            const newIdx = newEvents.findIndex(
                 (e) => e.t === "newWindow" && e.window === ev.window,
             );
             if (newIdx != -1) {
@@ -290,7 +295,7 @@ export function simplifyPostEvents(
     const newEvents = new Queue<PostEvent>();
     for (const ev of oldEvents) {
         if (ev.t === "warpCursor") {
-            let pastCursorEv = newEvents.indexOf((ev) => ev.t === "warpCursor");
+            let pastCursorEv = newEvents.findIndex((ev) => ev.t === "warpCursor");
             if (pastCursorEv != -1) {
                 newEvents.removeAtIndex(pastCursorEv);
             }

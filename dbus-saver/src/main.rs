@@ -2,8 +2,8 @@ use std::{
     collections::HashMap,
     env,
     error::Error,
-    fs::File,
-    io::{BufReader, BufWriter},
+    fs::{self, File},
+    io::{BufReader, BufWriter, Write},
     path::{Path, PathBuf},
     process::Command,
 };
@@ -25,21 +25,46 @@ fn get_file_path() -> PathBuf {
 
 type Settings = HashMap<String, String>;
 
-fn read_settings(path: &Path) -> Result<Settings, Box<dyn Error>> {
+fn read_settings(path: &Path) -> Settings {
     // in case of file not existing just return a blank hashmap
     let Ok(file) = File::open(path) else {
-        return Ok(HashMap::new());
+        return HashMap::new();
     };
     let reader = BufReader::new(file);
-    let ret = serde_json::from_reader(reader)?;
-    return Ok(ret);
+    match serde_json::from_reader(reader) {
+        Ok(settings) => settings,
+        Err(e) => {
+            // a corrupt file shouldnt stop the saver from starting, so move it aside
+            // (so it isnt lost) and start with blank settings
+            let backup = path.with_extension("json.corrupt");
+            eprintln!(
+                "Polonium WRN - dbus - could not parse settings at {:?} ({}), moving it to {:?} and starting fresh",
+                path, e, backup
+            );
+            if let Err(e) = fs::rename(path, &backup) {
+                eprintln!("Polonium WRN - dbus - could not move corrupt settings: {}", e);
+            }
+            HashMap::new()
+        }
+    }
 }
 
+// write to a temporary file and rename it over the real one, so that a crash or
+// full disk mid-write can never leave a truncated settings file behind
 fn write_settings(settings: &Settings, path: &Path) -> Result<(), Box<dyn Error>> {
-    let file = File::create(path)?;
+    let tmp_path = path.with_extension("json.tmp");
+    let file = File::create(&tmp_path)?;
     let mut writer = BufWriter::new(file);
     serde_json::to_writer(&mut writer, settings)?;
+    writer.flush()?;
+    writer.get_ref().sync_all()?;
+    fs::rename(&tmp_path, path)?;
     Ok(())
+}
+
+fn method_err(e: Box<dyn Error>) -> dbus::MethodErr {
+    eprintln!("Polonium ERR - dbus - could not save settings: {}", e);
+    dbus::MethodErr::failed(&format!("could not save settings: {}", e))
 }
 
 struct DBusObjects {
@@ -50,12 +75,11 @@ struct DBusObjects {
 fn main() -> Result<(), Box<dyn Error>> {
     if env::args().any(|arg| arg == "--clear-settings") {
         println!("Polonium LOG - clearing dbus settings");
-        write_settings(&HashMap::new(), &get_file_path()).unwrap();
+        write_settings(&HashMap::new(), &get_file_path())?;
         println!("Polonium LOG - restarting dbus");
         Command::new("systemctl")
             .args(["--user", "restart", "polonium-saver"])
-            .output()
-            .unwrap();
+            .output()?;
         return Ok(());
     }
     let dbus_conn = Connection::new_session()?;
@@ -86,8 +110,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                   (desktop_id, settings_bundle): (String, String)| {
                 objs.settings
                     .insert(desktop_id.clone(), settings_bundle.clone());
-                write_settings(&objs.settings, &objs.file_path).unwrap();
-                Ok(())
+                write_settings(&objs.settings, &objs.file_path).map_err(method_err)
             },
         );
         b.method(
@@ -96,8 +119,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             (),
             move |_ctx: &mut Context, objs: &mut DBusObjects, (desktop_id,): (String,)| {
                 objs.settings.remove(&desktop_id);
-                write_settings(&objs.settings, &objs.file_path).unwrap();
-                Ok(())
+                write_settings(&objs.settings, &objs.file_path).map_err(method_err)
             },
         );
     });
@@ -105,7 +127,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file_path = get_file_path();
     println!("Polonium LOG - dbus - loading config at {:?}", &file_path);
     let dbus_objs = DBusObjects {
-        settings: read_settings(&file_path)?,
+        settings: read_settings(&file_path),
         file_path: file_path,
     };
 

@@ -12,7 +12,7 @@ export function buildLayout(
     const queue = new Queue<[KwinTile, EngineTile]>();
     queue.push([kwinRootTile, engineRootTile]);
 
-    while (!queue.isEmpty) {
+    while (queue.length > 0) {
         const [kwinTile, engineTile] = queue.pop()!;
         if (kwinTile == null) {
             console().warn("kwin tile is null");

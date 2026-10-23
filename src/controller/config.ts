@@ -71,6 +71,8 @@ export class Config {
     readonly ignoreWindowCaptions: RegExp;
     readonly untileWindowClasses: RegExp;
     readonly untileWindowCaptions: RegExp;
+    // console isnt available while config is read, so errors are logged after init
+    readonly regexErrors: string[] = [];
     readonly tilePopups: boolean;
 
     constructor(kwinApi: KWin) {
@@ -154,32 +156,61 @@ export class Config {
         this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
 
         this.rawRegex = rc("RawRegex", false);
-        let ignoreWindowClasses = rc(
+        const ignoreWindowClasses = rc(
             "IgnoreWindowClasses",
             "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
         );
-        let ignoreWindowCaptions = rc("IgnoreWindowCaptions", "");
-        let untileWindowClasses = rc("UntileWindowClasses", "");
-        let untileWindowCaptions = rc("UntileWindowCaptions", "");
-        if (!this.rawRegex) {
-            ignoreWindowClasses = "^" + commaRegex(ignoreWindowClasses) + "$";
-            ignoreWindowCaptions = "^" + commaRegex(ignoreWindowCaptions) + "$";
-            untileWindowClasses = "^" + commaRegex(untileWindowClasses) + "$";
-            untileWindowCaptions = "^" + commaRegex(untileWindowCaptions) + "$";
+        const ignoreWindowCaptions = rc("IgnoreWindowCaptions", "");
+        const untileWindowClasses = rc("UntileWindowClasses", "");
+        const untileWindowCaptions = rc("UntileWindowCaptions", "");
+        this.ignoreWindowClasses = this.buildRegex(ignoreWindowClasses);
+        this.ignoreWindowCaptions = this.buildRegex(ignoreWindowCaptions);
+        this.untileWindowClasses = this.buildRegex(untileWindowClasses);
+        this.untileWindowCaptions = this.buildRegex(untileWindowCaptions);
+    }
+
+    // an invalid pattern should never stop the script from loading
+    private buildRegex(str: string): RegExp {
+        if (this.rawRegex) {
+            // an empty regex would match every window
+            if (str === "") {
+                return neverMatch;
+            }
+            try {
+                return new RegExp(str);
+            } catch (e) {
+                this.regexErrors.push(
+                    `invalid regex "${str}" (${(e as Error).message}), ignoring it`,
+                );
+                return neverMatch;
+            }
         }
-        this.ignoreWindowClasses = new RegExp(ignoreWindowClasses);
-        this.ignoreWindowCaptions = new RegExp(ignoreWindowCaptions);
-        this.untileWindowClasses = new RegExp(untileWindowClasses);
-        this.untileWindowCaptions = new RegExp(untileWindowCaptions);
+        const parts = str
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean)
+            .map((part) => {
+                try {
+                    new RegExp(part);
+                    return part;
+                } catch (e) {
+                    this.regexErrors.push(
+                        `invalid regex "${part}" (${(e as Error).message}), matching it literally`,
+                    );
+                    return escapeRegex(part);
+                }
+            });
+        // An empty pattern would become /^$/, matching windows with empty initial metadata.
+        if (parts.length == 0) {
+            return neverMatch;
+        }
+        // group the alternatives so ^ and $ apply to all of them, not just the first and last
+        return new RegExp("^(?:" + parts.join("|") + ")$");
     }
 }
 
-function commaRegex(str: string): string {
-    const pattern = str
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean)
-        .join("|");
-    // An empty pattern would become /^$/, matching windows with empty initial metadata.
-    return pattern || "(?!)";
+const neverMatch = /(?!)/;
+
+function escapeRegex(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
