@@ -4,6 +4,9 @@ import { Tile as EngineTile } from "../engine";
 import { Queue } from "../util";
 import { console, qt } from "../controller";
 
+const MIN_SIZE = 0.15;
+const TOLERANCE = 0.00001;
+
 export function buildLayout(
     kwinRootTile: KwinTile,
     engineRootTile: EngineTile,
@@ -43,6 +46,8 @@ export function buildLayout(
                 kwinTile.tiles[kwinTile.tiles.length - 1].remove();
             }
             queue.push([kwinTile, engineTile.children[0]]);
+        } else if (childrenAreSame(kwinTile, engineTile)) {
+            console().debug("skipping resize for this tile as it is unchanged");
         } else {
             matchChildren(kwinTile, engineTile);
         }
@@ -54,6 +59,37 @@ export function buildLayout(
         }
     }
     return tileMap;
+}
+
+// check if there is literally no change between a tile before and after
+function childrenAreSame(kwinTile: KwinTile, engineTile: EngineTile): boolean {
+    if (kwinTile.tiles.length != engineTile.children.length) {
+        return false;
+    }
+    const totalChildrenSize = engineTile.totalChildrenSize();
+    const layoutDirection = kwinTile.layoutDirection;
+
+    for (let i = 0; i < kwinTile.tiles.length; i += 1) {
+        const kwinChild = kwinTile.tiles[i];
+        const engineChildSize = engineTile.children[i].size / totalChildrenSize;
+        let relativeSize = 1;
+
+        if (layoutDirection === LayoutDirection.Horizontal) {
+            relativeSize =
+                kwinChild.relativeGeometry.width /
+                kwinTile.relativeGeometry.width;
+        } else if (layoutDirection === LayoutDirection.Vertical) {
+            relativeSize =
+                kwinChild.relativeGeometry.height /
+                kwinTile.relativeGeometry.height;
+        }
+
+        if (!(Math.abs(relativeSize - engineChildSize) <= TOLERANCE)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // matches children count and sizing using following steps -
@@ -92,7 +128,7 @@ function matchChildren(kwinTile: KwinTile, engineTile: EngineTile): void {
 
 function setChildMinSize(kwinTile: KwinTile, index: number) {
     // set higher than 0.15 to avoid floating point issues
-    const minSize = 0.15001;
+    const minSize = MIN_SIZE + TOLERANCE;
 
     console().debug("setMinChildSize on idx", index);
     const kwinChild = kwinTile.tiles[index];
