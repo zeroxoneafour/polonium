@@ -1,6 +1,6 @@
 <script lang="ts">
 	import "./layout.css";
-	import favicon from "$lib/assets/favicon.svg";
+	import favicon from "#lib/assets/favicon.svg";
 	import { AppBar, } from "@skeletonlabs/skeleton-svelte";
 	import { CodeXml, Store } from "@lucide/svelte";
 	import { page } from "$app/state";

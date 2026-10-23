@@ -35,5 +35,9 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.0",
     "vite": "^8.3.5"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
   }
 }
