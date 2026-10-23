@@ -16,6 +16,7 @@
 - Option for ultrawide windows per-display
 - Updated settings interface
 - Added shortcut to toggle tiling on active display
+- Optimized rebuild and update tile functions
 
 ### 1.2.1
 
