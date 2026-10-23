@@ -21,6 +21,7 @@ export interface QmlObjects {
 
 export interface Shortcuts {
     toggleActiveTiling(): ShortcutHandler;
+    toggleAllTiling(): ShortcutHandler;
 
     setEngineBTree(): ShortcutHandler;
     setEngineHalf(): ShortcutHandler;

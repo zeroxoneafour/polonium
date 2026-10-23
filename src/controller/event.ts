@@ -73,6 +73,26 @@ export class Display {
             }
         }
     }
+
+    static activeDisplay(): Display | null {
+        if (this.workspace == undefined) {
+            return null;
+        }
+        return new Display(
+            this.workspace.currentDesktop,
+            this.workspace.currentActivity,
+            this.workspace.activeScreen,
+        );
+    }
+
+    containsWindow(window: Window): boolean {
+        return (
+            (window.desktops.includes(this.desktop) || window.onAllDesktops) &&
+            (window.activities.includes(this.activity) ||
+                window.activities.length == 0) &&
+            window.output === this.output
+        );
+    }
 }
 
 interface GenericEvent {

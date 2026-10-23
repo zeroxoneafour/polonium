@@ -3,8 +3,9 @@ import { Shortcuts } from "../../extern";
 import { config, console, controller as ctrl, qt } from "..";
 import { Direction, TilingEngineType } from "../../engine";
 import { Display } from "../event";
-import { Edge, Tile } from "kwin-api";
+import { Edge, Tile, Window } from "kwin-api";
 import { KWinVersion, WarpCursor } from "../config";
+import { WindowHandler } from ".";
 
 export class ShortcutsHandler {
     private workspace: Workspace;
@@ -17,6 +18,9 @@ export class ShortcutsHandler {
         this.shortcuts
             .toggleActiveTiling()
             .activated.connect(this.toggleActiveTiling.bind(this));
+        this.shortcuts
+            .toggleAllTiling()
+            .activated.connect(this.toggleAllTiling.bind(this));
 
         this.shortcuts
             .setEngineBTree()
@@ -135,14 +139,46 @@ export class ShortcutsHandler {
         }
     }
 
+    // if any windows are untiled, then tile them all, else untile all
+    toggleAllTiling() {
+        const display = Display.activeDisplay()!;
+        const untiledWindows = new Set<[Window, WindowHandler]>();
+        const tiledWindows = new Set<[Window, WindowHandler]>();
+        for (const window of this.workspace.windows) {
+            const windowHandler = ctrl().getWindowHandler(window);
+            // unmanaged windows should also be skipped here
+            if (windowHandler == undefined || !display.containsWindow(window)) {
+                continue;
+            }
+            if (ctrl().isWindowTiled(window, display)) {
+                tiledWindows.add([window, windowHandler]);
+            } else {
+                untiledWindows.add([window, windowHandler]);
+            }
+        }
+        if (untiledWindows.size > 0) {
+            for (const [window, windowHandler] of untiledWindows) {
+                windowHandler.wantsTiled = true;
+                ctrl().queueEvent({
+                    t: "tileWindow",
+                    window: window,
+                });
+            }
+        } else {
+            for (const [window, windowHandler] of tiledWindows) {
+                windowHandler.wantsTiled = false;
+                ctrl().queueEvent({
+                    t: "untileWindow",
+                    window: window,
+                });
+            }
+        }
+    }
+
     setEngineType(engineType: TilingEngineType) {
         ctrl().queueEvent({
             t: "changeEngine",
-            display: new Display(
-                this.workspace.currentDesktop,
-                this.workspace.currentActivity,
-                this.workspace.activeScreen,
-            ),
+            display: Display.activeDisplay()!,
             engineType: engineType,
         });
     }
@@ -336,22 +372,12 @@ export class ShortcutsHandler {
     toggleSettingsMenu() {
         ctrl().queuePostEvent({
             t: "toggleSettingsMenu",
-            display: new Display(
-                this.workspace.currentDesktop,
-                this.workspace.currentActivity,
-                this.workspace.activeScreen,
-            ),
+            display: Display.activeDisplay()!,
         });
     }
 
     cycleEngine() {
-        const current = ctrl().getEngineType(
-            new Display(
-                this.workspace.currentDesktop,
-                this.workspace.currentActivity,
-                this.workspace.activeScreen,
-            ),
-        );
+        const current = ctrl().getEngineType(Display.activeDisplay()!);
         if (current === undefined) {
             // Should never happen, but it's better for code quality
             // that we assume that it can and we handle the error without assumption.

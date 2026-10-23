@@ -5,24 +5,35 @@ import org.kde.kwin;
 
 Item {
     id: shortcuts;
-    
+
     function toggleActiveTiling() {
         return toggleActiveTilingObj;
     }
     ShortcutHandler {
         id: toggleActiveTilingObj;
-        
+
         name: "PoloniumToggleActiveTiling";
         text: "Polonium: Toggle Tiling on Active Window";
         sequence: "Meta+Shift+Space";
     }
+    function toggleAllTiling() {
+        return toggleAllTilingObj;
+    }
+    ShortcutHandler {
+        id: toggleAllTilingObj;
+
+        name: "PoloniumToggleAllTiling";
+        text: "Polonium: Toggle Tiling on All Windows on Active Display";
+        sequence: "";
+    }
+
     // no default shortcuts for specific engines
     function setEngineBTree() {
         return setEngineBTreeObj;
     }
     ShortcutHandler {
         id: setEngineBTreeObj;
-        
+
         name: "PoloniumSetEngineBTree";
         text: "Polonium: Use Binary Tree Engine";
         sequence: "";
@@ -32,7 +43,7 @@ Item {
     }
     ShortcutHandler {
         id: setEngineHalfObj;
-        
+
         name: "PoloniumSetEngineHalf";
         text: "Polonium: Use Half Engine";
         sequence: "";
@@ -42,7 +53,7 @@ Item {
     }
     ShortcutHandler {
         id: setEngineThreeColumnObj;
-        
+
         name: "PoloniumSetEngineThreeColumn";
         text: "Polonium: Use Three Column Engine";
         sequence: "";
@@ -52,7 +63,7 @@ Item {
     }
     ShortcutHandler {
         id: setEnginePillarsObj;
-        
+
         name: "PoloniumSetEnginePillars";
         text: "Polonium: Use Pillars Engine";
         sequence: "";
@@ -62,7 +73,7 @@ Item {
     }
     ShortcutHandler {
         id: setEnginePagerObj;
-        
+
         name: "PoloniumSetEnginePager";
         text: "Polonium: Use Pager Engine";
         sequence: "";
@@ -72,7 +83,7 @@ Item {
     }
     ShortcutHandler {
         id: setEngineKWinObj;
-        
+
         name: "PoloniumSetEngineKWin";
         text: "Polonium: Use KWin Engine";
         sequence: "";
@@ -83,7 +94,7 @@ Item {
     }
     ShortcutHandler {
         id: activateAboveObj;
-        
+
         name: "PoloniumActivateAbove";
         text: "Polonium: Activate Above";
         sequence: "Meta+K";
@@ -94,7 +105,7 @@ Item {
     }
     ShortcutHandler {
         id: activateBelowObj;
-        
+
         name: "PoloniumActivateBelow";
         text: "Polonium: Activate Below";
         sequence: "Meta+J";
@@ -105,7 +116,7 @@ Item {
     }
     ShortcutHandler {
         id: activateLeftObj;
-        
+
         name: "PoloniumActivateLeft";
         text: "Polonium: Activate Left";
         sequence: "Meta+H";
@@ -116,7 +127,7 @@ Item {
     }
     ShortcutHandler {
         id: activateRightObj;
-        
+
         name: "PoloniumActivateRight";
         text: "Polonium: Activate Right";
         sequence: "Meta+L";
@@ -127,7 +138,7 @@ Item {
     }
     ShortcutHandler {
         id: placeAboveObj;
-        
+
         name: "PoloniumPlaceAbove";
         text: "Polonium: Place Window Above";
         sequence: "Meta+Shift+K";
@@ -138,7 +149,7 @@ Item {
     }
     ShortcutHandler {
         id: placeBelowObj;
-        
+
         name: "PoloniumPlaceBelow";
         text: "Polonium: Place Window Below";
         sequence: "Meta+Shift+J";
@@ -149,7 +160,7 @@ Item {
     }
     ShortcutHandler {
         id: placeLeftObj;
-        
+
         name: "PoloniumPlaceLeft";
         text: "Polonium: Place Window Left";
         sequence: "Meta+Shift+H";
@@ -160,7 +171,7 @@ Item {
     }
     ShortcutHandler {
         id: placeRightObj;
-        
+
         name: "PoloniumPlaceRight";
         text: "Polonium: Place Window Right";
         sequence: "Meta+Shift+L";
@@ -171,7 +182,7 @@ Item {
     }
     ShortcutHandler {
         id: resizeUpObj;
-        
+
         name: "PoloniumResizeUp";
         text: "Polonium: Resize Tile Up";
         sequence: "Meta+Ctrl+K";
@@ -182,7 +193,7 @@ Item {
     }
     ShortcutHandler {
         id: resizeDownObj;
-        
+
         name: "PoloniumResizeDown";
         text: "Polonium: Resize Tile Down";
         sequence: "Meta+Ctrl+J";
@@ -193,7 +204,7 @@ Item {
     }
     ShortcutHandler {
         id: resizeLeftObj;
-        
+
         name: "PoloniumResizeLeft";
         text: "Polonium: Resize Tile Left";
         sequence: "Meta+Ctrl+H";
@@ -204,29 +215,29 @@ Item {
     }
     ShortcutHandler {
         id: resizeRightObj;
-        
+
         name: "PoloniumResizeRight";
         text: "Polonium: Resize Tile Right";
         sequence: "Meta+Ctrl+L";
     }
-    
+
     function toggleSettingsMenu() {
         return toggleSettingsMenuObj;
     }
     ShortcutHandler {
         id: toggleSettingsMenuObj;
-        
+
         name: "PoloniumToggleSettingsMenu";
         text: "Polonium: Toggle Settings Menu";
         sequence: "Meta+\\";
     }
- 
+
     function cycleEngine() {
         return cycleEngineObj;
     }
     ShortcutHandler {
         id: cycleEngineObj;
-        
+
         name: "PoloniumCycleEngine";
         text: "Polonium: Cycle Engine";
         sequence: "Meta+|";
@@ -242,36 +253,36 @@ Item {
         text: "Polonium: Rotate Layout";
         sequence: "";
     }
-    
+
 
     function getSwitchThreeColumn() {
         return switchThreeColumn;
     }
     ShortcutHandler {
         id: switchThreeColumn;
-        
+
         name: "PoloniumSwitchThreeColumn";
         text: "Polonium: Use Three Column Engine";
         sequence: "";
     }
-    
+
     function getSwitchMonocle() {
         return switchMonocle;
     }
     ShortcutHandler {
         id: switchMonocle;
-        
+
         name: "PoloniumSwitchMonocle";
         text: "Polonium: Use Monocle Engine";
         sequence: "";
     }
-    
+
     function getSwitchKwin() {
         return switchKwin;
     }
     ShortcutHandler {
         id: switchKwin;
-        
+
         name: "PoloniumSwitchKwin";
         text: "Polonium: Use KWin Engine";
         sequence: "";

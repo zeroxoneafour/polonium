@@ -79,11 +79,7 @@ export class WorkspaceHandler {
     refreshSettingsPopup() {
         ctrl().queuePostEvent({
             t: "refreshSettingsMenu",
-            display: new Display(
-                this.workspace.currentDesktop,
-                this.workspace.currentActivity,
-                this.workspace.activeScreen,
-            ),
+            display: Display.activeDisplay()!,
         });
     }
 

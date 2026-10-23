@@ -15,6 +15,7 @@
 - Snap cursor to active window settings (broken for swap, out of our control)
 - Option for ultrawide windows per-display
 - Updated settings interface
+- Added shortcut to toggle tiling on active display
 
 ### 1.2.1
 

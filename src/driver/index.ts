@@ -61,7 +61,16 @@ export class Driver {
             this.tilingEngine.engineType != engineType
         ) {
             if (engineSettings === undefined) {
-                engineSettings = getConfigEngineSettings(engineType);
+                // first make shallow copy then update that copy with old values
+                // this tries to preserve config values between engine swaps
+                engineSettings = Object.assign(
+                    {},
+                    getConfigEngineSettings(engineType),
+                );
+                engineSettings = Object.assign(
+                    engineSettings,
+                    this.getEngineSettings(),
+                );
             }
             this.setEngineType(engineType, engineSettings);
         } else if (engineSettings !== undefined) {
@@ -110,15 +119,7 @@ export class Driver {
         for (const [kwinWindow, _ew] of this.windowMap) {
             if (
                 !ctrl().windowExists(kwinWindow) ||
-                !(
-                    kwinWindow.desktops.includes(display.desktop) ||
-                    kwinWindow.onAllDesktops
-                ) ||
-                !(
-                    kwinWindow.activities.includes(display.activity) ||
-                    kwinWindow.activities.length == 0
-                ) ||
-                kwinWindow.output !== display.output
+                !display.containsWindow(kwinWindow)
             ) {
                 console().warn("invalid window in windowMap");
                 this.removeWindow(kwinWindow);
@@ -198,15 +199,7 @@ export class Driver {
         for (const [kwinWindow, _ew] of this.windowMap) {
             if (
                 !ctrl().windowExists(kwinWindow) ||
-                !(
-                    kwinWindow.desktops.includes(display.desktop) ||
-                    kwinWindow.onAllDesktops
-                ) ||
-                !(
-                    kwinWindow.activities.includes(display.activity) ||
-                    kwinWindow.activities.length == 0
-                ) ||
-                kwinWindow.output !== display.output
+                !display.containsWindow(kwinWindow)
             ) {
                 console().warn("invalid window in windowMap");
                 this.removeWindow(kwinWindow);
