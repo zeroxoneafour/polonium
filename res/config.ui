@@ -1014,7 +1014,7 @@
          <item row="2" column="2">
           <widget class="QLineEdit" name="kcfg_IgnoreWindowClasses">
            <property name="text">
-            <string>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</string>
+            <string>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge, kwin_wayland</string>
            </property>
           </widget>
          </item>

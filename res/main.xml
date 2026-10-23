@@ -43,7 +43,7 @@
         <entry name="PagerRotateLayout" type="bool"><default>false</default></entry>
 
         <entry name="RawRegex" type="bool"><default>false</default></entry>
-        <entry name="IgnoreWindowClasses" type="string"><default>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge</default></entry>
+        <entry name="IgnoreWindowClasses" type="string"><default>krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge, kwin_wayland</default></entry>
         <entry name="IgnoreWindowCaptions" type="string"><default></default></entry>
         <entry name="UntileWindowClasses" type="string"><default></default></entry>
         <entry name="UntileWindowCaptions" type="string"><default></default></entry>

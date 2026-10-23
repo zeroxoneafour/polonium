@@ -158,7 +158,7 @@ export class Config {
         this.rawRegex = rc("RawRegex", false);
         const ignoreWindowClasses = rc(
             "IgnoreWindowClasses",
-            "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge",
+            "krunner, yakuake, kded, polkit, plasmashell, xwaylandvideobridge, kwin_wayland",
         );
         const ignoreWindowCaptions = rc("IgnoreWindowCaptions", "");
         const untileWindowClasses = rc("UntileWindowClasses", "");
