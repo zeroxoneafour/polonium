@@ -1,6 +1,6 @@
 // half.ts - Tiling engine for the half/split layout
 
-import { rotateDirection } from "../../util/geometry";
+import { rotateDirection } from "../../util";
 import {
     Tile,
     Window,

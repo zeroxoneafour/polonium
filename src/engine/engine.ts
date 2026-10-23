@@ -2,7 +2,7 @@
 
 import { LayoutDirection } from "kwin-api";
 import { QSize, QUuid } from "kwin-api/qt";
-import { Direction } from "../util/geometry";
+import { Direction } from "../util";
 
 export { LayoutDirection, Direction };
 

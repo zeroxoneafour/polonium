@@ -20,9 +20,9 @@ import { Direction, directionFromPoint, Queue } from "../util";
 import { Console } from "./console";
 import { Driver } from "../driver";
 import { QPoint, QTimer, Qt } from "kwin-api/qt";
-import { Config, WarpCursor } from "./config";
+import { Config } from "./config";
 import { TilingEngineType } from "../engine";
-import { rectContainsPoint } from "../util/geometry";
+import { rectContainsPoint } from "../util";
 
 class Controller {
     private workspace: Workspace;

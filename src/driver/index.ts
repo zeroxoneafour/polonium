@@ -1,7 +1,7 @@
 import {
     Tile as KwinTile,
+    RootTile as KwinRootTile,
     Window as KwinWindow,
-    LayoutDirection,
 } from "kwin-api";
 import {
     Tile as EngineTile,
@@ -11,14 +11,13 @@ import {
 } from "../engine";
 import { buildLayout } from "./buildlayout";
 import { config, console, controller as ctrl } from "../controller";
-import { Direction } from "../util";
+import { Direction, clampPoint, directionFromPoint, rectCenter } from "../util";
 import { Borders } from "../controller/config";
 import { updateTiles } from "./updatetiles";
 import { Display } from "../controller/event";
-import { clampPoint, directionFromPoint, rectCenter } from "../util/geometry";
 
 export class Driver {
-    private kwinRootTile: KwinTile | null = null;
+    private kwinRootTile: KwinRootTile | null = null;
     private engineRootTile: EngineTile | null = null;
     private tileMap: Map<KwinTile, EngineTile> = new Map();
     private hookedTiles: Set<KwinTile> = new Set();
@@ -103,7 +102,7 @@ export class Driver {
         }
     }
 
-    buildLayout(rootTile: KwinTile, display: Display): void {
+    buildLayout(rootTile: KwinRootTile, display: Display): void {
         this.kwinRootTile = rootTile;
 
         // remove non-extant windows or windows that are not on the desktop/activity/output
