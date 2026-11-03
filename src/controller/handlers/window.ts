@@ -54,10 +54,15 @@ export class WindowHandler {
     }
 
     startTiled(): boolean {
+        if (this.window.specialWindow) {
+            return false;
+        }
         if (
-            this.window.specialWindow ||
-            (!config().tilePopups &&
-                (this.window.popupWindow || this.window.transient))
+            !config().tilePopups &&
+            (!this.window.resizeable ||
+                this.window.popupWindow ||
+                this.window.transient ||
+                this.window.modal)
         ) {
             return false;
         }

@@ -1,6 +1,6 @@
 <div align="center">
 
-# polonium
+# [polonium](https://polonium.vaughanm.xyz)
 
 An autotile manager for Plasma 6.
 
