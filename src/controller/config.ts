@@ -65,6 +65,7 @@ export class Config {
     readonly tiledWindowsBelow: boolean;
     readonly windowDragPolicy: DragPolicy;
     readonly dragRetilePoint: DragRetilePoint;
+    readonly screenGap: number;
 
     readonly rawRegex: boolean;
     readonly ignoreWindowClasses: RegExp;
@@ -154,6 +155,8 @@ export class Config {
         this.tilePopups = rc("TilePopups", false);
         this.windowDragPolicy = rc("WindowDragPolicy", DragPolicy.Tiled);
         this.dragRetilePoint = rc("DragRetilePoint", DragRetilePoint.Mouse);
+        // 0 leaves kwin's own tile padding untouched
+        this.screenGap = Math.min(Math.max(rc("ScreenGap", 0), 0), 20);
 
         this.rawRegex = rc("RawRegex", false);
         const ignoreWindowClasses = rc(
