@@ -112,6 +112,13 @@ export class Driver {
     }
 
     buildLayout(rootTile: KwinRootTile, display: Display): void {
+        // gap between tiled windows and screen edges; kwin gives each side half
+        // between windows and the full value at screen edges, and child tiles
+        // inherit it, so this covers every engine. 0 keeps kwin's own padding
+        const screenGap = config().screenGap;
+        if (screenGap > 0) {
+            rootTile.padding = screenGap;
+        }
         this.kwinRootTile = rootTile;
 
         // remove non-extant windows or windows that are not on the desktop/activity/output
